@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public class ChargingSlot {
 	int id;
 	ChargingStation chargingStation;
-	Car currentCar = NULL;
+	Car currentCar = null;
 	LocalDateTime nextFreeTime;
 	
 	public ChargingSlot(CharingStation charingStation, int id) {
@@ -13,10 +13,9 @@ public class ChargingSlot {
 		this.id = id;
 	}
 	
-	public void chargeCar(Car car) {
 		// if there is a car already docked in this slot, raise an exception
-		if (this.currentCar != NULL) {
 			throw new CharingSlotFullException("Charging Slot +" this.id + " is full.");
+		if (this.currentCar != null) {
 		}
 		this.currentCar = car;
 		
