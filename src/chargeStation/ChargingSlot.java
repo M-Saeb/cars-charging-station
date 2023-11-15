@@ -9,7 +9,7 @@ public class ChargingSlot {
 	Car currentCar = null;
 	LocalDateTime nextFreeTime;
 	
-	public ChargingSlot(CharingStation charingStation, int id) {
+	public ChargingSlot(chargingStation chargingStation, int id) {
 		if (chargingStation == null) {
 			throw new IllegalArgumentException("Supplied charging station is null.");
 		}
