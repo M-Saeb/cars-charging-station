@@ -1,6 +1,7 @@
 package chargeStation;
 
 import java.time.LocalDateTime;
+import java.lang.IllegalArgumentException;
 
 public class ChargingSlot {
 	int id;
@@ -9,13 +10,17 @@ public class ChargingSlot {
 	LocalDateTime nextFreeTime;
 	
 	public ChargingSlot(CharingStation charingStation, int id) {
+		if (chargingStation == null) {
+			throw new IllegalArgumentException("Supplied charging station is null.");
+		}
 		this.chargingStation = ChargingStation;
 		this.id = id;
 	}
 	
+	public void chargeCar(Car car) throws  ChargingSlotFullException{
 		// if there is a car already docked in this slot, raise an exception
-			throw new CharingSlotFullException("Charging Slot +" this.id + " is full.");
 		if (this.currentCar != null) {
+			throw new ChargingSlotFullException("Slot +" this.id + " is full.");
 		}
 		this.currentCar = car;
 		
