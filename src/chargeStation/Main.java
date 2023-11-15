@@ -1,4 +1,4 @@
-package mainPackage;
+package chargeStation;
 
 public class Main {
 	public static void main(String[] args) {
