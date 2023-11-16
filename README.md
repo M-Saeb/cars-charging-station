@@ -2,6 +2,9 @@
 
 Team members:
 - Hazhir Amiri; 7218509.
+- Leander Hackmann; 7217912
+- Luis Fernando Rodriguez Gutierrez; 7219085
+- Mohammed Al Salihi; 7218958
 
 
 ## Task 1
