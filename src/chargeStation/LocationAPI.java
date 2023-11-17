@@ -5,11 +5,25 @@ public class LocationAPI
 
     public float getGPSLatitud_f()
     {
-        return GPSLatitud_f;
+        if(this.GPSLatitud_f == 0)
+        {
+            throw new IllegalArgumentException("GPS Location is Invalid...");
+        }
+        else
+        {
+            return GPSLatitud_f;
+        }
     }
 
     public float getGPSLongitud_f()
     {
-        return GPSLongitud_f;
+        if(this.GPSLongitud_f == 0)
+        {
+            throw new IllegalArgumentException("GPS Location is Invalid...");
+        }
+        else
+        {
+            return GPSLongitud_f;
+        }
     }
 }

@@ -5,7 +5,7 @@ public class ElectricStation extends ChargingStation
     /*
     Amount of battery that the station has to charge vehicles
      */
-    private float batteryAmountStorage_f;
+    private float batteryCapacityStorage_f;
     /*
     Amount of charge that the station can distribute to each vehicle
      */
@@ -15,18 +15,35 @@ public class ElectricStation extends ChargingStation
      */
     private int vehiclesChargeCounter_int;
 
-    public float getBatteryAmountStorage_f() {
-        return batteryAmountStorage_f;
+    public float getBatteryCapacityStorage_f()
+    {
+        if(this.batteryCapacityStorage_f < 0)
+        {
+            throw new IllegalArgumentException("Charging in this station is not possible...");
+        }
+        else
+        {
+            return batteryCapacityStorage_f;
+        }
     }
 
-    public void setBatteryAmountStorage_f(float batteryAmountStorage_f) {
-        this.batteryAmountStorage_f = batteryAmountStorage_f;
+    public void setBatteryCapacityStorage_f(float batteryCapacityStorage_f)
+    {
+        if(batteryCapacityStorage_f < 0)
+        {
+            throw new IllegalArgumentException("Battery died...");
+        }
+        else
+        {
+            this.batteryCapacityStorage_f = batteryCapacityStorage_f;
+        }
     }
 
     public float getBatteryDistributionCapacity_f() {
         return batteryDistributionCapacity_f;
     }
 
+    /* TODO: Discuss with Leander regarding this subject */
     public void setBatteryDistributionCapacity_f(float batteryDistributionCapacity_f) {
         this.batteryDistributionCapacity_f = batteryDistributionCapacity_f;
     }
@@ -35,7 +52,16 @@ public class ElectricStation extends ChargingStation
         return vehiclesChargeCounter_int;
     }
 
-    public void setVehiclesChargeCounter_int(int vehiclesChargeCounter_int) {
-        this.vehiclesChargeCounter_int = vehiclesChargeCounter_int;
+    public void setVehiclesChargeCounter_int(int vehiclesChargeCounter_int)
+    {
+        if(vehiclesChargeCounter_int < 0)
+        {
+            vehiclesChargeCounter_int = 0;
+            throw new IllegalArgumentException("Impossible to have less than 0 vehicles...");
+        }
+        else
+        {
+            this.vehiclesChargeCounter_int = vehiclesChargeCounter_int;
+        }
     }
 }
