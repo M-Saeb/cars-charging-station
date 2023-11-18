@@ -8,10 +8,12 @@ public class ChargingStation
      */
     private float GPSLatitud_f;
     private float GPSLongitud_f;
+    /* TODO: Implement queue logic, where variable availableSlots_int is the number of slot available to push into the queue */
     /*
     Amount of available slot per charging station
      */
     private int availableSlots_int;
+    private int chargingStationID_int;
 
     public float getGPSLatitud_f() {
         return GPSLatitud_f;
@@ -35,5 +37,13 @@ public class ChargingStation
 
     public void setAvailableSlots_int(int availableSlots_int) {
         this.availableSlots_int = availableSlots_int;
+    }
+
+    public void setChargingStationID_int(int chargingStationID_int) {
+        this.chargingStationID_int = chargingStationID_int;
+    }
+
+    public int getChargingStationID_int() {
+        return chargingStationID_int;
     }
 }
