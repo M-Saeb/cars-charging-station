@@ -3,9 +3,10 @@ package chargeStation;
 public class ElectricCar extends Car
 {
 
-	@Override
-	public String getType()
+	public ElectricCar(String carNumber, float tankCapacity, float waitDuration, LocationAPI api)
 	{
-		return "ElectricCar";
+		super(carNumber, tankCapacity, waitDuration, api);
+		// TODO Auto-generated constructor stub
 	}
+	
 }
