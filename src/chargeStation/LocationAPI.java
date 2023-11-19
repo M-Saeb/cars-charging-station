@@ -60,27 +60,35 @@ public class LocationAPI
         float LongitudDiff = 0;
         int[][] totalDistance = new int[this.class_ChargingStation.length][2];
         int[] sortedArray = new int[totalDistance.length];
-
-        for(int i = 0; i < this.class_ChargingStation.length; i++)
+        if(getAvailableStationID_int() != 0)
         {
+            for(int i = 0; i < this.class_ChargingStation.length; i++)
+            {
             /*
             Calculate the distance between the 2 points
             Where x2 is the station latitud and x1 is the car location
             sqrt[ (x2 - x1)^2 + (y2 - y1)^2 ]
             */
-            LattitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLatitud_f() - varLatitud), 2);
-            LongitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLongitud_f() - varLongitud), 2);
-            totalDistance[i][0] = (int) this.class_ChargingStation[i].getChargingStationID_int();
-            totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
-        }
-        /* Compare elements regarding the second position of the array and sort them from shortest to longest */
-        Arrays.sort(totalDistance, Comparator.comparingInt(arr -> arr[1]));
-        for(int i = 0; i<sortedArray.length; i++)
-        {
-            sortedArray[i] = totalDistance[i][0];
-        }
-        /* TODO: DEBUG print array */
+                LattitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLatitud_f() - varLatitud), 2);
+                LongitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLongitud_f() - varLongitud), 2);
+                totalDistance[i][0] = (int) this.class_ChargingStation[i].getChargingStationID_int();
+                totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
+            }
+            /* Compare elements regarding the second position of the array and sort them from shortest to longest */
+            Arrays.sort(totalDistance, Comparator.comparingInt(arr -> arr[1]));
+            for(int i = 0; i<sortedArray.length; i++)
+            {
+                sortedArray[i] = totalDistance[i][0];
+            }
+            /* TODO: DEBUG print array */
 
+        }
+        else
+        {
+            System.out.println("No available stations nearby");
+            /* Fill array with zeros, meaning no available station is nearby */
+            Arrays.fill(sortedArray, 0);
+        }
         /* Return the station ID that it is closest to the station */
         return sortedArray;
     }
