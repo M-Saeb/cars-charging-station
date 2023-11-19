@@ -1,27 +1,29 @@
 package chargeStation;
 
+import chargeStation.Stations.ChargingStation;
+
 public abstract class Car
 {
 	private String carNumber;
 	private float tankCapacity;
 	private float waitDuration;
 	private LocationAPI api;
-	private ChargingStation chargingStation;
+    private float[][] currentGPS_f;
 	
-	public Car(String carNumber, float tankCapacity, float waitDuration, LocationAPI api)
+	public Car(String carNumber, float tankCapacity, float waitDuration, LocationAPI api, float[][] currentGPS_f)
 	{
 		this.carNumber = carNumber;
 		this.tankCapacity = tankCapacity;
 		this.waitDuration = waitDuration;
 		this.api = api;
+		this.currentGPS_f = currentGPS_f;
 	}
 	
-	public float getChargingTime()
+	public float getChargingTime(ChargingStation station)
 	{
-		return tankCapacity / chargingStation.getChargePerSecond();
+		return tankCapacity / station.getOutputPerSecond();
 	}
 
-	public abstract String getType();
 	
 	public String getCarNumber()
 	{
@@ -63,13 +65,19 @@ public abstract class Car
 		this.api = api;
 	}
 
-	public ChargingStation getChargingStation()
+	public int getNearestFreeChargingStation() throws ChargingStationNotFoundException
 	{
-		return chargingStation;
-	}
-
-	public void setChargingStation(ChargingStation chargingStation)
-	{
-		this.chargingStation = chargingStation;
+		//Setting the current position
+		api.setCarCurrentGPS_f(currentGPS_f);
+		
+		//Getting the nearest station
+		int result = api.calculateNearestStation();
+		
+		//Checking the result
+		if(result == 0)
+		{
+			throw new ChargingStationNotFoundException("Car: " + carNumber + " could not find a free station.");
+		}
+		return result;
 	}
 }
