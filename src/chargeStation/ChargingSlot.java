@@ -4,10 +4,10 @@ import java.time.LocalDateTime;
 import java.lang.IllegalArgumentException;
 
 public class ChargingSlot {
-	int id;
-	ChargingStation chargingStation;
-	Car currentCar = null;
-	LocalDateTime nextFreeTime;
+	private int id;
+	private ChargingStation chargingStation;
+	private Car currentCar = null;
+	private LocalDateTime nextFreeTime;
 	
 	public ChargingSlot(chargingStation chargingStation, int id) {
 		if (chargingStation == null) {
@@ -27,5 +27,20 @@ public class ChargingSlot {
 		// calculate when the charging finishes and the slot is available
 		// LocalDateTime finishedChargingTime = ;
 		// this.nextFreeTime = finishedChargingTime;
-	}; 
+	}
+	
+	public int getId(){
+		return this.id;
+	}
+	
+	public Car getCurrentCar() {
+		return this.currentCar;
+	}
+	
+	public LocalDateTime getNextFreeTime() {
+		return this.nextFreeTime;
+	}
+	}
+	
+	
 }
