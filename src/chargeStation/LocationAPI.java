@@ -66,4 +66,9 @@ public class LocationAPI
         }
         return 0;
     }
+
+	public void setCarCurrentGPS_f(float[][] carCurrentGPS_f)
+	{
+		this.carCurrentGPS_f = carCurrentGPS_f;
+	}
 }

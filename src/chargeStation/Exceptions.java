@@ -5,3 +5,9 @@ class ChargingSlotFullException extends Throwable{
 		super(s);
 	}
 }
+
+class ChargingStationNotFoundException extends Throwable{
+	public ChargingStationNotFoundException(String s) {
+		super(s);
+	}
+}

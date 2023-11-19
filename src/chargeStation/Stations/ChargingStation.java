@@ -14,6 +14,7 @@ public class ChargingStation
      */
     private int availableSlots_int;
     private int chargingStationID_int;
+    private float outputPerSecond;
 
     public float getGPSLatitud_f() {
         return GPSLatitud_f;
@@ -46,4 +47,14 @@ public class ChargingStation
     public int getChargingStationID_int() {
         return chargingStationID_int;
     }
+
+	public float getOutputPerSecond()
+	{
+		return outputPerSecond;
+	}
+
+	public void setOutputPerSecond(float outputPerSecond)
+	{
+		this.outputPerSecond = outputPerSecond;
+	}
 }
