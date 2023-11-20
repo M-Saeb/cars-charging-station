@@ -2,6 +2,7 @@ package chargeStation;
 
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
+import chargeStation.Stations.ChargingStation;
 
 
 public class ChargingSlot {
@@ -9,14 +10,13 @@ public class ChargingSlot {
 	private ChargingStation chargingStation;
 	private Car currentCar = null;
 	private LocalDateTime nextFreeTime;
-	private float throughput;
 	private Logger logger;
 	
-	public ChargingSlot(chargingStation chargingStation, int id, float throughput) {
+	public ChargingSlot(ChargingStation chargingStation, int id) {
 		if (chargingStation == null) {
 			throw new IllegalArgumentException("Supplied charging station is null.");
 		}
-		this.chargingStation = ChargingStation;
+		this.chargingStation = chargingStation;
 		this.id = id;
 		this.logger = Logger.getLogger(this.getClass().getSimpleName() + " " + this.id);
 		this.logger.fine("Initiated Charging Slot " + this.id);
