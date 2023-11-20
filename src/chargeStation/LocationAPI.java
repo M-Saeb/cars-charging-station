@@ -7,11 +7,20 @@ import java.util.Comparator;
 
 public class LocationAPI
 {
-    int[] class_sortedChargingStation;
-    private int totalAmountChargingStations;
-    private int availableStationID_int;
+    ChargingStation[] class_ChargingStation;
+    private int availableStationID;
 
-    public int getAvailableStationID_int()
+    /*
+    Constructor for the API object
+    Input:
+    - ChargingStation[] -> List of objects called 'ChargingStation' that will be available/existing in the area
+     */
+    public LocationAPI(ChargingStation[] class_ChargingStation)
+    {
+        this.class_ChargingStation = class_ChargingStation;
+    }
+
+    public int getAvailableStationID()
     {
         int amountOfChargingStations_int = this.class_ChargingStation.length;
         /*
@@ -27,10 +36,10 @@ public class LocationAPI
         else
         {
             System.out.println("No Available Slots in station: ");
-            availableStationID_int = 0;
+            availableStationID = 0;
         }
 
-        return availableStationID_int;
+        return availableStationID;
     }
 
     /* Local functions */
@@ -55,14 +64,14 @@ public class LocationAPI
     -varLongitud -> Current coordinates of the car
     Return: Nearest Charging Station ID
      */
-    public int[] sortNearestStation(float varLatitud, float varLongitud, ChargingStation[] varChargingStation)
+    protected int[] sortNearestStation(float varLatitud, float varLongitud)
     {
         float LattitudDiff = 0;
         float LongitudDiff = 0;
         int[][] totalDistance = new int[this.class_ChargingStation.length][2];
         int[] sortedArray = new int[totalDistance.length];
         /* Method where the function 'setChargingStations' was called */
-        if(varChargingStation == null)
+        if(this.class_ChargingStation == null)
         {
             if(getAvailableStationID_int() != 0)
             {
@@ -73,9 +82,9 @@ public class LocationAPI
             Where x2 is the station latitud and x1 is the car location
             sqrt[ (x2 - x1)^2 + (y2 - y1)^2 ]
             */
-                    LattitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLatitude() - varLatitud), 2);
-                    LongitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLongitude() - varLongitud), 2);
-                    totalDistance[i][0] = (int) this.class_ChargingStation[i].getChargingStationID();
+                    LattitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLatitud_f() - varLatitud), 2);
+                    LongitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLongitud_f() - varLongitud), 2);
+                    totalDistance[i][0] = (int) this.class_ChargingStation[i].getChargingStationID_int();
                     totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
                 }
                 /* Compare elements regarding the second position of the array and sort them from shortest to longest */
@@ -97,18 +106,18 @@ public class LocationAPI
         /* Method where the function 'setChargingStations' was not called */
         else
         {
-            if(getAvailableStationID_int() != 0)
+            if(getAvailableStationID() != 0)
             {
-                for(int i = 0; i < varChargingStation.length; i++)
+                for(int i = 0; i < this.class_ChargingStation.length; i++)
                 {
             /*
             Calculate the distance between the 2 points
             Where x2 is the station latitud and x1 is the car location
             sqrt[ (x2 - x1)^2 + (y2 - y1)^2 ]
             */
-                    LattitudDiff = (float) Math.pow((varChargingStation[i].getGPSLatitude() - varLatitud), 2);
-                    LongitudDiff = (float) Math.pow((varChargingStation[i].getGPSLongitude() - varLongitud), 2);
-                    totalDistance[i][0] = (int) varChargingStation[i].getChargingStationID();
+                    LattitudDiff = (float) Math.pow((varChargingStation[i].getGPSLatitud_f() - varLatitud), 2);
+                    LongitudDiff = (float) Math.pow((varChargingStation[i].getGPSLongitud_f() - varLongitud), 2);
+                    totalDistance[i][0] = (int) varChargingStation[i].getChargingStationID_int();
                     totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
                 }
                 /* Compare elements regarding the second position of the array and sort them from shortest to longest */
@@ -139,17 +148,19 @@ public class LocationAPI
     -varArrStations[] -> array or list of all the stations in the area
     Return: Nearest Charging Station ID
      */
-    public ChargingStation[] calculateNearestStation(int[] varSortedArray, ChargingStation[] varArrStations)
+    public ChargingStation[] calculateNearestStation(float varLatitud, float varLongitud)
     {
-        ChargingStation[] sortedStations = new ChargingStation[varArrStations.length];
+        int[] varSortedArray = new int[this.class_ChargingStation.length];
+        ChargingStation[] sortedStations = new ChargingStation[this.class_ChargingStation.length];
 
+        varSortedArray = sortNearestStation(varLatitud, varLongitud);
         for(int i = 0; i < varSortedArray.length; i++)
         {
             int currentID = varSortedArray[i];
-            for(int j = 0; j < varArrStations.length; j++)
+            for(int j = 0; j < this.class_ChargingStation.length; j++)
             {
                 ChargingStation tempChargingStation = varArrStations[j];
-                if(tempChargingStation.getChargingStationID() == currentID)
+                if(tempChargingStation.getChargingStationID_int() == currentID)
                 {
                     sortedStations[i] = tempChargingStation;
                     /* Exit current cycle as we already found a match and updated the list */
