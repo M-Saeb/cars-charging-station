@@ -1,5 +1,10 @@
 package Stations;
 
+import chargeStation.LocationAPI;
+import chargeStation.ChargingSlot;
+import java.util.logging.Logger;
+
+
 public class ChargingStation
 {
     /*
@@ -13,38 +18,74 @@ public class ChargingStation
     Amount of available slot per charging station
      */
     private int availableSlots;
+    private ChargingSlot[] slots;
     private int chargingStationID;
     private float outputPerSecond;
+    private Logger logger;
+    
+    public ChargingStation(int chargingStationID, float GPSLatitude, float GPSLongitude, int availableSlots, float outputPerSecond) {
+    	this.logger = Logger.getLogger(this.toString());
+    	this.chargingStationID = chargingStationID;
+    	
+    	try {
+    		LocationAPI.checkGPSValues(GPSLatitude, GPSLongitude);
+    		this.GPSLatitude = GPSLatitude;
+    		this.GPSLongitude = GPSLongitude;
+    	} catch (InvalidGPSLatitude | InvalidGPSLongitude e) {
+    		this.logger.severe(e.getStackTrace().toString());
+    		throw e;
+    	} catch (Exception e) {
+    		this.logger.severe(e.getStackTrace().toString());
+    		throw e;
+    	}
 
-    public float getGPSLatitud_f() {
+    	this.availableSlots = availableSlots;
+    	for (int i=0;i < availableSlots; i++) {
+    		this.slots[i] = new ChargingSlot(this, i);
+    	}
+
+    	if (outputPerSecond < 0) {
+    		throw new IllegalArgumentException("Charging station output can't be fewer than 0.");
+    	}
+    	this.outputPerSecond = outputPerSecond;
+    	
+    	
+    	this.logger.fine("Initiated " + this.toString());
+    }
+    
+    public String toString() {
+    	return String.format("Charging Station %d", this.chargingStationID);
+    }
+    
+    public float getGPSLatitude() {
         return GPSLatitude;
     }
 
-    public void setGPSLatitud_f(float GPSLatitud_f) {
-        this.GPSLatitude = GPSLatitud_f;
+    public void setGPSLatitud_f(float GPSLatitude) {
+        this.GPSLatitude = GPSLatitude;
     }
 
-    public float getGPSLongitud_f() {
+    public float getGPSLongitud() {
         return GPSLongitude;
     }
 
-    public void setGPSLongitud_f(float GPSLongitud_f) {
-        this.GPSLongitude = GPSLongitud_f;
+    public void setGPSLongitud_f(float GPSLongitude) {
+        this.GPSLongitude = GPSLongitude;
     }
 
     public int getAvailableSlots_int() {
         return availableSlots;
     }
 
-    public void setAvailableSlots_int(int availableSlots_int) {
-        this.availableSlots = availableSlots_int;
+    public void setAvailableSlots(int availableSlots) {
+        this.availableSlots = availableSlots;
     }
 
-    public void setChargingStationID_int(int chargingStationID_int) {
-        this.chargingStationID = chargingStationID_int;
+    public void setChargingStationID(int chargingStationID) {
+        this.chargingStationID = chargingStationID;
     }
 
-    public int getChargingStationID_int() {
+    public int getChargingStationID() {
         return chargingStationID;
     }
 
