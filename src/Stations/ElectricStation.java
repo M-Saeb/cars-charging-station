@@ -1,7 +1,17 @@
-package Stations;
+package stations;
+
+import api.GPSValues;
+import exceptions.InvalidGPSLatitudeException;
+import exceptions.InvalidGPSLongitudeException;
 
 public class ElectricStation extends ChargingStation
 {
+    public ElectricStation(int chargingStationID, GPSValues gpsValues, int availableSlots,
+            float outputPerSecond) throws InvalidGPSLatitudeException, InvalidGPSLongitudeException {
+        super(chargingStationID, gpsValues, availableSlots, outputPerSecond);
+        //TODO Auto-generated constructor stub
+    }
+
     /*
     Amount of battery that the station has to charge vehicles
      */
