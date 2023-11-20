@@ -1,7 +1,9 @@
-package Car;
+package car;
 
-import API.LocationAPI;
-import Stations.ChargingStation;
+import api.GPSValues;
+import api.LocationAPI;
+import stations.ChargingStation;
+import exceptions.ChargingStationNotFoundException;
 
 public abstract class Car
 {
@@ -9,15 +11,15 @@ public abstract class Car
 	private float tankCapacity;
 	private float waitDuration;
 	private LocationAPI api;
-    private float[][] currentGPS_f;
+    private GPSValues currentGPS;
 	
-	public Car(String carNumber, float tankCapacity, float waitDuration, LocationAPI api, float[][] currentGPS_f)
+	public Car(String carNumber, float tankCapacity, float waitDuration, LocationAPI api, GPSValues currentGPS)
 	{
 		this.carNumber = carNumber;
 		this.tankCapacity = tankCapacity;
 		this.waitDuration = waitDuration;
 		this.api = api;
-		this.currentGPS_f = currentGPS_f;
+		this.currentGPS = currentGPS;
 	}
 	
 	public float getChargingTime(ChargingStation station)
@@ -69,10 +71,10 @@ public abstract class Car
 	public int getNearestFreeChargingStation() throws ChargingStationNotFoundException
 	{
 		//Setting the current position
-		// api.setCarCurrentGPS(currentGPS_f);
+		// api.setCarCurrentGPS(currentGPS);
 		
 		//Getting the nearest station
-		//int result = api.sortNearestStation(currentGPS_f[0], currentGPS_f[1], );
+		//int result = api.sortNearestStation(currentGPS[0], currentGPS[1], );
 		int result = 1;
 		
 		//Checking the result

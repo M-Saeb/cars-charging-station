@@ -1,7 +1,10 @@
-package Stations;
+package stations;
 import java.util.logging.Logger;
 
-import API.LocationAPI;
+import api.GPSValues;
+import api.LocationAPI;
+import exceptions.InvalidGPSLatitudeException;
+import exceptions.InvalidGPSLongitudeException;
 
 public class ChargingStation
 {
@@ -9,26 +12,25 @@ public class ChargingStation
     GPS location from every charging station.
     This value can be sent to the other types of station from this super class
      */
-    private float GPSLatitude;
-    private float GPSLongitude;
+    private GPSValues gpsValues;
     /* TODO: Implement queue logic, where variable availableSlots_int is the number of slot available to push into the queue */
     /*
     Amount of available slot per charging station
      */
     private int availableSlots;
-    private ChargingSlot[] slots;
+    
     private int chargingStationID;
     private float outputPerSecond;
     private Logger logger;
+    private ChargingSlot[] slots;
     
-    public ChargingStation(int chargingStationID, float GPSLatitude, float GPSLongitude, int availableSlots, float outputPerSecond) {
+    public ChargingStation(int chargingStationID, GPSValues gpsValues, int availableSlots, float outputPerSecond)
+        throws InvalidGPSLatitudeException, InvalidGPSLongitudeException {
     	this.logger = Logger.getLogger(this.toString());
     	this.chargingStationID = chargingStationID;
     	try {
-    		LocationAPI.checkGPSValues(GPSLatitude, GPSLongitude);
-    		this.GPSLatitude = GPSLatitude;
-    		this.GPSLongitude = GPSLongitude;
-    	} catch (InvalidGPSLatitude | InvalidGPSLongitude e) {
+    		LocationAPI.checkGPSValues(gpsValues);
+    	} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e) {
     		this.logger.severe(e.getStackTrace().toString());
     		throw e;
     	} catch (Exception e) {
@@ -37,9 +39,11 @@ public class ChargingStation
     	}
 
     	this.availableSlots = availableSlots;
+        ChargingSlot[] mySlots = new ChargingSlot[availableSlots];
     	for (int i=0;i < availableSlots; i++) {
-    		this.slots[i] = new ChargingSlot(this, i);
+    		mySlots[i] = new ChargingSlot(this, i);
     	}
+        this.slots = mySlots;
 
     	if (outputPerSecond < 0) {
     		throw new IllegalArgumentException("Charging station output can't be fewer than 0.");
@@ -53,21 +57,13 @@ public class ChargingStation
     public String toString() {
     	return String.format("Charging Station %d", this.chargingStationID);
     }
-    
-    public float getGPSLatitude() {
-        return GPSLatitude;
-    }
 
-    public void setGPSLatitude(float GPSLatitude) {
-        this.GPSLatitude = GPSLatitude;
+    public float getGPSLatitude() {
+        return this.gpsValues.getLatitude();
     }
 
     public float getGPSLongitude() {
-        return GPSLongitude;
-    }
-
-    public void setGPSLongitude(float GPSLongitude) {
-        this.GPSLongitude = GPSLongitude;
+        return this.gpsValues.getLongitude();
     }
 
     public int getAvailableSlots() {

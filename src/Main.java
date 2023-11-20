@@ -1,5 +1,10 @@
-import API.LocationAPI;
-import Car.*;
+import api.GPSValues;
+import api.LocationAPI;
+import car.*;
+import exceptions.InvalidGPSLatitudeException;
+import exceptions.InvalidGPSLongitudeException;
+import stations.ChargingStation;
+
 import java.util.logging.Logger;
 
 
@@ -13,21 +18,30 @@ public class Main {
 	 
 	public static void main(String[] args) {
 		// initiate logger
-		
 		Logger logger = Logger.getLogger("Main");
-		
-		// create pool of cars
-		
-		Car[] cars = {
-			new GasCar("Ford Mustang", (float) 60.9, (float) 120.0, new LocationAPI(), new float[40][20]),
-			new ElectricCar("Toyota Prius", (float) 13.0, (float) 30.0, new LocationAPI(), new float[10][70]),
-			new GasCar("Peugeot 206", (float) 49.0, (float) 30.0, new LocationAPI(), new float[44][170]),
-			new ElectricCar("BW i5", (float) 83.9, (float) 70.0, new LocationAPI(), new float[-40][56]),
-			new GasCar("Audi A3", (float) 48.0, (float) 90.0, new LocationAPI(), new float[40][25])
-		};
-		logger.info("Created pool of cars.");
+		ChargingStation[] stations = new ChargingStation[4];
 		
 		// create pool of charging stations
+		try {
+			stations[0] = new ChargingStation(0, new GPSValues(0,0), 3, 10);
+			stations[1] = new ChargingStation(1, new GPSValues(10, 50), 2, 5);
+			stations[2] = new ChargingStation(1, new GPSValues(-50, 150), 4, 15);
+			stations[3] = new ChargingStation(1, new GPSValues(-70, 44), 1, 5);
+		} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e){
+			logger.severe(e.getStackTrace().toString());
+			e.printStackTrace();
+			return;
+		}
+
+		// create pool of cars
+		Car[] cars = {
+			new GasCar("Ford Mustang", (float) 60.9, (float) 120.0, new LocationAPI(stations), new GPSValues(40, 20)),
+			new ElectricCar("Toyota Prius", (float) 13.0, (float) 30.0, new LocationAPI(stations), new GPSValues(-50, 50)),
+			new GasCar("Peugeot 206", (float) 49.0, (float) 30.0, new LocationAPI(stations), new GPSValues(24, 140)),
+			new ElectricCar("BW i5", (float) 83.9, (float) 70.0, new LocationAPI(stations), new GPSValues(80, 95)),
+			new GasCar("Audi A3", (float) 48.0, (float) 90.0, new LocationAPI(stations), new GPSValues(40, 10))
+		};
+		logger.info("Created pool of cars.");
 
 		// create pool of threads
 		
