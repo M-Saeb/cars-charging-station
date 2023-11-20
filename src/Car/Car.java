@@ -1,6 +1,7 @@
-package chargeStation;
+package Car;
 
-import chargeStation.Stations.ChargingStation;
+import API.LocationAPI;
+import Stations.ChargingStation;
 
 public abstract class Car
 {

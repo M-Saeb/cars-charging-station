@@ -1,4 +1,4 @@
-package chargeStation;
+package Stations;
 
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
@@ -22,7 +22,7 @@ public class ChargingSlot {
 		this.logger.fine("Initiated Charging Slot " + this.id);
 	}
 	
-	public void chargeCar(Car car) throws  ChargingSlotFullException{
+	public void chargeCar(Car car) throws ChargingSlotFullException {
 		// if there is a car already docked in this slot, raise an exception
 		if (this.currentCar != null) {
 			throw new ChargingSlotFullException("Slot " + this.id + " is full.");

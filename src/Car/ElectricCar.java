@@ -1,4 +1,5 @@
-package chargeStation;
+package Car;
+import API.LocationAPI;
 
 public class ElectricCar extends Car
 {

@@ -1,9 +1,7 @@
-
+package Stations;
 import java.util.logging.Logger;
 
-import chargeStation.ChargingSlot;
-import chargeStation.LocationAPI;
-
+import API.LocationAPI;
 
 public class ChargingStation
 {
