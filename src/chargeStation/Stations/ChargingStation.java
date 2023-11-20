@@ -1,8 +1,8 @@
-package Stations;
 
-import chargeStation.LocationAPI;
-import chargeStation.ChargingSlot;
 import java.util.logging.Logger;
+
+import chargeStation.ChargingSlot;
+import chargeStation.LocationAPI;
 
 
 public class ChargingStation
@@ -26,7 +26,6 @@ public class ChargingStation
     public ChargingStation(int chargingStationID, float GPSLatitude, float GPSLongitude, int availableSlots, float outputPerSecond) {
     	this.logger = Logger.getLogger(this.toString());
     	this.chargingStationID = chargingStationID;
-    	
     	try {
     		LocationAPI.checkGPSValues(GPSLatitude, GPSLongitude);
     		this.GPSLatitude = GPSLatitude;
@@ -61,19 +60,19 @@ public class ChargingStation
         return GPSLatitude;
     }
 
-    public void setGPSLatitud_f(float GPSLatitude) {
+    public void setGPSLatitude(float GPSLatitude) {
         this.GPSLatitude = GPSLatitude;
     }
 
-    public float getGPSLongitud() {
+    public float getGPSLongitude() {
         return GPSLongitude;
     }
 
-    public void setGPSLongitud_f(float GPSLongitude) {
+    public void setGPSLongitude(float GPSLongitude) {
         this.GPSLongitude = GPSLongitude;
     }
 
-    public int getAvailableSlots_int() {
+    public int getAvailableSlots() {
         return availableSlots;
     }
 
