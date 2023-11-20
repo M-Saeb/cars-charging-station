@@ -7,7 +7,6 @@ import java.util.Comparator;
 
 public class LocationAPI
 {
-    ChargingStation[] class_ChargingStation;
     int[] class_sortedChargingStation;
     private int totalAmountChargingStations;
     private int availableStationID_int;
@@ -74,9 +73,9 @@ public class LocationAPI
             Where x2 is the station latitud and x1 is the car location
             sqrt[ (x2 - x1)^2 + (y2 - y1)^2 ]
             */
-                    LattitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLatitud_f() - varLatitud), 2);
-                    LongitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLongitud_f() - varLongitud), 2);
-                    totalDistance[i][0] = (int) this.class_ChargingStation[i].getChargingStationID_int();
+                    LattitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLatitude() - varLatitud), 2);
+                    LongitudDiff = (float) Math.pow((this.class_ChargingStation[i].getGPSLongitude() - varLongitud), 2);
+                    totalDistance[i][0] = (int) this.class_ChargingStation[i].getChargingStationID();
                     totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
                 }
                 /* Compare elements regarding the second position of the array and sort them from shortest to longest */
@@ -107,9 +106,9 @@ public class LocationAPI
             Where x2 is the station latitud and x1 is the car location
             sqrt[ (x2 - x1)^2 + (y2 - y1)^2 ]
             */
-                    LattitudDiff = (float) Math.pow((varChargingStation[i].getGPSLatitud_f() - varLatitud), 2);
-                    LongitudDiff = (float) Math.pow((varChargingStation[i].getGPSLongitud_f() - varLongitud), 2);
-                    totalDistance[i][0] = (int) varChargingStation[i].getChargingStationID_int();
+                    LattitudDiff = (float) Math.pow((varChargingStation[i].getGPSLatitude() - varLatitud), 2);
+                    LongitudDiff = (float) Math.pow((varChargingStation[i].getGPSLongitude() - varLongitud), 2);
+                    totalDistance[i][0] = (int) varChargingStation[i].getChargingStationID();
                     totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
                 }
                 /* Compare elements regarding the second position of the array and sort them from shortest to longest */
@@ -150,7 +149,7 @@ public class LocationAPI
             for(int j = 0; j < varArrStations.length; j++)
             {
                 ChargingStation tempChargingStation = varArrStations[j];
-                if(tempChargingStation.getChargingStationID_int() == currentID)
+                if(tempChargingStation.getChargingStationID() == currentID)
                 {
                     sortedStations[i] = tempChargingStation;
                     /* Exit current cycle as we already found a match and updated the list */
