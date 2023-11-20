@@ -68,10 +68,11 @@ public abstract class Car
 	public int getNearestFreeChargingStation() throws ChargingStationNotFoundException
 	{
 		//Setting the current position
-		api.setCarCurrentGPS_f(currentGPS_f);
+		// api.setCarCurrentGPS(currentGPS_f);
 		
 		//Getting the nearest station
-		int result = api.calculateNearestStation();
+		//int result = api.sortNearestStation(currentGPS_f[0], currentGPS_f[1], );
+		int result = 1;
 		
 		//Checking the result
 		if(result == 0)
