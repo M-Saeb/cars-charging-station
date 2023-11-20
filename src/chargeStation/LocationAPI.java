@@ -165,4 +165,14 @@ public class LocationAPI
 
         return sortedStations;
     }
+	public static void checkGPSValues(float latitude, float longitude) throws InvalidGPSLatitude, InvalidGPSLongitude {
+		if (latitude < -90.0 || latitude > 90) {
+			throw new InvalidGPSLatitude("Invalid latitude: " + latitude);
+		}
+		if (longitude < -180.0 || longitude> 180) {
+			throw new InvalidGPSLongitude("Invalid longtitude: " + longitude);
+		}
+		
+	}
+
 }
