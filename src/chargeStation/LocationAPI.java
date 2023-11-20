@@ -1,3 +1,5 @@
+package chargeStation;
+
 import Stations.ChargingStation;
 import java.lang.Math;
 import java.util.Arrays;
