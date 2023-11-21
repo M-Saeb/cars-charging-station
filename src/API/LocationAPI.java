@@ -8,11 +8,7 @@ import java.util.Comparator;
 
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
-
-enum GPSCords {
-  LATITUDE,
-  LONGITUDe,
-}
+import exceptions.InvalidGPSValueException;
 
 public class LocationAPI
 {
@@ -156,7 +152,8 @@ public class LocationAPI
 
         return sortedStations;
     }
-	public static void checkGPSValues(GPSValues gpsValues) throws InvalidGPSLatitudeException, InvalidGPSLongitudeException {
+	public static void checkGPSValues(GPSValues gpsValues)
+        throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
 		float latitude = gpsValues.getLatitude();
         float longitude = gpsValues.getLongitude();
         if (latitude < -90.0 || latitude > 90) {
@@ -165,6 +162,9 @@ public class LocationAPI
 		if (longitude < -180.0 || longitude> 180) {
 			throw new InvalidGPSLongitudeException("Invalid longtitude: " + longitude);
 		}
+        if (latitude == 0 && longitude == 0){
+            throw new InvalidGPSValueException("You can't be in the ocean.");
+        }
 		
 	}
 

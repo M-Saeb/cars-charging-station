@@ -3,6 +3,7 @@ import api.LocationAPI;
 import car.*;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
+import exceptions.InvalidGPSValueException;
 import stations.ChargingStation;
 
 import java.util.logging.Logger;
@@ -23,16 +24,15 @@ public class Main {
 		
 		// create pool of charging stations
 		try {
-			stations[0] = new ChargingStation(0, new GPSValues(0,0), 3, 10);
+			stations[0] = new ChargingStation(0, new GPSValues(44,96), 3, 10);
 			stations[1] = new ChargingStation(1, new GPSValues(10, 50), 2, 5);
 			stations[2] = new ChargingStation(1, new GPSValues(-50, 150), 4, 15);
 			stations[3] = new ChargingStation(1, new GPSValues(-70, 44), 1, 5);
-		} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e){
+		} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException | InvalidGPSValueException e){
 			logger.severe(e.getStackTrace().toString());
 			e.printStackTrace();
 			return;
 		}
-
 		// create pool of cars
 		Car[] cars = {
 			new GasCar("Ford Mustang", (float) 60.9, (float) 120.0, new LocationAPI(stations), new GPSValues(40, 20)),
