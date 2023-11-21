@@ -1,6 +1,6 @@
-package stations;
+package Stations;
 
-import api.GPSValues;
+import API.GPSValues;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;

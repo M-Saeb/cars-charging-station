@@ -1,17 +1,17 @@
-package car;
+package Car;
 
-import api.GPSValues;
-import api.LocationAPI;
-import stations.ChargingStation;
+import API.LocationAPI;
+import Stations.ChargingStation;
+import API.GPSValues;
 import exceptions.ChargingStationNotFoundException;
 
 public abstract class Car
 {
-	private String carNumber;
+	protected String carNumber;
 	private float tankCapacity;
 	private float waitDuration;
-	private LocationAPI api;
-    private GPSValues currentGPS;
+	protected LocationAPI api;
+    protected GPSValues currentGPS;
 	
 	public Car(String carNumber, float tankCapacity, float waitDuration, LocationAPI api, GPSValues currentGPS)
 	{
@@ -68,20 +68,5 @@ public abstract class Car
 		this.api = api;
 	}
 
-	public int getNearestFreeChargingStation() throws ChargingStationNotFoundException
-	{
-		//Setting the current position
-		// api.setCarCurrentGPS(currentGPS);
-		
-		//Getting the nearest station
-		//int result = api.sortNearestStation(currentGPS[0], currentGPS[1], );
-		int result = 1;
-		
-		//Checking the result
-		if(result == 0)
-		{
-			throw new ChargingStationNotFoundException("Car: " + carNumber + " could not find a free station.");
-		}
-		return result;
-	}
+	public abstract ChargingStation getNearestFreeChargingStation() throws ChargingStationNotFoundException;
 }

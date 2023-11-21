@@ -1,8 +1,8 @@
-package stations;
+package Stations;
 import java.util.logging.Logger;
 
-import api.GPSValues;
-import api.LocationAPI;
+import API.GPSValues;
+import API.LocationAPI;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;

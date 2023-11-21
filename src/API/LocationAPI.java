@@ -1,6 +1,6 @@
-package api;
+package API;
 
-import stations.ChargingStation;
+import Stations.ChargingStation;
 
 import java.lang.Math;
 import java.util.Arrays;

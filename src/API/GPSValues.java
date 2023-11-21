@@ -1,4 +1,4 @@
-package api;
+package API;
 
 public class GPSValues {
     private float latitude;

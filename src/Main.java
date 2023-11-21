@@ -1,10 +1,10 @@
-import api.GPSValues;
-import api.LocationAPI;
-import car.*;
+import API.GPSValues;
+import API.LocationAPI;
+import Car.*;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
-import stations.ChargingStation;
+import Stations.*;
 
 import java.util.logging.Logger;
 
@@ -24,10 +24,10 @@ public class Main {
 		
 		// create pool of charging stations
 		try {
-			stations[0] = new ChargingStation(0, new GPSValues(44,96), 3, 10);
-			stations[1] = new ChargingStation(1, new GPSValues(10, 50), 2, 5);
-			stations[2] = new ChargingStation(1, new GPSValues(-50, 150), 4, 15);
-			stations[3] = new ChargingStation(1, new GPSValues(-70, 44), 1, 5);
+			stations[0] = new GasStation(0, new GPSValues(44,96), 3, 10);
+			stations[1] = new GasStation(1, new GPSValues(10, 50), 2, 5);
+			stations[2] = new ElectricStation(1, new GPSValues(-50, 150), 4, 15);
+			stations[3] = new ElectricStation(1, new GPSValues(-70, 44), 1, 5);
 		} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException | InvalidGPSValueException e){
 			logger.severe(e.getStackTrace().toString());
 			e.printStackTrace();
@@ -42,7 +42,7 @@ public class Main {
 			new GasCar("Audi A3", (float) 48.0, (float) 90.0, new LocationAPI(stations), new GPSValues(40, 10))
 		};
 		logger.info("Created pool of cars.");
-
+		
 		// create pool of threads
 		
 		// send cars to charging stations

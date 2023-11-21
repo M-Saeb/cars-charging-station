@@ -1,8 +1,8 @@
-package stations;
+package Stations;
 
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
-import car.Car;
+import Car.Car;
 import exceptions.ChargingSlotFullException;
 
 
