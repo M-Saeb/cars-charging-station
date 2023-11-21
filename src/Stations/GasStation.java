@@ -3,11 +3,13 @@ package stations;
 import api.GPSValues;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
+import exceptions.InvalidGPSValueException;
 
 public class GasStation extends ChargingStation
 {
     public GasStation(int chargingStationID, GPSValues gpsValues, int availableSlots,
-            float outputPerSecond) throws InvalidGPSLatitudeException, InvalidGPSLongitudeException {
+            float outputPerSecond)
+            throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
         super(chargingStationID, gpsValues, availableSlots, outputPerSecond);
         //TODO Auto-generated constructor stub
     }

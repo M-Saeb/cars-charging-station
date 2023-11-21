@@ -5,6 +5,7 @@ import api.GPSValues;
 import api.LocationAPI;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
+import exceptions.InvalidGPSValueException;
 
 public class ChargingStation
 {
@@ -25,7 +26,7 @@ public class ChargingStation
     private ChargingSlot[] slots;
     
     public ChargingStation(int chargingStationID, GPSValues gpsValues, int availableSlots, float outputPerSecond)
-        throws InvalidGPSLatitudeException, InvalidGPSLongitudeException {
+        throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
     	this.logger = Logger.getLogger(this.toString());
     	this.chargingStationID = chargingStationID;
     	try {
