@@ -1,7 +1,7 @@
 > # Java Project
 > ## Task 2, Basic I/O
 > This task will consist of recording and reading logs generated in the program, for example:
->> - If an error ocurrs in the program, this needs to be logged so a report can be made. 
+>> If an error ocurrs in the program, this needs to be logged so a report can be made. 
 
 > ## Authors
 >> Name: Hazhir Amiri.
