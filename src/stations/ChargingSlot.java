@@ -1,7 +1,6 @@
 package stations;
 
 import java.time.LocalDateTime;
-import java.util.logging.Logger;
 import car.Car;
 import exceptions.ChargingSlotFullException;
 
@@ -11,7 +10,6 @@ public class ChargingSlot {
 	private ChargingStation chargingStation;
 	private Car currentCar = null;
 	private LocalDateTime nextFreeTime;
-	private Logger logger;
 	
 	public ChargingSlot(ChargingStation chargingStation, int id) {
 		if (chargingStation == null) {
@@ -19,8 +17,6 @@ public class ChargingSlot {
 		}
 		this.chargingStation = chargingStation;
 		this.id = id;
-		this.logger = Logger.getLogger(this.getClass().getSimpleName() + " " + this.id);
-		this.logger.fine("Initiated Charging Slot " + this.id);
 	}
 	
 	public void chargeCar(Car car) throws ChargingSlotFullException {
@@ -32,8 +28,6 @@ public class ChargingSlot {
 		
 		// calculate when the charging finishes and the slot is available
 		this.nextFreeTime = this.calculateNextFreeTime();
-		this.logger.info("Plugged in " + this.currentCar.toString());
-		this.logger.fine("Slot will be free at " + this.nextFreeTime.toString());
 	}
 	
 	public int getId(){

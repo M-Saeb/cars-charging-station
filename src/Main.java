@@ -6,35 +6,9 @@ import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
 import stations.ChargingStation;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-
 public class Main {
 
-	static {
-		try {
-			Files.createDirectories(Paths.get("logs"));
-		} catch (final IOException e) {
-			Logger.getAnonymousLogger().severe("Couldn't great logs folder.");
-			Logger.getAnonymousLogger().severe(e.getMessage());
-		}
-		final InputStream inputStream = Main.class.getResourceAsStream("/logging.properties");
-		try {
-			LogManager.getLogManager().readConfiguration(inputStream);
-		} catch (final IOException e) {
-			Logger.getAnonymousLogger().severe("Could not load default logging.properties file");
-			Logger.getAnonymousLogger().severe(e.getMessage());
-		}
-
-	}
-
 	public static void main(String[] args) {
-		// initiate logger
-		Logger logger = Logger.getLogger("Main");
 		ChargingStation[] stations = new ChargingStation[4];
 		ChargingStation[] sortedStations = new ChargingStation[4];
 
@@ -45,11 +19,9 @@ public class Main {
 			stations[2] = new ChargingStation(3, new GPSValues(-50, 150), 4, 15);
 			stations[3] = new ChargingStation(4, new GPSValues(-70, 44), 1, 5);
 		} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException | InvalidGPSValueException e) {
-			logger.severe(e.getStackTrace().toString());
-			e.printStackTrace();
+			System.out.println(e.toString());
 			return;
 		}
-		logger.info("Created pool of charging stations.");
 		
 		// create pool of cars
 		Car[] cars = {
@@ -62,8 +34,7 @@ public class Main {
 				new ElectricCar("BW i5", (float) 83.9, (float) 70.0, new LocationAPI(stations), new GPSValues(80, 95)),
 				new GasCar("Audi A3", (float) 48.0, (float) 90.0, new LocationAPI(stations), new GPSValues(40, 10))
 		};
-		logger.info("Created pool of cars.");
-		
+		System.out.println("Created cars and charging stations.");
 
 		// create pool of threads
 
