@@ -1,6 +1,7 @@
 > # Java Project
 > ## Task 2, Basic I/O
-> The Java programming language uses exceptions to handle errors and other exceptional events. This lesson describes when and how to use exceptions.
+> This task will consist of recording and reading logs generated in the program, for example:
+>> - If an error ocurrs in the program, this needs to be logged so a report can be made. 
 
 > ## Authors
 >> Name: Hazhir Amiri.
