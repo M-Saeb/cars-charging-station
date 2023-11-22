@@ -1,5 +1,4 @@
 package stations;
-import java.util.logging.Logger;
 
 import api.GPSValues;
 import api.LocationAPI;
@@ -22,20 +21,16 @@ public class ChargingStation
     
     private int chargingStationID;
     private float outputPerSecond;
-    private Logger logger;
     private ChargingSlot[] slots;
     
     public ChargingStation(int chargingStationID, GPSValues gpsValues, int availableSlots, float outputPerSecond)
         throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
-    	this.logger = Logger.getLogger(this.toString());
     	this.chargingStationID = chargingStationID;
     	try {
     		LocationAPI.checkGPSValues(gpsValues);
     	} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e) {
-    		this.logger.severe(e.getStackTrace().toString());
     		throw e;
     	} catch (Exception e) {
-    		this.logger.severe(e.getStackTrace().toString());
     		throw e;
     	}
     	this.gpsValues = gpsValues;
@@ -51,9 +46,7 @@ public class ChargingStation
     		throw new IllegalArgumentException("Charging station output can't be fewer than 0.");
     	}
     	this.outputPerSecond = outputPerSecond;
-    	
-    	
-    	this.logger.fine("Initiated " + this.toString());
+
     }
     
     public String toString() {
