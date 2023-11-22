@@ -9,6 +9,7 @@ import java.util.Comparator;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
+import exceptions.InvalidGPSObject;
 
 public class LocationAPI
 {
@@ -22,6 +23,17 @@ public class LocationAPI
     public LocationAPI(ChargingStation[] class_chargingStation)
     {
         this.class_chargingStation = class_chargingStation;
+    }
+    /* 
+     * Constructor that will be able to throw an exception.
+     * This will only occurs, when the assignation of the proper
+     * constructor it is not called.
+     */
+    public LocationAPI() throws InvalidGPSObject
+    {
+        if(this.class_chargingStation == null) {
+        	throw new InvalidGPSObject("Charging Station List not provided to constructor...");
+        }
     }
     
 
@@ -52,7 +64,7 @@ public class LocationAPI
     Return: Nearest Charging Station ID
      */
     @SuppressWarnings("unused")
-	protected static int[] sortNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation)
+	protected static int[] sortNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation) throws InvalidGPSObject
     {
         float LattitudDiff = gpsValues.getLatitude();
         float LongitudDiff = gpsValues.getLongitude();
@@ -62,9 +74,7 @@ public class LocationAPI
         /* Method where the function 'setChargingStations' was called */
         if(class_chargingStation == null)
         {
-            System.out.println("No Object Initialized");
-            /* Fill array with zeros, meaning no available station is nearby */
-            Arrays.fill(sortedArray, 0);
+        	throw new InvalidGPSObject("No Object has been initialiyed...");
         }
         /* Method where the function 'setChargingStations' was not called */
         else
@@ -105,7 +115,11 @@ public class LocationAPI
         int[] varSortedArray = new int[class_chargingStation.length];
         ChargingStation[] sortedStations = new ChargingStation[class_chargingStation.length];
 
-        varSortedArray = sortNearestStation(gpsValues, class_chargingStation);
+        try {
+			varSortedArray = sortNearestStation(gpsValues, class_chargingStation);
+		} catch (InvalidGPSObject e) {
+			e.printStackTrace();
+		}
         for(int i = 0; i < varSortedArray.length; i++)
         {
             int currentID = varSortedArray[i];
