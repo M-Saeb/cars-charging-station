@@ -64,10 +64,6 @@ public class Main {
 		};
 		logger.info("Created pool of cars.");
 		
-		LocationAPI.printArray(stations);
-		sortedStations = LocationAPI.calculateNearestStation(new GPSValues(13, 31), stations);
-		LocationAPI.printArray(sortedStations);
-		
 
 		// create pool of threads
 
