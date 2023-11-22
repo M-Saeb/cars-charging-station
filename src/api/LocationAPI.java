@@ -13,7 +13,6 @@ import exceptions.InvalidGPSValueException;
 public class LocationAPI
 {
     ChargingStation[] class_chargingStation;
-    private static int availableStationID;
 
     /*
     Constructor for the API object
