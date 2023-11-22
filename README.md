@@ -1,6 +1,6 @@
 > # Java Project
 > ## Task 1, Exception Handling
-> The Java programming language uses exceptions to handle errors and other exceptional events. This lesson describes when and how to use exceptions.
+> The Java programming language uses exceptions to handle errors and other exceptional events. This task describes when and how to use exceptions.
 > 
 > What is an Exception?
 >> An exception is an event that occurs during the execution of a program that disrupts the normal flow of instructions.
