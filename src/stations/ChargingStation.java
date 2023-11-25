@@ -1,4 +1,6 @@
 package stations;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.logging.Logger;
 
 import api.GPSValues;
@@ -6,6 +8,7 @@ import api.LocationAPI;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
+import car.Car;
 
 public class ChargingStation
 {
@@ -24,6 +27,8 @@ public class ChargingStation
     private float outputPerSecond;
     private Logger logger;
     private ChargingSlot[] slots;
+    private Queue<Car> queue = new LinkedList<Car>();
+    private float waitTime = 0;
     
     public ChargingStation(int chargingStationID, GPSValues gpsValues, int availableSlots, float outputPerSecond)
         throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
@@ -56,8 +61,18 @@ public class ChargingStation
     	this.logger.fine("Initiated " + this.toString());
     }
     
+    public void addCar(Car car){
+        // add this car to queue
+
+        // calcualte new wait time
+    }
+
     public String toString() {
     	return String.format("Charging Station %d", this.chargingStationID);
+    }
+
+    public float getWaitTime() {
+        return waitTime;
     }
 
     public float getGPSLatitude() {
