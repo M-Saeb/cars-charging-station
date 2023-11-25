@@ -8,20 +8,39 @@ import exceptions.ChargingStationNotFoundException;
 public abstract class Car
 {
 	protected String carNumber;
+	private float currentCapacity;
 	private float tankCapacity;
 	private float waitDuration;
 	protected LocationAPI api;
     protected GPSValues currentGPS;
+	private boolean isCharged = false;
 	
-	public Car(String carNumber, float tankCapacity, float waitDuration, LocationAPI api, GPSValues currentGPS)
+	public Car(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api, GPSValues currentGPS)
 	{
 		this.carNumber = carNumber;
+		this.currentCapacity = currentCapacity;
 		this.tankCapacity = tankCapacity;
 		this.waitDuration = waitDuration;
 		this.api = api;
 		this.currentGPS = currentGPS;
 	}
 	
+	public float getCurrentCapacity() {
+		return currentCapacity;
+	}
+
+	public boolean isCharged() {
+		return isCharged;
+	}
+
+	public void setCharged(boolean isCharged) {
+		this.isCharged = isCharged;
+	}
+
+	public void setCurrentCapacity(float currentCapacity) {
+		this.currentCapacity = currentCapacity;
+	}
+
 	public float getChargingTime(ChargingStation station)
 	{
 		return tankCapacity / station.getOutputPerSecond();
