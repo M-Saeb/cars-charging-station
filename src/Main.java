@@ -50,7 +50,7 @@ public class Main {
 			return;
 		}
 		logger.info("Created pool of charging stations.");
-		
+
 		// create pool of cars
 		Car[] cars = {
 				new GasCar("Ford Mustang", (float) 60.9, (float) 120.0, new LocationAPI(stations),
@@ -63,11 +63,27 @@ public class Main {
 				new GasCar("Audi A3", (float) 48.0, (float) 90.0, new LocationAPI(stations), new GPSValues(40, 10))
 		};
 		logger.info("Created pool of cars.");
-		
 
 		// create pool of threads
 
 		// send cars to charging stations
+		boolean allCharged = false;
+		while (!allCharged){
+			for (Car car: cars){
+				if (!car.isCharged()){
+					// find a station that:
+					// - provides a matching fuel type
+					// - provides suitable waiting time
+					
+					
+					// if charging is done, make car leave
+				}
+			}
+		}
+
+		for (ChargingStation station: stations){
+			// process cars in queues, slots, ...
+		}
 
 	}
 }
