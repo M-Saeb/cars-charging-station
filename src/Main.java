@@ -1,11 +1,13 @@
 import api.GPSValues;
 import api.LocationAPI;
 import car.*;
+import exceptions.ChargingStationNotFoundException;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
 import stations.ChargingStation;
 
+import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -127,22 +129,63 @@ public class Main {
 		// create pool of threads
 
 		// send cars to charging stations
-		boolean allCharged = false;
-		while (!allCharged){
+		int numCharged = 0;
+		while (numCharged < cars.length){
 			for (Car car: cars){
-				if (!car.isCharged()){
-					// find a station that:
-					// - provides a matching fuel type
-					// - provides suitable waiting time
-					
-					
-					// if charging is done, make car leave
+				// if car is looking, find a suitable station and join its queue
+				if (car.isLooking()){
+					logger.fine(car.toString() + " is not charged yet.");
+						try {
+							ChargingStation suitableStation = car.getNearestFreeChargingStation();
+							car.joinStationQueue(suitableStation);
+							logger.fine(car.toString() + " joined " + suitableStation.toString());
+						} catch (ChargingStationNotFoundException e) {
+							logger.severe("No charging station found for " + car.toString() + ". Setting at as charged.");
+							car.leaveMap();
+							++numCharged;
+						}
+				
+					// if car is alrady in queue, check if station is still suitable
+					// If not, search for another station.
+					} else if (car.isInQueue()){
+					boolean isStationStillSuitable = car.checkCurrentStation();
+					if (!isStationStillSuitable){
+						logger.fine(car.toString() + " left " + car.getCurrentStation().toString() + " as it was not suitable anymore.");
+						car.leaveStationQueue();
+						try {
+							ChargingStation suitableStation = car.getNearestFreeChargingStation();
+							car.joinStationQueue(suitableStation);
+							logger.fine(car.toString() + " joined " + suitableStation.toString());
+						} catch (ChargingStationNotFoundException e) {
+							logger.severe("No charging station found for " + car.toString() + ". Setting at as charged.");
+							car.leaveMap();
+							++numCharged;
+						}
+					}
+				// if car is charging, see if it's fully charged.
+				// If it is, leave the station. Yohoo, it's charged!
+				} else if (car.isCharging()){
+					if (car.getCurrentCapacity() == car.getTankCapacity()){
+						car.leaveStation();
+						logger.fine(car.toString() + " is charged and left the station.");
+						++numCharged;
+					}
 				}
 			}
 		}
 
 		for (ChargingStation station: stations){
-			// process cars in queues, slots, ...
+			station.sendCarsToFreeSlots();
+			logger.info("Sent cars of " + station.toString() + " to slots.");
+			station.chargeCarsInSlots();
+			logger.info("Charged cars of " + station.toString());
+		}
+
+		try {
+			TimeUnit.SECONDS.sleep(1);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return;
 		}
 
 	}

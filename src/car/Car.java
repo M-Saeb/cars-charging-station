@@ -13,7 +13,6 @@ public abstract class Car
 	private float waitDuration;
 	protected LocationAPI api;
     protected GPSValues currentGPS;
-	private boolean isCharged = false;
 	
 	public Car(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api, GPSValues currentGPS)
 	{
@@ -29,23 +28,11 @@ public abstract class Car
 		return currentCapacity;
 	}
 
-	public boolean isCharged() {
-		return isCharged;
-	}
-
-	public void setCharged(boolean isCharged) {
-		this.isCharged = isCharged;
-	}
-
 	public void setCurrentCapacity(float currentCapacity) {
 		this.currentCapacity = currentCapacity;
 	}
 
-	public float getChargingTime(ChargingStation station)
-	{
-		return tankCapacity / station.getOutputPerSecond();
-	}
-
+	abstract public float getChargingTime(ChargingStation station);
 	
 	public String getCarNumber()
 	{
@@ -87,5 +74,66 @@ public abstract class Car
 		this.api = api;
 	}
 
-	public abstract int getNearestFreeChargingStation() throws ChargingStationNotFoundException;
+	/*
+	This method should return the nearest charging station based on the following criteria and order:
+	- Location of the station (nearest is better)
+	- Waiting time (station's waiting time should be lower than car's waiting time)
+	- Station's capacity (station should have enough fuel left for this car)
+	 */
+	public abstract ChargingStation getNearestFreeChargingStation() throws ChargingStationNotFoundException;
+
+	/*
+	This method will add the car to the station's queue.
+	Also it should set car state to in queue.
+	 */
+	public abstract void joinStationQueue(ChargingStation station);
+
+
+	/*
+	A car has 4 states (probably an ENUM implementation?):
+	- looking
+	- in queue
+	- charging
+	- charged
+	The following methods return boolean values corrresponding to its state.
+	 */
+
+	abstract public boolean isLooking();
+	abstract public boolean isInQueue();
+	abstract public boolean isCharging();
+	abstract public boolean isCharged();
+
+	/*
+	Checks the current station the car is in to make sure the
+	waiting time is still feasible. This is required since priority cars
+	could jump in line or station could run out of fuel till the car's turn
+	is up for whatever reason. 
+	 */
+	abstract public boolean checkCurrentStation();
+
+	/*
+	Return the station the car joined to.
+	 */
+	abstract public ChargingStation getCurrentStation();
+
+	/*
+	 * Leave station since the current station isn't suitable anymore. Set car state to looking.
+	 */
+	abstract public void leaveStationQueue();
+
+	/*
+	 * Leave station since the car is charged. Set car state to charged.
+	 */
+	abstract public void leaveStation();
+
+	/*
+	 * Car leaves map as no suitable station is available. Set state to charged!
+	 * We'll change this later and handle it better. But for now, it should suffice. 
+	 */
+	abstract public void leaveMap();
+
+	/*
+	 * Add the amount of fuel to the car's current capacity.
+	 */
+	abstract public void addFuel(double amount);
 }

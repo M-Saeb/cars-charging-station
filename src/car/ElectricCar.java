@@ -8,14 +8,14 @@ import stations.ElectricStation;
 
 public class ElectricCar extends Car {
 
-	public ElectricCar(String carNumber, float tankCapacity, float waitDuration, LocationAPI api,
+	public ElectricCar(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api,
 			GPSValues currentGPS) {
-		super(carNumber, tankCapacity, waitDuration, api, currentGPS);
+		super(carNumber, currentCapacity, tankCapacity, waitDuration, api, currentGPS);
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public int getNearestFreeChargingStation() throws ChargingStationNotFoundException {
+	public ChargingStation getNearestFreeChargingStation() throws ChargingStationNotFoundException {
 		// Getting the nearest station from the LocationAPI
 		ChargingStation[] nearestStations = LocationAPI.calculateNearestStation(currentGPS, api.getChargingStation());
 
@@ -29,7 +29,7 @@ public class ElectricCar extends Car {
 		// type is matching
 		for (int i = 0; i < nearestStations.length; i++) {
 			if (nearestStations[i].getAvailableSlots() >= 1 && nearestStations[i] instanceof ElectricStation) {
-				return nearestStations[i].getChargingStationID();
+				return nearestStations[i];
 			}
 		}
 
