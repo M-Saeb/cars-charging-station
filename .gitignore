@@ -1,1 +1,4 @@
-/bin/
+# Specify filepatterns you want git to ignore.
+
+*.class
+logs/
