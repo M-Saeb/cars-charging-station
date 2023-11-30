@@ -133,13 +133,13 @@ public class LocationAPI
     -varArrStations[] -> array or list of all the stations in the area
     Return: Nearest Charging Station ID
      */
-    public static ChargingStation[] calculateNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation)
+    public static ChargingStation[] calculateNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_car)
     {
         int[] varSortedArray = new int[class_chargingStation.length];
         ChargingStation[] sortedStations = new ChargingStation[class_chargingStation.length];
 
         try {
-			varSortedArray = sortNearestStation(gpsValues, class_chargingStation);
+			varSortedArray = sortNearestStation(gpsValues, class_chargingStation, class_car);
 		} catch (InvalidGPSObject e) {
 			e.printStackTrace();
 		}
