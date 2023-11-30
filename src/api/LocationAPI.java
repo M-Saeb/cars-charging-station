@@ -108,11 +108,11 @@ public class LocationAPI
             Arrays.sort(totalDistance, Comparator.comparingInt(arr -> arr[1]));
             for(int i = 0; i<sortedArray.length; i++)
             {
-            	if((class_carObject instanceof ElectricCar) && (class_chargingStation[i].getAvailableGasSlots() > 0))
+            	if((class_carObject instanceof GasCar) && (class_chargingStation[i].getAvailableGasSlots() > 0))
             	{
             		sortedArray[i] = totalDistance[i][0];
             	}
-            	else if((class_carObject instanceof GasCar) && (class_chargingStation[i].getAvailableElectricSlots() > 0)) 
+            	else if((class_carObject instanceof ElectricCar) && (class_chargingStation[i].getAvailableElectricSlots() > 0)) 
             	{
             		sortedArray[i] = totalDistance[i][0];
 				}
