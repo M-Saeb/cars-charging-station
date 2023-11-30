@@ -149,7 +149,10 @@ public class ChargingStation
     public double getTotalWaitingTime(){ return 0.0; };
 
 
-    public void addCarToQueue(){}
+    public void addCarToQueue(Car car)
+    {
+    	queue.add(car);
+    }
 
     /*
      * Remove car from station queue.
