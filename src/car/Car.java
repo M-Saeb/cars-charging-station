@@ -11,6 +11,7 @@ public abstract class Car {
 	protected String carNumber;
 	private float currentCapacity;
 	private float tankCapacity;
+	private float fuelLevel;
 	private float waitDuration;
 	protected LocationAPI api;
 	protected GPSValues currentGPS;
@@ -68,7 +69,19 @@ public abstract class Car {
 	public void setApi(LocationAPI api) {
 		this.api = api;
 	}
+	
+	public void setCurrState(CarState currState) {
+		this.currState = currState;
+	}
+	
+	public float getFuelLevel() {
+		return fuelLevel;
+	}
 
+	public void setFuelLevel(float fuelLevel) {
+		this.fuelLevel = fuelLevel;
+	}
+	
 	/*
 	 * This method should return the nearest charging station based on the following
 	 * criteria and order: - Location of the station (nearest is better) - Waiting
@@ -110,14 +123,14 @@ public abstract class Car {
 	public void joinStationQueue(ChargingStation station)
 	{
 		station.addCarToQueue(this);
+		currState = CarState.charging;
 	}
 
 	/*
-	 * A car has 4 states (probably an ENUM implementation?): - looking - in queue -
+	 * A car has 4 states (ENUM implementation): - looking - in queue -
 	 * charging - charged The following methods return boolean values corrresponding
 	 * to its state.
 	 */
-
 	public boolean isLooking()
 	{
 		if(currState == CarState.looking)
@@ -186,13 +199,16 @@ public abstract class Car {
 	/*
 	 * Add the amount of fuel to the car's current capacity.
 	 */
-	abstract public void addFuel(double amount);
-
-	public State getCurrState() {
-		return currState;
+	public void addFuel(double amount)
+	{
+		fuelLevel += amount;
 	}
-
-	public void setCurrState(State currState) {
-		this.currState = currState;
+	
+	/*
+	 * Returns the amount of fuel that is missing until the tank is full
+	 */
+	public float getMissingAmountOfFuel()
+	{
+		return tankCapacity - fuelLevel;
 	}
 }
