@@ -1,6 +1,7 @@
 package api;
 
 import stations.ChargingStation;
+import car.*;
 
 import java.lang.Math;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import exceptions.InvalidGPSObject;
 public class LocationAPI
 {
     ChargingStation[] class_chargingStation;
+    Car class_carCar;
 
     /*
     Constructor for the API object
@@ -23,6 +25,17 @@ public class LocationAPI
     public LocationAPI(ChargingStation[] class_chargingStation)
     {
         this.class_chargingStation = class_chargingStation;
+    }
+    /*
+    Constructor for the API object
+    Input:
+    - ChargingStation[] -> List of objects called 'ChargingStation' that will be available/existing in the area
+    - Car -> Car object to obtain if the car is an electric or gas vehicle
+     */
+    public LocationAPI(ChargingStation[] class_chargingStation, Car class_car)
+    {
+        this.class_chargingStation = class_chargingStation;
+        this.class_carCar = class_car;
     }
     /* 
      * Constructor that will be able to throw an exception.
@@ -64,7 +77,7 @@ public class LocationAPI
     Return: Nearest Charging Station ID
      */
     @SuppressWarnings("unused")
-	protected static int[] sortNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation) throws InvalidGPSObject
+	protected static int[] sortNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_carObject) throws InvalidGPSObject
     {
         float LattitudDiff = gpsValues.getLatitude();
         float LongitudDiff = gpsValues.getLongitude();
@@ -83,7 +96,7 @@ public class LocationAPI
             {
 		        /*
 		        Calculate the distance between the 2 points
-		        Where x2 is the station latitud and x1 is the car location
+		        Where x2 is the station latitude and x1 is the car location
 		        sqrt[ (x2 - x1)^2 + (y2 - y1)^2 ]
 		        */
                 LattitudDiff = (float) Math.pow((class_chargingStation[i].getGPSLatitude() - gpsValues.getLatitude()), 2);
@@ -95,7 +108,17 @@ public class LocationAPI
             Arrays.sort(totalDistance, Comparator.comparingInt(arr -> arr[1]));
             for(int i = 0; i<sortedArray.length; i++)
             {
-                sortedArray[i] = totalDistance[i][0];
+            	if((class_carObject instanceof ElectricCar) && (class_chargingStation[i].getAvailableGasSlots() > 0))
+            	{
+            		sortedArray[i] = totalDistance[i][0];
+            	}
+            	else if((class_carObject instanceof GasCar) && (class_chargingStation[i].getAvailableElectricSlots() > 0)) 
+            	{
+            		sortedArray[i] = totalDistance[i][0];
+				}
+            	else {
+					
+				}
             }
         }
         /* Return the station ID that it is closest to the station */
