@@ -2,6 +2,7 @@ package stations;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.logging.Logger;
+import java.util.spi.LocaleNameProvider;
 
 import api.GPSValues;
 import api.LocationAPI;
@@ -47,8 +48,11 @@ public class ChargingStation
     	}
     	this.gpsValues = gpsValues;
 
+    	this.gasSlots = new GasChargingSlot[numGasSlots];
+    	this.electricSlots = new ElectricChargingSlot[numElectricSlots];
+    	
     	this.availableSlots = numGasSlots + numElectricSlots;
-        if (this.availableSlots == 0){
+        if ((numGasSlots == 0) && (numElectricSlots == 0)){
             throw new IllegalArgumentException("Station can't have 0 slots");
         } else if (numGasSlots < 0) {
             throw new IllegalArgumentException("Station can't have fewer than 0 gas slots.");
@@ -112,6 +116,14 @@ public class ChargingStation
 
     public int getAvailableSlots() {
         return availableSlots;
+    }
+    
+    public int getAvailableGasSlots() {
+    	return gasSlots.length;
+    }
+    
+    public int getAvailableElectricSlots() {
+        return electricSlots.length;
     }
 
     public void setAvailableSlots(int availableSlots) {
