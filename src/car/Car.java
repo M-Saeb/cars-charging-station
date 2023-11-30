@@ -2,16 +2,14 @@ package car;
 
 import api.GPSValues;
 import api.LocationAPI;
-import stations.ChargingStation;
-import stations.ElectricStation;
 import exceptions.ChargingStationNotFoundException;
+import stations.ChargingStation;
 
 public abstract class Car {
 	
 	protected String carNumber;
 	private float currentCapacity;
 	private float tankCapacity;
-	private float fuelLevel;
 	private float waitDuration;
 	protected LocationAPI api;
 	protected GPSValues currentGPS;
@@ -74,14 +72,6 @@ public abstract class Car {
 		this.currState = currState;
 	}
 	
-	public float getFuelLevel() {
-		return fuelLevel;
-	}
-
-	public void setFuelLevel(float fuelLevel) {
-		this.fuelLevel = fuelLevel;
-	}
-	
 	/*
 	 * This method should return the nearest charging station based on the following
 	 * criteria and order: - Location of the station (nearest is better) - Waiting
@@ -105,11 +95,15 @@ public abstract class Car {
 				continue;
 			}
 			
-			if(nearestStations[i].getTotalLeftoverCapacity() <= tankCapacity)
+			if(this instanceof ElectricCar && nearestStations[i].getTotalLeftoverElectricity() < getMissingAmountOfFuel())
 			{
 				continue;
 			}
-			
+			else if(this instanceof GasCar && nearestStations[i].getTotalLeftoverGas() < getMissingAmountOfFuel())
+			{
+				continue;
+			}
+				
 			return nearestStations[i];
 		}
 
@@ -201,7 +195,7 @@ public abstract class Car {
 	 */
 	public void addFuel(double amount)
 	{
-		fuelLevel += amount;
+		currentCapacity += amount;
 	}
 	
 	/*
@@ -209,6 +203,6 @@ public abstract class Car {
 	 */
 	public float getMissingAmountOfFuel()
 	{
-		return tankCapacity - fuelLevel;
+		return tankCapacity - currentCapacity;
 	}
 }

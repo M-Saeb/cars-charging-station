@@ -1,14 +1,15 @@
 package stations;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import api.GPSValues;
 import api.LocationAPI;
+import car.Car;
+import car.ElectricCar;
+import car.GasCar;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
-import car.Car;
 
 public class ChargingStation
 {
@@ -29,7 +30,9 @@ public class ChargingStation
     private Logger logger;
     private GasChargingSlot[] gasSlots;
     private ElectricChargingSlot[] electricSlots;
-    private Queue<Car> queue = new LinkedList<Car>();
+    private float LevelOfElectricityStorage;
+	private float LevelOfGasStorage;
+    private ArrayList<Car> queue = new ArrayList<Car>();
     private float waitTime = 0;
     
     public ChargingStation(int chargingStationID, GPSValues gpsValues, int numGasSlots, int numElectricSlots, float gasOutputPerSecondoutputPerSecond, float electricityOutputPerSecond)
@@ -133,6 +136,22 @@ public class ChargingStation
     public float getElectricityOutputPerSecond() {
         return electricityOutputPerSecond;
     }
+    
+    public float getLevelOfElectricityStorage() {
+		return LevelOfElectricityStorage;
+	}
+
+	public void setLevelOfElectricityStorage(float levelOfElectricityStorage) {
+		LevelOfElectricityStorage = levelOfElectricityStorage;
+	}
+
+	public float getLevelOfGasStorage() {
+		return LevelOfGasStorage;
+	}
+
+	public void setLevelOfGasStorage(float levelOfGasStorage) {
+		LevelOfGasStorage = levelOfGasStorage;
+	}
 
     /*
     This should get the waiting time for a specific car in qeueue
@@ -175,4 +194,44 @@ public class ChargingStation
      * If a car's tank is already full, do nothing.
      */
     public void chargeCarsInSlots(){}
+    
+    public float getTotalLeftoverElectricity()
+    {
+		int pendingUsedElectricity = 0;
+    	
+		for(int i = 0; i<electricSlots.length; i++)
+    	{
+    		pendingUsedElectricity += electricSlots[i].getCurrentCar().getMissingAmountOfFuel();
+    	}
+    	
+		for(int i = 0; i<queue.size(); i++)
+		{
+			if(queue.get(i) instanceof ElectricCar)
+			{
+				pendingUsedElectricity += queue.get(i).getMissingAmountOfFuel();
+			}
+		}
+    	
+		return LevelOfElectricityStorage - pendingUsedElectricity;
+    }
+    
+    public float getTotalLeftoverGas()
+    {
+		int pendingUsedGas = 0;
+    	
+		for(int i = 0; i<gasSlots.length; i++)
+    	{
+    		pendingUsedGas += gasSlots[i].getCurrentCar().getMissingAmountOfFuel();
+    	}
+    	
+		for(int i = 0; i<queue.size(); i++)
+		{
+			if(queue.get(i) instanceof GasCar)
+			{
+				pendingUsedGas += queue.get(i).getMissingAmountOfFuel();
+			}
+		}
+    	
+		return LevelOfGasStorage - pendingUsedGas;
+    }
 }

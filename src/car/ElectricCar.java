@@ -4,7 +4,6 @@ import api.GPSValues;
 import api.LocationAPI;
 import exceptions.ChargingStationNotFoundException;
 import stations.ChargingStation;
-import stations.ElectricStation;
 
 public class ElectricCar extends Car {
 
