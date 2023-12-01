@@ -176,7 +176,53 @@ public class ChargingStation
     It should consider the waiting time + the charging times of the cars
     in the queue.
      */
-    public double getTotalWaitingTime(){ return 0.0; };
+    public double getTotalWaitingTimeElectric()
+    {
+    	double totalWaitingTime = 0;
+    	for(Car car : queue)
+    	{
+    		if(car instanceof ElectricCar)
+    		{
+    			totalWaitingTime += car.getChargingTime(this);
+    		}
+    	}
+    	
+    	for(ElectricChargingSlot slot : electricSlots)
+    	{
+    		if(slot.getCurrentCar() == null)
+    		{
+    			continue;
+    		}
+    		
+    		totalWaitingTime += slot.getCurrentCar().getChargingTime(this);
+    	}
+    	
+    	return totalWaitingTime;
+    }
+    
+    public double getTotalWaitingTimeGas()
+    {
+    	double totalWaitingTime = 0;
+    	for(Car car : queue)
+    	{
+    		if(car instanceof GasCar)
+    		{
+    			totalWaitingTime += car.getChargingTime(this);
+    		}
+    	}
+    	
+    	for(ElectricChargingSlot slot : gasSlots)
+    	{
+    		if(slot.getCurrentCar() == null)
+    		{
+    			continue;
+    		}
+    		
+    		totalWaitingTime += slot.getCurrentCar().getChargingTime(this);
+    	}
+    	
+    	return totalWaitingTime;
+    }
 
 
     public void addCarToQueue(Car car)
@@ -187,8 +233,10 @@ public class ChargingStation
     /*
      * Remove car from station queue.
      */
-    public void leaveStationQueue(Car car){}
-
+    public void leaveStationQueue(Car car)
+    {
+    	queue.remove(car);
+    }
     /*
      * Disonnect car from slot.
      */
