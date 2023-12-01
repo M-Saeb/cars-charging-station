@@ -204,7 +204,58 @@ public class ChargingStation
      * Make sure the car's tank only gets full and not more than that.
      * If a car's tank is already full, do nothing.
      */
-    public void chargeCarsInSlots(){}
+    public void chargeCarsInSlots()
+    {
+    	for(ElectricChargingSlot chargingSlot : electricSlots)
+    	{
+    		if(chargingSlot.getCurrentCar() == null)
+    		{
+    			continue;
+    		}
+    		
+    		if(LevelOfElectricityStorage < electricityOutputPerSecond)
+    		{
+    			break;
+    		}
+    		
+    		float missingFuel = chargingSlot.getCurrentCar().getMissingAmountOfFuel();
+    		if(missingFuel >= electricityOutputPerSecond)
+    		{
+        		chargingSlot.getCurrentCar().addFuel(electricityOutputPerSecond);
+        		LevelOfElectricityStorage -= electricityOutputPerSecond;
+    		}
+    		else
+    		{
+    			chargingSlot.getCurrentCar().addFuel(missingFuel);
+        		LevelOfElectricityStorage -= missingFuel;
+    		}
+    	}
+    	
+    	for(GasChargingSlot chargingSlot : gasSlots)
+    	{	
+    		if(LevelOfGasStorage < gasOutputPerSecond)
+    		{
+    			break;
+    		}
+    		
+    		if(chargingSlot.getCurrentCar() == null)
+    		{
+    			continue;
+    		}
+    		
+    		float missingFuel = chargingSlot.getCurrentCar().getMissingAmountOfFuel();
+    		if(missingFuel >= gasOutputPerSecond)
+    		{
+        		chargingSlot.getCurrentCar().addFuel(gasOutputPerSecond);
+        		LevelOfGasStorage -= gasOutputPerSecond;
+    		}
+    		else
+    		{
+    			chargingSlot.getCurrentCar().addFuel(missingFuel);
+        		LevelOfGasStorage -= missingFuel;
+    		}
+    	}
+    }
     
     public float getTotalLeftoverElectricity()
     {
