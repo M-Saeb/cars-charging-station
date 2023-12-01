@@ -80,7 +80,7 @@ public abstract class Car {
 	 */
 	public ChargingStation getNearestFreeChargingStation() throws ChargingStationNotFoundException {
 		// Getting the nearest station from the LocationAPI
-		ChargingStation[] nearestStations = LocationAPI.calculateNearestStation(currentGPS, api.getChargingStation());
+		ChargingStation[] nearestStations = LocationAPI.calculateNearestStation(currentGPS, api.getChargingStation(), this);
 
 		// Checking if it returned any stations. Throwing exception when not
 		if (nearestStations.length == 0) {
