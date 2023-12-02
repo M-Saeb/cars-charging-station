@@ -106,6 +106,9 @@ public class LocationAPI
                     totalDistance[i][0] = (int) class_chargingStation[i].getChargingStationID();
                     totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
 					
+                    /*
+                     * Exception bound to happen if invalid values are assigned into the operation.
+                     */
 				} catch (Exception arithmeticException) {
 					try {
 						throw new InvalidGPSValueException("Invalid values to calculate distance");
