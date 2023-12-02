@@ -149,7 +149,7 @@ public class LocationAPI
     -varArrStations[] -> array or list of all the stations in the area
     Return: Nearest Charging Station ID
      */
-    public static ChargingStation[] calculateNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_car)
+    public static ChargingStation[] calculateNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_car) throws InvalidGPSValueException
     {
         int[] varSortedArray = new int[class_chargingStation.length];
         ChargingStation[] sortedStations = new ChargingStation[class_chargingStation.length];
