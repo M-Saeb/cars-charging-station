@@ -3,6 +3,7 @@ package byteStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 
 public class byteStream 
 {
@@ -14,28 +15,31 @@ public class byteStream
     -originalFile -> name on how the destination file should be named, as sufix it will always have a "backup"
     Return: Nearest Charging Station ID
      */
-	public void logByteStream(String originalFile, String destinationFile) throws IOException
+	public void logByteStream(String destinationFile, String varString) throws IOException
 	{
-	    FileInputStream input = null;
 	    FileOutputStream output = null;
 	    
-	    /* TODO: add local path where files will be stored */
-		try {
-			input = new FileInputStream(originalFile + ".txt");
-			output = new FileOutputStream(destinationFile + "_backup" + ".txt");
-		    int c;
-		
-		    while ((c = input.read()) != -1) {
-		    	output.write(c);
-		    }
-		} finally {
-		    if (input != null) {
-		    	input.close();
-		    }
-		    if (output != null) {
-		    	output.close();
-		    }
-		}
+        Date timestamp = new Date();
+        String timestampString = "[" + timestamp.toString() + "] ";
+	    
+        try {
+        	output = new FileOutputStream(destinationFile + ".txt", true);
+
+            output.write(10);
+        	for(int i = 0; i < 20; i++)
+        	{
+        		output.write(45);
+        	}
+        	output.write(10);
+        	output.write(timestampString.getBytes());
+        	output.write(10);
+        	/* Add the exact text to add into the log */
+        	output.write(varString.getBytes());
+        } finally {
+            if (output != null) {
+            	output.close();
+            }
+        }
 	}
 
 }
