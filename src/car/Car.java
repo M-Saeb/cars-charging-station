@@ -10,9 +10,10 @@ public abstract class Car {
 	protected String carNumber;
 	private float currentCapacity;
 	private float tankCapacity;
-	private float waitDuration;
+	private float waitDuration; // the maximum accepted waiting duration for the car
 	protected LocationAPI api;
 	protected GPSValues currentGPS;
+	private ChargingStation currentChargingStation;
 	private CarState currState;
 	
 	public Car(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api,
@@ -91,15 +92,21 @@ public abstract class Car {
 		// Iterating over the found stations and checking for empty slots and if the
 		// type is matching
 		for (int i = 0; i < nearestStations.length; i++) {
-			if (nearestStations[i].getTotalWaitingTime() >= waitDuration) {
+			double totalWaitingTime;
+			float tankLeftOver;
+			if (this instanceof ElectricCar){
+				totalWaitingTime = nearestStations[i].getTotalWaitingTimeElectric();
+				tankLeftOver = nearestStations[i].getTotalLeftoverElectricity();
+
+			} else{ // GasCar
+				totalWaitingTime = nearestStations[i].getTotalWaitingTimeGas();
+				tankLeftOver = nearestStations[i].getTotalLeftoverGas();
+			}
+
+			if (totalWaitingTime >= this.waitDuration) {
 				continue;
 			}
-			
-			if(this instanceof ElectricCar && nearestStations[i].getTotalLeftoverElectricity() < getMissingAmountOfFuel())
-			{
-				continue;
-			}
-			else if(this instanceof GasCar && nearestStations[i].getTotalLeftoverGas() < getMissingAmountOfFuel())
+			if(tankLeftOver < getMissingAmountOfFuel())
 			{
 				continue;
 			}
@@ -117,6 +124,7 @@ public abstract class Car {
 	public void joinStationQueue(ChargingStation station)
 	{
 		station.addCarToQueue(this);
+		currentChargingStation = station;
 		currState = CarState.charging;
 	}
 
@@ -171,24 +179,38 @@ public abstract class Car {
 	/*
 	 * Return the station the car joined to.
 	 */
-	abstract public ChargingStation getCurrentStation();
+	public ChargingStation getCurrentStation(){
+		return this.currentChargingStation;
+	};
 
 	/*
 	 * Leave station since the current station isn't suitable anymore. Set car state
 	 * to looking.
 	 */
-	abstract public void leaveStationQueue();
+	public void leaveStationQueue(){
+		currentChargingStation.leaveStationQueue(this);
+		currentChargingStation = null;
+	};
 
 	/*
 	 * Leave station since the car is charged. Set car state to charged.
 	 */
-	abstract public void leaveStation();
+	public void leaveStation(){
+		currState = CarState.charged;
+		currentChargingStation.leaveStation(this);
+		currentChargingStation = null;
+	};
 
 	/*
 	 * Car leaves map as no suitable station is available. Set state to charged!
 	 * We'll change this later and handle it better. But for now, it should suffice.
 	 */
-	abstract public void leaveMap();
+	public void leaveMap(){
+		currState = CarState.charged;
+		System.out.println(
+			"Car numbered " + carNumber + " because it couldn't find station with acceptable waiting time"
+		);
+	};
 
 	/*
 	 * Add the amount of fuel to the car's current capacity.

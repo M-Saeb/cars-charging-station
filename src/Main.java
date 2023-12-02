@@ -90,7 +90,8 @@ public class Main {
 					(float) 60.9,
 					(float) 120.0,
 					locationAPI,
-					new GPSValues(40, 20)
+					new GPSValues(40, 20),
+					null
 				),
 				new ElectricCar(
 					"Toyota Prius",
@@ -98,14 +99,18 @@ public class Main {
 					(float) 13.0,
 					(float) 30.0,
 					locationAPI,
-					new GPSValues(-50, 50)),
+					new GPSValues(-50, 50),
+					null
+				),
+					
 				new GasCar(
 					"Peugeot 206",
 					(float) 12.0,
 					(float) 49.0,
 					(float) 30.0,
 					locationAPI,
-					new GPSValues(24, 140)
+					new GPSValues(24, 140),
+					null
 				),
 				new ElectricCar(
 					"BW i5",
@@ -113,7 +118,8 @@ public class Main {
 					(float) 83.9,
 					(float) 70.0,
 					locationAPI,
-					new GPSValues(80, 95)
+					new GPSValues(80, 95),
+					null
 				),
 				new GasCar(
 					"Audi A3",
@@ -121,7 +127,8 @@ public class Main {
 					(float) 48.0,
 					(float) 90.0,
 					locationAPI,
-					new GPSValues(40, 10)
+					new GPSValues(40, 10),
+					null
 				)
 		};
 		logger.info("Created pool of cars.");
