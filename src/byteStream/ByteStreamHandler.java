@@ -4,20 +4,25 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
-public class ByteStreamHandler extends StreamHandler
+public class ByteStreamHandler extends Handler
 {
 	FileOutputStream file = null;
-	
+	Formatter formatter;
+
     public ByteStreamHandler(String pattern) {
-        // create/open log file (name it using provided pattern)
+		// Use the formatter we have already set
+		formatter = Logger.getLogger("").getHandlers()[0].getFormatter();
     	 try {
     		File tempFile = new File(pattern); 
     		if(tempFile.exists())
     		{
-    			this.file = new FileOutputStream(pattern + ".txt", true);
+    			this.file = new FileOutputStream(pattern, true);
     		}
     		else 
     		{
@@ -25,7 +30,7 @@ public class ByteStreamHandler extends StreamHandler
 					boolean createFile = tempFile.createNewFile();
 					if(createFile)
 					{
-						this.file = new FileOutputStream(pattern + ".txt", true);
+						this.file = new FileOutputStream(pattern, true);
 					}
 					else {
 						throw new IOException("Failed to create the file...");
@@ -41,9 +46,14 @@ public class ByteStreamHandler extends StreamHandler
 		}
     }
 
+	@Override
+	public Formatter getFormatter() {
+		// TODO Auto-generated method stub
+		return formatter;
+	}
+
     @Override
     public void close() throws SecurityException {
-		super.close();
     	try {
 			this.file.close();
 		} catch (IOException e) {
@@ -68,7 +78,6 @@ public class ByteStreamHandler extends StreamHandler
 			return;
 		}
         byte[] logBytes = getFormatter().format(arg0).getBytes();
-        super.publish(arg0);
     	try {
 	    	file.write(logBytes);
 		} catch (IOException e) {
@@ -77,7 +86,6 @@ public class ByteStreamHandler extends StreamHandler
 		}
     	finally {
     		flush();
-    		close();
     	}
     }
 }
