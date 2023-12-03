@@ -19,6 +19,7 @@ public abstract class Car
 	protected GPSValues currentGPS;
 	private ChargingStation currentChargingStation;
 	private CarState currState;
+	private boolean priorityFlag;
 
 	public Car(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api,
 			GPSValues currentGPS)
@@ -37,6 +38,7 @@ public abstract class Car
 		{
 			this.currState = CarState.charged;
 		}
+		this.priorityFlag = false;
 	}
 
 	public float getCurrentCapacity()
@@ -94,6 +96,17 @@ public abstract class Car
 	public void setCurrState(CarState currState)
 	{
 		this.currState = currState;
+	}
+
+	
+	public boolean isPriority()
+	{
+		return priorityFlag;
+	}
+
+	public void setPriorityFlag(boolean priorityFlag)
+	{
+		this.priorityFlag = priorityFlag;
 	}
 
 	/*
