@@ -2,7 +2,6 @@ package car;
 
 import api.GPSValues;
 import api.LocationAPI;
-import exceptions.ChargingStationNotFoundException;
 import stations.ChargingStation;
 
 public class ElectricCar extends Car {
@@ -14,6 +13,6 @@ public class ElectricCar extends Car {
 
 	@Override
 	public float getChargingTime(ChargingStation station) {
-		return getTankCapacity() / station.getElectricityOutputPerSecond();
+		return getMissingAmountOfFuel() / station.getElectricityOutputPerSecond();
 	}
 }
