@@ -55,7 +55,11 @@ public class ByteStreamHandler extends Handler
 
 	@Override
 	public void flush() {
-		// TODO Auto-generated method stub
+		try {
+			file.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	} 
     
@@ -82,6 +86,7 @@ public class ByteStreamHandler extends Handler
 			e.printStackTrace();
 		}
     	finally {
+    		flush();
     		close();
     	}
     }
