@@ -12,6 +12,7 @@ import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
 import exceptions.InvalidGPSObject;
 
+
 public class LocationAPI
 {
     ChargingStation[] class_chargingStation;
@@ -77,7 +78,7 @@ public class LocationAPI
     Return: Nearest Charging Station ID
      */
     @SuppressWarnings("unused")
-	protected static int[] sortNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_carObject) throws InvalidGPSObject
+	protected static int[] sortNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_carObject) throws InvalidGPSObject, InvalidGPSValueException
     {
         float LattitudDiff = gpsValues.getLatitude();
         float LongitudDiff = gpsValues.getLongitude();
@@ -94,15 +95,30 @@ public class LocationAPI
         {
             for(int i = 0; i < class_chargingStation.length; i++)
             {
-		        /*
-		        Calculate the distance between the 2 points
-		        Where x2 is the station latitude and x1 is the car location
-		        sqrt[ (x2 - x1)^2 + (y2 - y1)^2 ]
-		        */
-                LattitudDiff = (float) Math.pow((class_chargingStation[i].getGPSLatitude() - gpsValues.getLatitude()), 2);
-                LongitudDiff = (float) Math.pow((class_chargingStation[i].getGPSLongitude() - gpsValues.getLongitude()), 2);
-                totalDistance[i][0] = (int) class_chargingStation[i].getChargingStationID();
-                totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
+            	try {
+    		        /*
+    		        Calculate the distance between the 2 points
+    		        Where x2 is the station latitude and x1 is the car location
+    		        sqrt[ (x2 - x1)^2 + (y2 - y1)^2 ]
+    		        */
+                    LattitudDiff = (float) Math.pow((class_chargingStation[i].getGPSLatitude() - gpsValues.getLatitude()), 2);
+                    LongitudDiff = (float) Math.pow((class_chargingStation[i].getGPSLongitude() - gpsValues.getLongitude()), 2);
+                    totalDistance[i][0] = (int) class_chargingStation[i].getChargingStationID();
+                    totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
+					
+                    /*
+                     * Exception bound to happen if invalid values are assigned into the operation.
+                     */
+				} catch (Exception arithmeticException) {
+					try {
+						throw new InvalidGPSValueException("Invalid values to calculate distance");
+					} catch (Exception chainedException) {
+						System.out.println("Chained exception happend...");
+						chainedException.printStackTrace();
+					}
+					
+				}
+
             }
             /* Compare elements regarding the second position of the array and sort them from shortest to longest */
             Arrays.sort(totalDistance, Comparator.comparingInt(arr -> arr[1]));
@@ -133,15 +149,15 @@ public class LocationAPI
     -varArrStations[] -> array or list of all the stations in the area
     Return: Nearest Charging Station ID
      */
-    public static ChargingStation[] calculateNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_car)
+    public static ChargingStation[] calculateNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_car) throws InvalidGPSValueException
     {
         int[] varSortedArray = new int[class_chargingStation.length];
         ChargingStation[] sortedStations = new ChargingStation[class_chargingStation.length];
 
         try {
 			varSortedArray = sortNearestStation(gpsValues, class_chargingStation, class_car);
-		} catch (InvalidGPSObject e) {
-			e.printStackTrace();
+		} catch (InvalidGPSObject ex1) {
+			ex1.printStackTrace();
 		}
         for(int i = 0; i < varSortedArray.length; i++)
         {
@@ -201,5 +217,4 @@ public class LocationAPI
         }
         System.out.println();
     }
-
 }

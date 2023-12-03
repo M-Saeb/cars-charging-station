@@ -107,11 +107,39 @@ public class ChargingStation
         return waitTime;
     }
 
-    public float getGPSLatitude() {
+    public float getGPSLatitude() throws InvalidGPSValueException{
+    	if(this.gpsValues.getLatitude() == 0)
+    	{
+    		try {
+				throw new InvalidGPSLatitudeException("Invalid Latitud value...");
+			} catch (Exception e) {
+				System.out.println("Invalid Latitud value...");
+				e.printStackTrace();
+			}
+    	}
+    	else {
+			/*
+			 * Do nothing
+			 */
+		}
         return this.gpsValues.getLatitude();
     }
 
-    public float getGPSLongitude() {
+    public float getGPSLongitude() throws InvalidGPSValueException{
+    	if(this.gpsValues.getLongitude() == 0)
+    	{
+    		try {
+				throw new InvalidGPSLongitudeException("Invalid Latitud value...");
+			} catch (Exception e) {
+				System.out.println("Invalid Latitud value...");
+				e.printStackTrace();
+			}
+    	}
+    	else {
+			/*
+			 * Do nothing
+			 */
+		}
         return this.gpsValues.getLongitude();
     }
 
