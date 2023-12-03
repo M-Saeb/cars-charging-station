@@ -13,6 +13,6 @@ public class ElectricCar extends Car {
 
 	@Override
 	public float getChargingTime(ChargingStation station) {
-		return getTankCapacity() / station.getElectricityOutputPerSecond();
+		return getMissingAmountOfFuel() / station.getElectricityOutputPerSecond();
 	}
 }
