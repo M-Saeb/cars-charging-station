@@ -64,6 +64,9 @@ public class ByteStreamHandler extends StreamHandler
     @Override
     public void publish(LogRecord arg0) 
     {
+		if (!isLoggable(arg0)){
+			return;
+		}
         byte[] logBytes = getFormatter().format(arg0).getBytes();
         super.publish(arg0);
     	try {
