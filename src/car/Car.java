@@ -151,7 +151,7 @@ public abstract class Car
 				if (currentStation == null){
 					continue;
 				}
-				totalWaitingTime = currentStation.getTotalWaitingTimeElectric();
+				totalWaitingTime = currentStation.getTotalWaitingTimeElectric(this);
 				tankLeftOver = currentStation.getTotalLeftoverElectricity();
 
 			}
