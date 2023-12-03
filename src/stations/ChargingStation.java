@@ -7,6 +7,7 @@ import api.LocationAPI;
 import car.Car;
 import car.ElectricCar;
 import car.GasCar;
+import exceptions.ChargingSlotFullException;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
@@ -18,11 +19,9 @@ public class ChargingStation
     This value can be sent to the other types of station from this super class
      */
     private GPSValues gpsValues;
-    /* TODO: Implement queue logic, where variable availableSlots_int is the number of slot available to push into the queue */
-    /*
-    Amount of available slot per charging station
-     */
-    private int availableSlots;
+
+	/*Amount of available slot per charging station*/
+    private int numberOfAvailableSlots;
     
     private int chargingStationID;
     private float gasOutputPerSecond;
@@ -53,7 +52,7 @@ public class ChargingStation
     	this.gasSlots = new GasChargingSlot[numGasSlots];
     	this.electricSlots = new ElectricChargingSlot[numElectricSlots];
     	
-    	this.availableSlots = numGasSlots + numElectricSlots;
+    	this.setNumberOfAvailableSlots(numGasSlots + numElectricSlots);
         if ((numGasSlots == 0) && (numElectricSlots == 0)){
             throw new IllegalArgumentException("Station can't have 0 slots");
         } else if (numGasSlots < 0) {
@@ -116,8 +115,8 @@ public class ChargingStation
         return this.gpsValues.getLongitude();
     }
 
-    public int getAvailableSlots() {
-        return availableSlots;
+    public int getNumberOfAvailableSlots() {
+        return numberOfAvailableSlots;
     }
     
     public int getAvailableGasSlots() {
@@ -128,8 +127,8 @@ public class ChargingStation
         return electricSlots.length;
     }
 
-    public void setAvailableSlots(int availableSlots) {
-        this.availableSlots = availableSlots;
+    public void setNumberOfAvailableSlots(int availableSlots) {
+        this.numberOfAvailableSlots = availableSlots;
     }
 
     public void setChargingStationID(int chargingStationID) {
@@ -199,7 +198,7 @@ public class ChargingStation
     	
     	return totalWaitingTime;
     }
-    
+
     public double getTotalWaitingTimeGas()
     {
     	double totalWaitingTime = 0;
@@ -211,7 +210,7 @@ public class ChargingStation
     		}
     	}
     	
-    	for(ElectricChargingSlot slot : gasSlots)
+    	for(GasChargingSlot slot : gasSlots)
     	{
     		if(slot.getCurrentCar() == null)
     		{
@@ -240,12 +239,70 @@ public class ChargingStation
     /*
      * Disonnect car from slot.
      */
-    public void leaveStation(Car car){}
+    public void leaveStation(Car car){
+		ChargingSlot stationSlots[];
+		if (car instanceof ElectricCar){
+			stationSlots = this.electricSlots;
+		} else { // GasCar
+			stationSlots = this.gasSlots;
+		}
+		for (ChargingSlot slot: stationSlots){
+			if (slot.currentCar == car){
+				slot.disconnectCar();
+			}
+			return;
+		}
+		logger.severe(
+			"Something went wrong: you order car numbered  " + car.getCarNumber() + 
+			" out of the station, but the car is not in the station"
+		);
+	}
 
     /*
      * Send cars in queue to free slots and set their state to charging.
      */
-    public void sendCarsToFreeSlots(){}
+    public void sendCarsToFreeSlots(){
+		/* get the currently free slots */
+		ArrayList<ChargingSlot> freeSlots = new ArrayList<ChargingSlot>();
+		for (ElectricChargingSlot slot: electricSlots){
+			if (slot.currentCar == null){
+				freeSlots.add(slot);
+			}
+		}
+		for (GasChargingSlot slot: gasSlots){
+			if (slot.currentCar == null){
+				freeSlots.add(slot);
+			}
+		}
+
+		/* updating each free slot */
+		for (ChargingSlot slot: freeSlots){
+
+			/* getting the type (class) of the slot */
+			Class<?> acceptedCarType;
+			if (slot instanceof ElectricChargingSlot){
+				acceptedCarType = ElectricCar.class;
+			} else { // GasCharingSlot
+				acceptedCarType = GasCar.class;
+			}
+
+			/* 
+			checking which is the first car in the qeueue to have
+			the same fuel as the slot 
+			*/
+			for (Car car: queue){
+				if(car.getClass() == acceptedCarType){
+					try{
+						slot.connectCar(car);
+						queue.remove(car);
+						break;
+					} catch (ChargingSlotFullException e) {
+						break;
+					}
+				}
+			}
+		}
+	}
 
     /*
      * Add output per second of station to the car's tank.
