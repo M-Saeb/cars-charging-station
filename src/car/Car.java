@@ -143,13 +143,13 @@ public abstract class Car
 			float tankLeftOver;
 			if(this instanceof ElectricCar)
 			{
-				totalWaitingTime = nearestStations[i].getTotalWaitingTimeElectric();
+				totalWaitingTime = nearestStations[i].getTotalWaitingTimeElectric(this);
 				tankLeftOver = nearestStations[i].getTotalLeftoverElectricity();
 
 			}
 			else
 			{ // GasCar
-				totalWaitingTime = nearestStations[i].getTotalWaitingTimeGas();
+				totalWaitingTime = nearestStations[i].getTotalWaitingTimeGas(this);
 				tankLeftOver = nearestStations[i].getTotalLeftoverGas();
 			}
 
