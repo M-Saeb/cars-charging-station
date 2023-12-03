@@ -2,6 +2,9 @@ package stations;
 
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
+
+import annotations.Mutable;
+import annotations.Readonly;
 import car.Car;
 import exceptions.ChargingSlotFullException;
 
@@ -22,7 +25,8 @@ abstract public class ChargingSlot {
 		this.logger = Logger.getLogger(this.getClass().getSimpleName() + " " + this.id);
 		this.logger.fine("Initiated Charging Slot " + this.id);
 	}
-	
+
+	@Mutable
 	public void connectCar(Car car) throws ChargingSlotFullException {
 		// if there is a car already docked in this slot, raise an exception
 		if (this.currentCar != null) {
@@ -39,27 +43,33 @@ abstract public class ChargingSlot {
 
 	abstract public void chargeCar();
 
+	@Mutable
 	public void disconnectCar(){
 		this.currentCar = null;
 	}
-	
+
+	@Readonly
 	public int getId(){
 		return this.id;
 	}
-	
+
+	@Readonly
 	public Car getCurrentCar() {
 		return this.currentCar;
 	}
 	
+	@Readonly
 	public LocalDateTime getNextFreeTime() {
 		return this.nextFreeTime;
 	}
-	
+
+	@Readonly
 	private LocalDateTime calculateNextFreeTime() {
 		long chargingTime =  (long) this.currentCar.getChargingTime(this.chargingStation);
 		return LocalDateTime.now().plusSeconds(chargingTime);
 	}
-	
+
+	@Readonly
 	public String toString() {
 		return String.format("Charging Slot %s", this.id);
 	} 

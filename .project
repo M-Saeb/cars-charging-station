@@ -25,4 +25,17 @@
 			</matcher>
 		</filter>
 	</filteredResources>
+	<metadata>
+		<projectVersion>
+			<number>0.1</number>
+			<productionReady>false</productionReady>
+			<description>This is a prototype version of the charging station project</description>
+		</projectVersion>
+		<description>
+			A simulation system where we have car with 2 fuel types (gas and electric)
+			and charging stations with 2 fuel types.
+			The project will create a simulation where the cars will request data on nearby charging stations
+			and decide whether it's worth going to it or not
+		</description>
+	</metadata>
 </projectDescription>

@@ -2,6 +2,9 @@ package car;
 
 import api.GPSValues;
 import api.LocationAPI;
+import annotations.Readonly;
+import annotations.APIMethod;
+import annotations.Mutable;
 import exceptions.ChargingStationNotFoundException;
 import stations.ChargingStation;
 
@@ -31,48 +34,60 @@ public abstract class Car {
 		}
 	}
 
+	@Readonly
 	public float getCurrentCapacity() {
 		return currentCapacity;
 	}
 
+	@Mutable
 	public void setCurrentCapacity(float currentCapacity) {
 		this.currentCapacity = currentCapacity;
 	}
 
+	@Readonly
 	abstract public float getChargingTime(ChargingStation station);
 
+	@Readonly
 	public String getCarNumber() {
 		return carNumber;
 	}
 
+	@Mutable
 	public void setCarNumber(String carNumber) {
 		this.carNumber = carNumber;
 	}
 
+	@Readonly
 	public float getTankCapacity() {
 		return tankCapacity;
 	}
 
+	@Mutable
 	public void setTankCapacity(float tankCapacity) {
 		this.tankCapacity = tankCapacity;
 	}
 
+	@Readonly
 	public float getWaitDuration() {
 		return waitDuration;
 	}
 
+	@Mutable
 	public void setWaitDuration(float waitDuration) {
 		this.waitDuration = waitDuration;
 	}
 
+	@Readonly
 	public LocationAPI getApi() {
 		return api;
 	}
 
+	@Mutable
 	public void setApi(LocationAPI api) {
 		this.api = api;
 	}
 	
+	@Mutable
 	public void setCurrState(CarState currState) {
 		this.currState = currState;
 	}
@@ -83,6 +98,8 @@ public abstract class Car {
 	 * time (station's waiting time should be lower than car's waiting time) -
 	 * Station's capacity (station should have enough fuel left for this car)
 	 */
+	@Readonly
+	@APIMethod
 	public ChargingStation getNearestFreeChargingStation() throws ChargingStationNotFoundException {
 		// Getting the nearest station from the LocationAPI
 		ChargingStation[] nearestStations = LocationAPI.calculateNearestStation(currentGPS, api.getChargingStation(), this);
@@ -99,8 +116,12 @@ public abstract class Car {
 			double totalWaitingTime;
 			float tankLeftOver;
 			if (this instanceof ElectricCar){
-				totalWaitingTime = nearestStations[i].getTotalWaitingTimeElectric();
-				tankLeftOver = nearestStations[i].getTotalLeftoverElectricity();
+				ChargingStation currentStation = nearestStations[i];
+				if (currentStation == null){
+					continue;
+				}
+				totalWaitingTime = currentStation.getTotalWaitingTimeElectric();
+				tankLeftOver = currentStation.getTotalLeftoverElectricity();
 
 			} else{ // GasCar
 				totalWaitingTime = nearestStations[i].getTotalWaitingTimeGas();
@@ -125,6 +146,7 @@ public abstract class Car {
 	 * This method will add the car to the station's queue. Also it should set car
 	 * state to in queue.
 	 */
+	@Mutable
 	public void joinStationQueue(ChargingStation station)
 	{
 		station.addCarToQueue(this);
@@ -137,6 +159,7 @@ public abstract class Car {
 	 * charging - charged The following methods return boolean values corrresponding
 	 * to its state.
 	 */
+	@Readonly
 	public boolean isLooking()
 	{
 		if(currState == CarState.looking)
@@ -146,6 +169,7 @@ public abstract class Car {
 		return false;
 	}
 
+	@Readonly
 	public boolean isInQueue()
 	{
 		if(currState == CarState.inQueue)
@@ -155,6 +179,7 @@ public abstract class Car {
 		return false;
 	}
 
+	@Readonly
 	public boolean isCharging()
 	{
 		if(currState == CarState.charging)
@@ -164,6 +189,7 @@ public abstract class Car {
 		return false;
 	}
 
+	@Readonly
 	public boolean isCharged()
 	{
 		if(currState == CarState.charged)
@@ -183,6 +209,7 @@ public abstract class Car {
 	/*
 	 * Return the station the car joined to.
 	 */
+	@Readonly
 	public ChargingStation getCurrentStation(){
 		return this.currentChargingStation;
 	};
@@ -191,6 +218,7 @@ public abstract class Car {
 	 * Leave station since the current station isn't suitable anymore. Set car state
 	 * to looking.
 	 */
+	@Mutable
 	public void leaveStationQueue(){
 		setCurrState(CarState.looking);
 		currentChargingStation.leaveStationQueue(this);
@@ -200,6 +228,7 @@ public abstract class Car {
 	/*
 	 * Leave station since the car is charged. Set car state to charged.
 	 */
+	@Mutable
 	public void leaveStation(){
 		currState = CarState.charged;
 		currentChargingStation.leaveStation(this);
@@ -210,6 +239,7 @@ public abstract class Car {
 	 * Car leaves map as no suitable station is available. Set state to charged!
 	 * We'll change this later and handle it better. But for now, it should suffice.
 	 */
+	@Mutable
 	public void leaveMap(){
 		currState = CarState.charged;
 		System.out.println(
@@ -220,6 +250,7 @@ public abstract class Car {
 	/*
 	 * Add the amount of fuel to the car's current capacity.
 	 */
+	@Mutable
 	public void addFuel(double amount)
 	{
 		currentCapacity += amount;
@@ -228,6 +259,7 @@ public abstract class Car {
 	/*
 	 * Returns the amount of fuel that is missing until the tank is full
 	 */
+	@Readonly
 	public float getMissingAmountOfFuel()
 	{
 		return tankCapacity - currentCapacity;

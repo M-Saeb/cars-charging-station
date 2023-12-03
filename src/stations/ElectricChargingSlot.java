@@ -1,5 +1,6 @@
 package stations;
 
+import annotations.Mutable;
 import car.ElectricCar;
 import exceptions.ChargingSlotFullException;
 
@@ -8,10 +9,12 @@ public class ElectricChargingSlot extends ChargingSlot {
         super(chargingStation, id);
     }
 
+    @Mutable
     public void connectCar(ElectricCar car) throws ChargingSlotFullException {
         super.connectCar(car);
     }
 
+    @Mutable
     public void chargeCar() {
         this.currentCar.addFuel(this.chargingStation.getElectricityOutputPerSecond());
     }

@@ -1,11 +1,14 @@
 package api;
 
-import stations.ChargingStation;
-import car.*;
-
 import java.lang.Math;
 import java.util.Arrays;
 import java.util.Comparator;
+
+import annotations.Readonly;
+import annotations.Mutable;
+
+import stations.ChargingStation;
+import car.*;
 
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
@@ -50,7 +53,7 @@ public class LocationAPI
     }
     
 
-
+    @Readonly
 	public ChargingStation[] getChargingStation() {
 		return class_chargingStation;
 	}
@@ -64,6 +67,7 @@ public class LocationAPI
     Note:
     Important to use before 'calculateNearestStation'
      */
+    @Mutable
     public void setChargingStations(ChargingStation[] varChargingStation)
     {
         this.class_chargingStation = varChargingStation;
@@ -77,6 +81,7 @@ public class LocationAPI
     Return: Nearest Charging Station ID
      */
     @SuppressWarnings("unused")
+    @Readonly
 	protected static int[] sortNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_carObject) throws InvalidGPSObject
     {
         float LattitudDiff = gpsValues.getLatitude();
@@ -133,6 +138,7 @@ public class LocationAPI
     -varArrStations[] -> array or list of all the stations in the area
     Return: Nearest Charging Station ID
      */
+    @Readonly
     public static ChargingStation[] calculateNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_car)
     {
         int[] varSortedArray = new int[class_chargingStation.length];
@@ -172,6 +178,7 @@ public class LocationAPI
     Return:
     - void
      */
+    @Readonly
 	public static void checkGPSValues(GPSValues gpsValues)
         throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
 		float latitude = gpsValues.getLatitude();
@@ -195,6 +202,7 @@ public class LocationAPI
     Return:
     - Sorted list of available stations order from closest to farthest away
      */
+    @Readonly
     public static void printArray(ChargingStation[] array) {
         for (ChargingStation station : array) {
             System.out.println(station);
