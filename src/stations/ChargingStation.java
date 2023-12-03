@@ -344,7 +344,7 @@ public class ChargingStation
 		totalWaitingTime += getWaitingTimeForNextSlotElectric();
 
 		// Checking if there are cars in the queue, otherwise returning
-		if(queue.size() == 0)
+		if(queue.isEmpty())
 		{
 			return totalWaitingTime;
 		}
@@ -388,7 +388,7 @@ public class ChargingStation
 		totalWaitingTime += getWaitingTimeForNextSlotGas();
 
 		// Checking if there are cars in the queue, otherwise returning
-		if(queue.size() == 0)
+		if(queue.isEmpty())
 		{
 			return totalWaitingTime;
 		}
@@ -427,6 +427,29 @@ public class ChargingStation
 
 	public void addCarToQueue(Car car)
 	{
+		//Adding it and returning, if the queue is empty
+		if(queue.isEmpty())
+		{
+			queue.add(car);
+			return;
+		}
+		
+		
+		//If car is prioritized, add it after the last prioritized car
+		if(car.isPriority())
+		{
+			
+			for(int i = 0; i < queue.size(); i++)
+			{
+				if(!queue.get(i).isPriority())
+				{
+					queue.add(i, car);
+					return;
+				}
+			}
+		}
+		
+		//Otherwise add normal
 		queue.add(car);
 	}
 
