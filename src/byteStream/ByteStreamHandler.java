@@ -4,13 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.LogRecord;
-import java.util.Date;
+import java.util.logging.StreamHandler;
 
-public class ByteStreamHandler extends Handler
+public class ByteStreamHandler extends StreamHandler
 {
 	FileOutputStream file = null;
 	
@@ -46,6 +43,7 @@ public class ByteStreamHandler extends Handler
 
     @Override
     public void close() throws SecurityException {
+		super.close();
     	try {
 			this.file.close();
 		} catch (IOException e) {
@@ -66,16 +64,9 @@ public class ByteStreamHandler extends Handler
     @Override
     public void publish(LogRecord arg0) 
     {
-        Date timestamp = new Date();
-        String timestampString = "[" + timestamp.toString() + "] ";
-	    
         byte[] logBytes = getFormatter().format(arg0).getBytes();
-        
+        super.publish(arg0);
     	try {
-			file.write(10);
-	    	file.write(timestampString.getBytes());
-	    	file.write(10);
-        	/* Add the exact text to add into the log */
 	    	file.write(logBytes);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
