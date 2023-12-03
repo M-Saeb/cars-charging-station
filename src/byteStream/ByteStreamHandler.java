@@ -8,7 +8,6 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.StreamHandler;
 
 public class ByteStreamHandler extends Handler
 {
