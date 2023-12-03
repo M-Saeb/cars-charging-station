@@ -31,6 +31,7 @@
 			<productionReady>false</productionReady>
 			<description>This is a prototype version of the charging station project</description>
 		</projectVersion>
+		<projectCategory>Education</projectCategory>
 		<description>
 			A simulation system where we have car with 2 fuel types (gas and electric)
 			and charging stations with 2 fuel types.
