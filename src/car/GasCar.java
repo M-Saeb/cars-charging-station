@@ -1,7 +1,6 @@
 package car;
 import api.GPSValues;
 import api.LocationAPI;
-import exceptions.ChargingStationNotFoundException;
 import stations.ChargingStation;
 
 public class GasCar extends Car

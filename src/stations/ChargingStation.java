@@ -190,14 +190,109 @@ public class ChargingStation
 	public void setLevelOfGasStorage(float levelOfGasStorage) {
 		LevelOfGasStorage = levelOfGasStorage;
 	}
+	
+    /*
+     * Private function for getting the waiting time for the next free electric slot
+     */
+    private double getWaitingTimeForNextSlotElectric()
+    {
+    	double waitingTime = 0;
+    	
+    	for(ElectricChargingSlot slot : electricSlots)
+    	{
+    		if(slot.getCurrentCar() == null)
+    		{
+    			continue;
+    		}
+    		
+    		double waitingTimeOfCurrCar = slot.getCurrentCar().getChargingTime(this);
+    		
+    		if(waitingTime == 0)
+    		{
+    			waitingTime = waitingTimeOfCurrCar;
+    			continue;
+    		}
+    		
+    		if(waitingTimeOfCurrCar < waitingTime)
+    		{
+    			waitingTime = waitingTimeOfCurrCar;
+    		}
+    	}
+    	
+    	return waitingTime;
+    }
+    
+    /*
+     * Private function for getting the waiting time for the next free gas slot
+     */
+    private double getWaitingTimeForNextSlotGas()
+    {
+    	double waitingTime = 0;
+    	
+    	for(GasChargingSlot slot : gasSlots)
+    	{
+    		if(slot.getCurrentCar() == null)
+    		{
+    			continue;
+    		}
+    		
+    		double waitingTimeOfCurrCar = slot.getCurrentCar().getChargingTime(this);
+    		
+    		if(waitingTime == 0)
+    		{
+    			waitingTime = waitingTimeOfCurrCar;
+    			continue;
+    		}
+    		
+    		if(waitingTimeOfCurrCar < waitingTime)
+    		{
+    			waitingTime = waitingTimeOfCurrCar;
+    		}
+    	}
+    	
+    	return waitingTime;
+    }
 
     /*
     This should get the waiting time for a specific car in qeueue
     It should consider the waiting time + the charging times of the cars
     in front of that car.
      */
-    public double getCarWaitingTime(Car car){ return 0.0; };
-
+    public double getCarWaitingTime(Car car)
+    {
+    	double waitingTime = 0;
+    	
+    	if(car instanceof ElectricCar)
+    	{
+    		waitingTime += getWaitingTimeForNextSlotElectric();
+    	}
+    	else if(car instanceof GasCar)
+    	{
+    		waitingTime += getWaitingTimeForNextSlotGas();
+    	}
+    	
+    	for(Car queueCar : queue )
+    	{
+    		//Checking if the car that the time is calculated for is equal to the car at the position of the queue
+    		if(car == queueCar)
+    		{
+    			break;
+    		}
+    		
+    		if(car instanceof ElectricCar && queueCar instanceof ElectricCar)
+    		{
+    			waitingTime += queueCar.getChargingTime(this);
+    		}
+    		else if(car instanceof GasCar && queueCar instanceof ElectricCar)
+    		{
+    			waitingTime += queueCar.getChargingTime(this);
+    		}
+    	}
+    	
+    	return waitingTime;
+    }
+    
+    
     /*
     This should get the total waiting time of the station.
     It should consider the waiting time + the charging times of the cars
@@ -214,15 +309,7 @@ public class ChargingStation
     		}
     	}
     	
-    	for(ElectricChargingSlot slot : electricSlots)
-    	{
-    		if(slot.getCurrentCar() == null)
-    		{
-    			continue;
-    		}
-    		
-    		totalWaitingTime += slot.getCurrentCar().getChargingTime(this);
-    	}
+    	totalWaitingTime += getWaitingTimeForNextSlotElectric();
     	
     	return totalWaitingTime;
     }
@@ -238,15 +325,7 @@ public class ChargingStation
     		}
     	}
     	
-    	for(GasChargingSlot slot : gasSlots)
-    	{
-    		if(slot.getCurrentCar() == null)
-    		{
-    			continue;
-    		}
-    		
-    		totalWaitingTime += slot.getCurrentCar().getChargingTime(this);
-    	}
+    	totalWaitingTime += getWaitingTimeForNextSlotGas();
     	
     	return totalWaitingTime;
     }
@@ -264,6 +343,7 @@ public class ChargingStation
     {
     	queue.remove(car);
     }
+    
     /*
      * Disonnect car from slot.
      */
