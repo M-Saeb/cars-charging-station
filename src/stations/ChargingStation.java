@@ -1,4 +1,5 @@
 package stations;
+
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
@@ -17,86 +18,103 @@ import exceptions.InvalidGPSValueException;
 
 public class ChargingStation
 {
-    /*
-    GPS location from every charging station.
-    This value can be sent to the other types of station from this super class
-     */
-    private GPSValues gpsValues;
+	/*
+	 * GPS location from every charging station. This value can be sent to the other
+	 * types of station from this super class
+	 */
+	private GPSValues gpsValues;
 
-	/*Amount of available slot per charging station*/
-    private int numberOfAvailableSlots;
-    
-    private int chargingStationID;
-    private float gasOutputPerSecond;
-    private float electricityOutputPerSecond;
-    private Logger logger;
-    private GasChargingSlot[] gasSlots;
-    private ElectricChargingSlot[] electricSlots;
-    private float LevelOfElectricityStorage;
+	/* Amount of available slot per charging station */
+	private int numberOfAvailableSlots;
+
+	private int chargingStationID;
+	private float gasOutputPerSecond;
+	private float electricityOutputPerSecond;
+	private Logger logger;
+	private GasChargingSlot[] gasSlots;
+	private ElectricChargingSlot[] electricSlots;
+	private float LevelOfElectricityStorage;
 	private float LevelOfGasStorage;
     private ArrayList<Car> queue = new ArrayList<Car>();
     private float waitTime = 0;
 
 	@APIMethod
-    public ChargingStation(int chargingStationID, GPSValues gpsValues, int numGasSlots, int numElectricSlots, float gasOutputPerSecondoutputPerSecond, float electricityOutputPerSecond)
-	throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
-		/* Testing doc line 001 */
-    	this.logger = Logger.getLogger(this.toString());
-    	this.chargingStationID = chargingStationID;
-    	try {
-    		LocationAPI.checkGPSValues(gpsValues);
-    	} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e) {
-    		this.logger.severe(e.getStackTrace().toString());
-    		throw e;
-    	} catch (Exception e) {
-    		this.logger.severe(e.getStackTrace().toString());
-    		throw e;
-    	}
-    	this.gpsValues = gpsValues;
+	public ChargingStation(int chargingStationID, GPSValues gpsValues, int numGasSlots, int numElectricSlots,
+			float gasOutputPerSecondoutputPerSecond, float electricityOutputPerSecond)
+			throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException
+	{
+		this.logger = Logger.getLogger(this.toString());
+		this.chargingStationID = chargingStationID;
+		try
+		{
+			LocationAPI.checkGPSValues(gpsValues);
+		} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e)
+		{
+			this.logger.severe(e.getStackTrace().toString());
+			throw e;
+		} catch (Exception e)
+		{
+			this.logger.severe(e.getStackTrace().toString());
+			throw e;
+		}
+		this.gpsValues = gpsValues;
 
-    	this.gasSlots = new GasChargingSlot[numGasSlots];
-    	this.electricSlots = new ElectricChargingSlot[numElectricSlots];
-    	
-    	this.setNumberOfAvailableSlots(numGasSlots + numElectricSlots);
-        if ((numGasSlots == 0) && (numElectricSlots == 0)){
-            throw new IllegalArgumentException("Station can't have 0 slots");
-        } else if (numGasSlots < 0) {
-            throw new IllegalArgumentException("Station can't have fewer than 0 gas slots.");
-        } else if (numElectricSlots < 0){
-            throw new IllegalArgumentException("Station can't have fewer than 0 electirc slots.");
-        }
+		this.gasSlots = new GasChargingSlot[numGasSlots];
+		this.electricSlots = new ElectricChargingSlot[numElectricSlots];
 
-        int slotIDs = 0;
-        if (numGasSlots > 0){
-            GasChargingSlot[] myGasSlots = new GasChargingSlot[numGasSlots];
-            for (int i=0;i < numGasSlots; i++) {
-                myGasSlots[i] = new GasChargingSlot(this, slotIDs++);
-            }
-            this.gasSlots = myGasSlots;
-        }
-        if (numElectricSlots > 0){
-            ElectricChargingSlot[] myElectricSlots = new ElectricChargingSlot[numElectricSlots];
-            for (int i=0;i < numElectricSlots; i++) {
-                myElectricSlots[i] = new ElectricChargingSlot(this, slotIDs++);
-            }
-            this.electricSlots = myElectricSlots;
-        }
+		this.setNumberOfAvailableSlots(numGasSlots + numElectricSlots);
+		if((numGasSlots == 0) && (numElectricSlots == 0))
+		{
+			throw new IllegalArgumentException("Station can't have 0 slots");
+		}
+		else if(numGasSlots < 0)
+		{
+			throw new IllegalArgumentException("Station can't have fewer than 0 gas slots.");
+		}
+		else if(numElectricSlots < 0)
+		{
+			throw new IllegalArgumentException("Station can't have fewer than 0 electirc slots.");
+		}
 
+		int slotIDs = 0;
+		if(numGasSlots > 0)
+		{
+			GasChargingSlot[] myGasSlots = new GasChargingSlot[numGasSlots];
+			for (int i = 0; i < numGasSlots; i++)
+			{
+				myGasSlots[i] = new GasChargingSlot(this, slotIDs++);
+			}
+			this.gasSlots = myGasSlots;
+		}
+		if(numElectricSlots > 0)
+		{
+			ElectricChargingSlot[] myElectricSlots = new ElectricChargingSlot[numElectricSlots];
+			for (int i = 0; i < numElectricSlots; i++)
+			{
+				myElectricSlots[i] = new ElectricChargingSlot(this, slotIDs++);
+			}
+			this.electricSlots = myElectricSlots;
+		}
 
-    	if (gasOutputPerSecondoutputPerSecond < 0 || electricityOutputPerSecond < 0) {
-    		throw new IllegalArgumentException("Charging station output can't be fewer than 0.");
-    	}
-        if (numGasSlots == 0 && gasOutputPerSecondoutputPerSecond > 0){
-            throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
-        } else if (numElectricSlots == 0 && electricityOutputPerSecond > 0){
-            throw new IllegalArgumentException("Station can't have 0 electricty slots and still have electrity output potential.");
-        }
-    	this.gasOutputPerSecond = gasOutputPerSecondoutputPerSecond;
-        this.electricityOutputPerSecond = electricityOutputPerSecond;
-    	
-    	
-    	this.logger.fine("Initiated " + this.toString());
-    }
+		if(gasOutputPerSecondoutputPerSecond < 0 || electricityOutputPerSecond < 0)
+		{
+			throw new IllegalArgumentException("Charging station output can't be fewer than 0.");
+		}
+		if(numGasSlots == 0 && gasOutputPerSecondoutputPerSecond > 0)
+		{
+			throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
+		}
+		else if(numElectricSlots == 0 && electricityOutputPerSecond > 0)
+		{
+			throw new IllegalArgumentException(
+					"Station can't have 0 electricty slots and still have electrity output potential.");
+		}
+		this.gasOutputPerSecond = gasOutputPerSecondoutputPerSecond;
+		this.electricityOutputPerSecond = electricityOutputPerSecond;
+
+		this.logger.fine("Initiated " + this.toString());
+	}
+
     
 	@Mutable
 	public void addCar(Car car){
@@ -269,21 +287,24 @@ public class ChargingStation
 	@Mutable
     public void leaveStation(Car car){
 		ChargingSlot stationSlots[];
-		if (car instanceof ElectricCar){
+		if(car instanceof ElectricCar)
+		{
 			stationSlots = this.electricSlots;
-		} else { // GasCar
+		}
+		else
+		{ // GasCar
 			stationSlots = this.gasSlots;
 		}
-		for (ChargingSlot slot: stationSlots){
-			if (slot.currentCar == car){
+		for (ChargingSlot slot : stationSlots)
+		{
+			if(slot.currentCar == car)
+			{
 				slot.disconnectCar();
 			}
 			return;
 		}
-		logger.severe(
-			"Something went wrong: you order car numbered  " + car.getCarNumber() + 
-			" out of the station, but the car is not in the station"
-		);
+		logger.severe("Something went wrong: you order car numbered  " + car.getCarNumber()
+				+ " out of the station, but the car is not in the station");
 	}
 
     /*
@@ -293,39 +314,51 @@ public class ChargingStation
     public void sendCarsToFreeSlots(){
 		/* get the currently free slots */
 		ArrayList<ChargingSlot> freeSlots = new ArrayList<ChargingSlot>();
-		for (ElectricChargingSlot slot: electricSlots){
-			if (slot.currentCar == null){
+		for (ElectricChargingSlot slot : electricSlots)
+		{
+			if(slot.currentCar == null)
+			{
 				freeSlots.add(slot);
 			}
 		}
-		for (GasChargingSlot slot: gasSlots){
-			if (slot.currentCar == null){
+		for (GasChargingSlot slot : gasSlots)
+		{
+			if(slot.currentCar == null)
+			{
 				freeSlots.add(slot);
 			}
 		}
 
 		/* updating each free slot */
-		for (ChargingSlot slot: freeSlots){
+		for (ChargingSlot slot : freeSlots)
+		{
 
 			/* getting the type (class) of the slot */
 			Class<?> acceptedCarType;
-			if (slot instanceof ElectricChargingSlot){
+			if(slot instanceof ElectricChargingSlot)
+			{
 				acceptedCarType = ElectricCar.class;
-			} else { // GasCharingSlot
+			}
+			else
+			{ // GasCharingSlot
 				acceptedCarType = GasCar.class;
 			}
 
-			/* 
-			checking which is the first car in the qeueue to have
-			the same fuel as the slot 
-			*/
-			for (Car car: queue){
-				if(car.getClass() == acceptedCarType){
-					try{
+			/*
+			 * checking which is the first car in the qeueue to have the same fuel as the
+			 * slot
+			 */
+			for (Car car : queue)
+			{
+				if(car.getClass() == acceptedCarType)
+				{
+					try
+					{
 						slot.connectCar(car);
 						queue.remove(car);
 						break;
-					} catch (ChargingSlotFullException e) {
+					} catch (ChargingSlotFullException e)
+					{
 						break;
 					}
 				}
@@ -413,7 +446,7 @@ public class ChargingStation
 				pendingUsedElectricity += queue.get(i).getMissingAmountOfFuel();
 			}
 		}
-    	
+
 		return LevelOfElectricityStorage - pendingUsedElectricity;
     }
 
@@ -437,7 +470,7 @@ public class ChargingStation
 				pendingUsedGas += queue.get(i).getMissingAmountOfFuel();
 			}
 		}
-    	
+
 		return LevelOfGasStorage - pendingUsedGas;
-    }
+	}
 }

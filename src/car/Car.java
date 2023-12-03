@@ -6,9 +6,13 @@ import annotations.Readonly;
 import annotations.APIMethod;
 import annotations.Mutable;
 import exceptions.ChargingStationNotFoundException;
+import exceptions.InvalidGPSValueException;
 import stations.ChargingStation;
 
-public abstract class Car {
+public abstract class Car
+{
+
+	private final double FEASIBLE_WAITING_TIME = 900.0;
 	
 	protected String carNumber;
 	private float currentCapacity;
@@ -18,20 +22,26 @@ public abstract class Car {
 	protected GPSValues currentGPS;
 	private ChargingStation currentChargingStation;
 	private CarState currState;
-	
+	private boolean priorityFlag;
+
 	public Car(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api,
-			GPSValues currentGPS) {
+			GPSValues currentGPS)
+	{
 		this.carNumber = carNumber;
 		this.currentCapacity = currentCapacity;
 		this.tankCapacity = tankCapacity;
 		this.waitDuration = waitDuration;
 		this.api = api;
 		this.currentGPS = currentGPS;
-		if (currentCapacity < tankCapacity){
+		if(currentCapacity < tankCapacity)
+		{
 			this.currState = CarState.looking;
-		} else {
+		}
+		else
+		{
 			this.currState = CarState.charged;
 		}
+		this.priorityFlag = false;
 	}
 
 	@Readonly
@@ -91,7 +101,18 @@ public abstract class Car {
 	public void setCurrState(CarState currState) {
 		this.currState = currState;
 	}
+
 	
+	public boolean isPriority()
+	{
+		return priorityFlag;
+	}
+
+	public void setPriorityFlag(boolean priorityFlag)
+	{
+		this.priorityFlag = priorityFlag;
+	}
+
 	/*
 	 * This method should return the nearest charging station based on the following
 	 * criteria and order: - Location of the station (nearest is better) - Waiting
@@ -102,40 +123,53 @@ public abstract class Car {
 	@APIMethod
 	public ChargingStation getNearestFreeChargingStation() throws ChargingStationNotFoundException {
 		// Getting the nearest station from the LocationAPI
-		ChargingStation[] nearestStations = LocationAPI.calculateNearestStation(currentGPS, api.getChargingStation(), this);
+		ChargingStation[] nearestStations;
+		try
+		{
+			nearestStations = LocationAPI.calculateNearestStation(currentGPS, api.getChargingStation(), this);
+		} catch (InvalidGPSValueException e)
+		{
+			throw new ChargingStationNotFoundException(
+					"Car: " + carNumber + "; LocationAPI returned no close stations.");
+		}
 
 		// Checking if it returned any stations. Throwing exception when not
-		if (nearestStations.length == 0) {
+		if(nearestStations.length == 0)
+		{
 			throw new ChargingStationNotFoundException(
 					"Car: " + carNumber + "; LocationAPI returned no close stations.");
 		}
 
 		// Iterating over the found stations and checking for empty slots and if the
 		// type is matching
-		for (int i = 0; i < nearestStations.length; i++) {
+		for (int i = 0; i < nearestStations.length; i++)
+		{
 			double totalWaitingTime;
 			float tankLeftOver;
+			ChargingStation currentStation = nearestStations[i];
 			if (this instanceof ElectricCar){
-				ChargingStation currentStation = nearestStations[i];
 				if (currentStation == null){
 					continue;
 				}
 				totalWaitingTime = currentStation.getTotalWaitingTimeElectric();
 				tankLeftOver = currentStation.getTotalLeftoverElectricity();
 
-			} else{ // GasCar
-				totalWaitingTime = nearestStations[i].getTotalWaitingTimeGas();
-				tankLeftOver = nearestStations[i].getTotalLeftoverGas();
+			}
+			else
+			{ // GasCar
+				totalWaitingTime = currentStation.getTotalWaitingTimeGas(this);
+				tankLeftOver = currentStation.getTotalLeftoverGas();
 			}
 
-			if (totalWaitingTime >= this.waitDuration) {
+			if(totalWaitingTime >= this.waitDuration)
+			{
 				continue;
 			}
 			if(tankLeftOver < getMissingAmountOfFuel())
 			{
 				continue;
 			}
-				
+
 			return nearestStations[i];
 		}
 
@@ -155,9 +189,9 @@ public abstract class Car {
 	}
 
 	/*
-	 * A car has 4 states (ENUM implementation): - looking - in queue -
-	 * charging - charged The following methods return boolean values corrresponding
-	 * to its state.
+	 * A car has 4 states (ENUM implementation): - looking - in queue - charging -
+	 * charged The following methods return boolean values corrresponding to its
+	 * state.
 	 */
 	@Readonly
 	public boolean isLooking()
@@ -204,7 +238,17 @@ public abstract class Car {
 	 * still feasible. This is required since priority cars could jump in line or
 	 * station could run out of fuel till the car's turn is up for whatever reason.
 	 */
-	abstract public boolean checkCurrentStation();
+	public boolean checkCurrentStation()
+	{
+		if(currentChargingStation.getCarWaitingTime(this) > FEASIBLE_WAITING_TIME)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
 
 	/*
 	 * Return the station the car joined to.
@@ -243,8 +287,7 @@ public abstract class Car {
 	public void leaveMap(){
 		currState = CarState.charged;
 		System.out.println(
-			"Car numbered " + carNumber + " because it couldn't find station with acceptable waiting time"
-		);
+				"Car numbered " + carNumber + " because it couldn't find station with acceptable waiting time");
 	};
 
 	/*
@@ -255,7 +298,7 @@ public abstract class Car {
 	{
 		currentCapacity += amount;
 	}
-	
+
 	/*
 	 * Returns the amount of fuel that is missing until the tank is full
 	 */
