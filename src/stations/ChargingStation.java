@@ -248,11 +248,11 @@ public class ChargingStation
 		}
 		for (ChargingSlot slot: stationSlots){
 			if (slot.currentCar == car){
-				slot.currentCar = null;
+				slot.disconnectCar();
 			}
 			return;
 		}
-		System.out.println(
+		logger.severe(
 			"Something went wrong: you order car numbered  " + car.getCarNumber() + 
 			" out of the station, but the car is not in the station"
 		);

@@ -7,9 +7,9 @@ import stations.ChargingStation;
 public class GasCar extends Car
 {
 
-	public GasCar(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api, GPSValues currentGPS, CarState currState)
+	public GasCar(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api, GPSValues currentGPS)
 	{
-		super(carNumber, currentCapacity, tankCapacity, waitDuration, api, currentGPS, currState);
+		super(carNumber, currentCapacity, tankCapacity, waitDuration, api, currentGPS);
 	}
 
 	@Override

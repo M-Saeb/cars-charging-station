@@ -17,14 +17,18 @@ public abstract class Car {
 	private CarState currState;
 	
 	public Car(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api,
-			GPSValues currentGPS, CarState currState) {
+			GPSValues currentGPS) {
 		this.carNumber = carNumber;
 		this.currentCapacity = currentCapacity;
 		this.tankCapacity = tankCapacity;
 		this.waitDuration = waitDuration;
 		this.api = api;
 		this.currentGPS = currentGPS;
-		this.currState = currState;
+		if (currentCapacity < tankCapacity){
+			this.currState = CarState.looking;
+		} else {
+			this.currState = CarState.charged;
+		}
 	}
 
 	public float getCurrentCapacity() {
@@ -188,6 +192,7 @@ public abstract class Car {
 	 * to looking.
 	 */
 	public void leaveStationQueue(){
+		setCurrState(CarState.looking);
 		currentChargingStation.leaveStationQueue(this);
 		currentChargingStation = null;
 	};
