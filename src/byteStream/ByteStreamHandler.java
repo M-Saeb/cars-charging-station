@@ -72,10 +72,6 @@ public class ByteStreamHandler extends Handler
         byte[] logBytes = getFormatter().format(arg0).getBytes();
         
     	try {
-        	for(int i = 0; i < 20; i++)
-        	{
-        		file.write(45);
-        	}
 			file.write(10);
 	    	file.write(timestampString.getBytes());
 	    	file.write(10);
