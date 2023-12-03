@@ -38,6 +38,7 @@ public class ChargingStation
 	private ArrayList<Car> queue = new ArrayList<Car>();
 	private float waitTime = 0;
 
+	@APIMethod
 	public ChargingStation(int chargingStationID, GPSValues gpsValues, int numGasSlots, int numElectricSlots,
 			float gasOutputPerSecondoutputPerSecond, float electricityOutputPerSecond)
 			throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException
@@ -114,6 +115,7 @@ public class ChargingStation
 		this.logger.fine("Initiated " + this.toString());
 	}
 
+	@Mutable
 	public void addCar(Car car)
 	{
 		// add this car to queue
@@ -121,16 +123,19 @@ public class ChargingStation
 		// calcualte new wait time
 	}
 
+	@Readonly
 	public String toString()
 	{
 		return String.format("Charging Station %d", this.chargingStationID);
 	}
 
+	@Readonly
 	public float getWaitTime()
 	{
 		return waitTime;
 	}
 
+	@Readonly
 	public float getGPSLatitude() throws InvalidGPSValueException
 	{
 		if(this.gpsValues.getLatitude() == 0)
@@ -153,6 +158,7 @@ public class ChargingStation
 		return this.gpsValues.getLatitude();
 	}
 
+	@Readonly
 	public float getGPSLongitude() throws InvalidGPSValueException
 	{
 		if(this.gpsValues.getLongitude() == 0)
@@ -175,61 +181,73 @@ public class ChargingStation
 		return this.gpsValues.getLongitude();
 	}
 
+	@Readonly
 	public int getNumberOfAvailableSlots()
 	{
 		return numberOfAvailableSlots;
 	}
 
+	@Readonly
 	public int getAvailableGasSlots()
 	{
 		return gasSlots.length;
 	}
 
+	@Readonly
 	public int getAvailableElectricSlots()
 	{
 		return electricSlots.length;
 	}
 
+	@Mutable
 	public void setNumberOfAvailableSlots(int availableSlots)
 	{
 		this.numberOfAvailableSlots = availableSlots;
 	}
 
+	@Mutable
 	public void setChargingStationID(int chargingStationID)
 	{
 		this.chargingStationID = chargingStationID;
 	}
 
+	@Readonly
 	public int getChargingStationID()
 	{
 		return chargingStationID;
 	}
 
+	@Readonly
 	public float getGasOutputPerSecond()
 	{
 		return gasOutputPerSecond;
 	}
 
+	@Readonly
 	public float getElectricityOutputPerSecond()
 	{
 		return electricityOutputPerSecond;
 	}
 
+	@Readonly
 	public float getLevelOfElectricityStorage()
 	{
 		return LevelOfElectricityStorage;
 	}
 
+	@Mutable
 	public void setLevelOfElectricityStorage(float levelOfElectricityStorage)
 	{
 		LevelOfElectricityStorage = levelOfElectricityStorage;
 	}
 
+	@Readonly
 	public float getLevelOfGasStorage()
 	{
 		return LevelOfGasStorage;
 	}
 
+	@Mutable
 	public void setLevelOfGasStorage(float levelOfGasStorage)
 	{
 		LevelOfGasStorage = levelOfGasStorage;
@@ -238,6 +256,7 @@ public class ChargingStation
 	/*
 	 * Private function for getting the waiting time for the next free electric slot
 	 */
+	@Readonly
 	private double getWaitingTimeForNextSlotElectric()
 	{
 		double waitingTime = 0;
@@ -269,6 +288,7 @@ public class ChargingStation
 	/*
 	 * Private function for getting the waiting time for the next free gas slot
 	 */
+	@Readonly
 	private double getWaitingTimeForNextSlotGas()
 	{
 		double waitingTime = 0;
@@ -302,6 +322,7 @@ public class ChargingStation
 	 * consider the waiting time + the charging times of the cars in front of that
 	 * car.
 	 */
+	@Readonly
 	public double getCarWaitingTime(Car car)
 	{
 		double waitingTime = 0;
@@ -340,6 +361,7 @@ public class ChargingStation
 	 * This should get the total waiting time of the station. It should consider the
 	 * waiting time + the charging times of the cars in the queue.
 	 */
+	@Readonly
 	public double getTotalWaitingTimeElectric(Car car)
 	{
 		double totalWaitingTime = 0;
@@ -384,6 +406,7 @@ public class ChargingStation
 		return totalWaitingTime;
 	}
 
+	@Readonly
 	public double getTotalWaitingTimeGas(Car car)
 	{
 		double totalWaitingTime = 0;
@@ -428,6 +451,7 @@ public class ChargingStation
 		return totalWaitingTime;
 	}
 
+	@Mutable
 	public void addCarToQueue(Car car)
 	{
 		//Adding it and returning, if the queue is empty
@@ -459,6 +483,7 @@ public class ChargingStation
 	/*
 	 * Remove car from station queue.
 	 */
+	@Mutable
 	public void leaveStationQueue(Car car)
 	{
 		queue.remove(car);
@@ -467,6 +492,7 @@ public class ChargingStation
 	/*
 	 * Disonnect car from slot.
 	 */
+	@Mutable
 	public void leaveStation(Car car)
 	{
 		ChargingSlot stationSlots[];
@@ -493,6 +519,7 @@ public class ChargingStation
 	/*
 	 * Send cars in queue to free slots and set their state to charging.
 	 */
+	@Mutable
 	public void sendCarsToFreeSlots()
 	{
 		/* get the currently free slots */
@@ -554,6 +581,7 @@ public class ChargingStation
 	 * only gets full and not more than that. If a car's tank is already full, do
 	 * nothing.
 	 */
+	@Mutable
 	public void chargeCarsInSlots()
 	{
 		for (ElectricChargingSlot chargingSlot : electricSlots)
@@ -607,6 +635,7 @@ public class ChargingStation
 		}
 	}
 
+	@Readonly
 	public float getTotalLeftoverElectricity()
 	{
 		int pendingUsedElectricity = 0;
@@ -627,6 +656,7 @@ public class ChargingStation
 		return LevelOfElectricityStorage - pendingUsedElectricity;
 	}
 
+	@Readonly
 	public float getTotalLeftoverGas()
 	{
 		int pendingUsedGas = 0;
