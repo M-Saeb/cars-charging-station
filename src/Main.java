@@ -32,7 +32,7 @@ public class Main {
 			Logger.getAnonymousLogger().severe("Could not load default logging.properties file");
 			Logger.getAnonymousLogger().severe(e.getMessage());
 		}
-		Logger.getLogger("").addHandler(new ByteStreamHandler("logs/byteStreamLogs%u.log"));
+		Logger.getLogger("").addHandler(new ByteStreamHandler("logs/byteStreamLog.log"));
 
 	}
 
