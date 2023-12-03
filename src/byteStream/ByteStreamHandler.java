@@ -69,7 +69,7 @@ public class ByteStreamHandler extends Handler
         Date timestamp = new Date();
         String timestampString = "[" + timestamp.toString() + "] ";
 	    
-        byte[] logBytes = arg0.getMessage().getBytes();
+        byte[] logBytes = getFormatter().format(arg0).getBytes();
         
     	try {
         	for(int i = 0; i < 20; i++)
