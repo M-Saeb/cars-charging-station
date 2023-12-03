@@ -21,27 +21,18 @@ public class LocationAPI
     ChargingStation[] class_chargingStation;
     Car class_carCar;
 
-    /*
-    Constructor for the API object
-    Input:
-    - ChargingStation[] -> List of objects called 'ChargingStation' that will be available/existing in the area
-     */
     public LocationAPI(ChargingStation[] class_chargingStation)
     {
         this.class_chargingStation = class_chargingStation;
     }
-    /*
-    Constructor for the API object
-    Input:
-    - ChargingStation[] -> List of objects called 'ChargingStation' that will be available/existing in the area
-    - Car -> Car object to obtain if the car is an electric or gas vehicle
-     */
+
     public LocationAPI(ChargingStation[] class_chargingStation, Car class_car)
     {
         this.class_chargingStation = class_chargingStation;
         this.class_carCar = class_car;
     }
-    /* 
+
+    /**
      * Constructor that will be able to throw an exception.
      * This will only occurs, when the assignation of the proper
      * constructor it is not called.
@@ -58,29 +49,18 @@ public class LocationAPI
 	public ChargingStation[] getChargingStation() {
 		return class_chargingStation;
 	}
-    /* Local functions */
-    /*
-    Function: setChargingStations
-    Description: Assign the class ChargingStation to the API so all the functions can use this object.
-    Input:
-    -varChargingStation -> List of Charging stations in the area
-    Return: Void
-    Note:
-    Important to use before 'calculateNearestStation'
-     */
+
+    /**
+    * Assign the class ChargingStation to the API so all the functions can use this object.
+    */
     @Mutable
     public void setChargingStations(ChargingStation[] varChargingStation)
     {
         this.class_chargingStation = varChargingStation;
     }
-    /*
-    Function: sortNearestStation
-    Description: Calculate the nearest station regarding the auto current location that is given to the function
-    Input:
-    -varLatitud -> Current coordinates of the car
-    -varLongitud -> Current coordinates of the car
-    Return: Nearest Charging Station ID
-     */
+    /**
+    * Calculate the nearest station regarding the auto current location that is given to the function
+    */
     @SuppressWarnings("unused")
     @Readonly
 	protected static int[] sortNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_carObject) throws InvalidGPSObject, InvalidGPSValueException
@@ -146,14 +126,9 @@ public class LocationAPI
         return sortedArray;
     }
 
-    /*
-    Function: calculateNearestStation
-    Description: Calculate the nearest station regarding the auto current location that is given to the function
-    Input:
-    -varSortedArray[] -> sorted array, so we know the order of the stations
-    -varArrStations[] -> array or list of all the stations in the area
-    Return: Nearest Charging Station ID
-     */
+    /**
+    * Calculate the nearest station regarding the auto current location that is given to the function
+    */
     @Readonly
     public static ChargingStation[] calculateNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_car) throws InvalidGPSValueException
     {
@@ -186,14 +161,9 @@ public class LocationAPI
 
         return sortedStations;
     }
-    /*
-    Function: checkGPSValues
-    Description: Validates that the GPS values are a valid value
-    Input:
-    - List of available Stations
-    Return:
-    - void
-     */
+    /**
+    * Validates that the GPS values are a valid value
+    */
     @Readonly
 	public static void checkGPSValues(GPSValues gpsValues)
         throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
@@ -210,14 +180,9 @@ public class LocationAPI
         }
 		
 	}
-    /*
-    Function: printArray
-    Description: 
-    Input:
-    - List of available Stations
-    Return:
-    - Sorted list of available stations order from closest to farthest away
-     */
+    /**
+    * print the stations in API class
+    */
     @Readonly
     public static void printArray(ChargingStation[] array) {
         for (ChargingStation station : array) {

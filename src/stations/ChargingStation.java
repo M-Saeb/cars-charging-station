@@ -18,13 +18,13 @@ import exceptions.InvalidGPSValueException;
 
 public class ChargingStation
 {
-	/*
+	/**
 	 * GPS location from every charging station. This value can be sent to the other
 	 * types of station from this super class
 	 */
 	private GPSValues gpsValues;
 
-	/* Amount of available slot per charging station */
+	/** Amount of available slot per charging station */
 	private int numberOfAvailableSlots;
 
 	private int chargingStationID;
@@ -253,9 +253,9 @@ public class ChargingStation
 		LevelOfGasStorage = levelOfGasStorage;
 	}
 
-	/*
-	 * Private function for getting the waiting time for the next free electric slot
-	 */
+	/**
+	* Private function for getting the waiting time for the next free electric slot
+	*/
 	@Readonly
 	private double getWaitingTimeForNextSlotElectric()
 	{
@@ -285,9 +285,9 @@ public class ChargingStation
 		return waitingTime;
 	}
 
-	/*
-	 * Private function for getting the waiting time for the next free gas slot
-	 */
+	/**
+ 	* Private function for getting the waiting time for the next free gas slot
+	*/
 	@Readonly
 	private double getWaitingTimeForNextSlotGas()
 	{
@@ -317,7 +317,7 @@ public class ChargingStation
 		return waitingTime;
 	}
 
-	/*
+	/**
 	 * This should get the waiting time for a specific car in queue It should
 	 * consider the waiting time + the charging times of the cars in front of that
 	 * car.
@@ -357,10 +357,10 @@ public class ChargingStation
 		return waitingTime;
 	}
 
-	/*
-	 * This should get the total waiting time of the station. It should consider the
-	 * waiting time + the charging times of the cars in the queue.
-	 */
+	/**
+	* This gets the total waiting time of the station. It considers the
+	* waiting time + the charging times of the cars in the queue.
+	*/
 	@Readonly
 	public double getTotalWaitingTimeElectric(Car car)
 	{
@@ -480,18 +480,18 @@ public class ChargingStation
 		queue.add(car);
 	}
 
-	/*
-	 * Remove car from station queue.
-	 */
+	/**
+	* Remove car from station queue.
+	*/
 	@Mutable
 	public void leaveStationQueue(Car car)
 	{
 		queue.remove(car);
 	}
 
-	/*
-	 * Disonnect car from slot.
-	 */
+	/**
+	* Disonnect car from slot.
+	*/
 	@Mutable
 	public void leaveStation(Car car)
 	{
@@ -516,9 +516,9 @@ public class ChargingStation
 				+ " out of the station, but the car is not in the station");
 	}
 
-	/*
-	 * Send cars in queue to free slots and set their state to charging.
-	 */
+	/**
+	* Send cars in queue to free slots and set their state to charging.
+	*/
 	@Mutable
 	public void sendCarsToFreeSlots()
 	{
@@ -576,11 +576,11 @@ public class ChargingStation
 		}
 	}
 
-	/*
-	 * Add output per second of station to the car's tank. Make sure the car's tank
-	 * only gets full and not more than that. If a car's tank is already full, do
-	 * nothing.
-	 */
+	/**
+	* Add output per second of station to the car's tank. Make sure the car's tank
+	* only gets full and not more than that. If a car's tank is already full, do
+	* nothing.
+	*/
 	@Mutable
 	public void chargeCarsInSlots()
 	{
@@ -642,6 +642,10 @@ public class ChargingStation
 
 		for (int i = 0; i < electricSlots.length; i++)
 		{
+			Car currentCar = electricSlots[i].getCurrentCar();
+			if (currentCar == null){
+				continue;
+			}
 			pendingUsedElectricity += electricSlots[i].getCurrentCar().getMissingAmountOfFuel();
 		}
 
@@ -663,6 +667,10 @@ public class ChargingStation
 
 		for (int i = 0; i < gasSlots.length; i++)
 		{
+			Car currentCar = gasSlots[i].getCurrentCar();
+			if (currentCar == null){
+				continue;
+			}
 			pendingUsedGas += gasSlots[i].getCurrentCar().getMissingAmountOfFuel();
 		}
 

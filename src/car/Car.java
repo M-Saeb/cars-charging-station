@@ -113,7 +113,7 @@ public abstract class Car
 		this.priorityFlag = priorityFlag;
 	}
 
-	/*
+	/**
 	 * This method should return the nearest charging station based on the following
 	 * criteria and order: - Location of the station (nearest is better) - Waiting
 	 * time (station's waiting time should be lower than car's waiting time) -
@@ -176,9 +176,8 @@ public abstract class Car
 		throw new ChargingStationNotFoundException("Car: " + carNumber + " could not find a free station.");
 	}
 
-	/*
-	 * This method will add the car to the station's queue. Also it should set car
-	 * state to in queue.
+	/**
+	 * This method will add the car to the station's queue.
 	 */
 	@Mutable
 	public void joinStationQueue(ChargingStation station)
@@ -188,10 +187,8 @@ public abstract class Car
 		currState = CarState.charging;
 	}
 
-	/*
-	 * A car has 4 states (ENUM implementation): - looking - in queue - charging -
-	 * charged The following methods return boolean values corrresponding to its
-	 * state.
+	/**
+	 * return boolean values corrresponding to if it's in 'looking' state or not.
 	 */
 	@Readonly
 	public boolean isLooking()
@@ -233,10 +230,8 @@ public abstract class Car
 		return false;
 	}
 
-	/*
-	 * Checks the current station the car is in to make sure the waiting time is
-	 * still feasible. This is required since priority cars could jump in line or
-	 * station could run out of fuel till the car's turn is up for whatever reason.
+	/**
+	 * Checks the current station the car is in to make sure the waiting time is still feasible.
 	 */
 	public boolean checkCurrentStation()
 	{
@@ -250,18 +245,17 @@ public abstract class Car
 		}
 	}
 
-	/*
-	 * Return the station the car joined to.
-	 */
+	/**
+	* Return the station the car joined to.
+	*/
 	@Readonly
 	public ChargingStation getCurrentStation(){
 		return this.currentChargingStation;
 	};
 
-	/*
-	 * Leave station since the current station isn't suitable anymore. Set car state
-	 * to looking.
-	 */
+	/**
+	* Leave station since the current station isn't suitable anymore. Set car state to looking.
+	*/
 	@Mutable
 	public void leaveStationQueue(){
 		setCurrState(CarState.looking);
@@ -269,9 +263,9 @@ public abstract class Car
 		currentChargingStation = null;
 	};
 
-	/*
-	 * Leave station since the car is charged. Set car state to charged.
-	 */
+	/**
+	* Leave station since the car is charged. Set car state to charged.
+	*/
 	@Mutable
 	public void leaveStation(){
 		currState = CarState.charged;
@@ -279,10 +273,9 @@ public abstract class Car
 		currentChargingStation = null;
 	};
 
-	/*
-	 * Car leaves map as no suitable station is available. Set state to charged!
-	 * We'll change this later and handle it better. But for now, it should suffice.
-	 */
+	/**
+	* Car leaves map as no suitable station is available. Set state to charged!
+	*/
 	@Mutable
 	public void leaveMap(){
 		currState = CarState.charged;
@@ -290,18 +283,18 @@ public abstract class Car
 				"Car numbered " + carNumber + " because it couldn't find station with acceptable waiting time");
 	};
 
-	/*
-	 * Add the amount of fuel to the car's current capacity.
-	 */
+	/**
+	* Add the amount of fuel to the car's current capacity.
+	*/
 	@Mutable
 	public void addFuel(double amount)
 	{
 		currentCapacity += amount;
 	}
 
-	/*
-	 * Returns the amount of fuel that is missing until the tank is full
-	 */
+	/**
+	* Returns the amount of fuel that is missing until the tank is full
+	*/
 	@Readonly
 	public float getMissingAmountOfFuel()
 	{
