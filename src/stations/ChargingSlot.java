@@ -2,6 +2,8 @@ package stations;
 
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
+
+import byteStream.ByteStreamHandler;
 import car.Car;
 import exceptions.ChargingSlotFullException;
 
@@ -20,6 +22,7 @@ abstract public class ChargingSlot {
 		this.chargingStation = chargingStation;
 		this.id = id;
 		this.logger = Logger.getLogger(this.getClass().getSimpleName() + " " + this.id);
+		this.logger.addHandler(new ByteStreamHandler("logs/byteStreamLog.log"));
 		this.logger.fine("Initiated Charging Slot " + this.id);
 	}
 	
