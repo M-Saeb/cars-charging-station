@@ -2,6 +2,9 @@ package car;
 
 import api.GPSValues;
 import api.LocationAPI;
+import annotations.Readonly;
+import annotations.APIMethod;
+import annotations.Mutable;
 import exceptions.ChargingStationNotFoundException;
 import exceptions.InvalidGPSValueException;
 import stations.ChargingStation;
@@ -41,60 +44,61 @@ public abstract class Car
 		this.priorityFlag = false;
 	}
 
-	public float getCurrentCapacity()
-	{
+	@Readonly
+	public float getCurrentCapacity() {
 		return currentCapacity;
 	}
 
-	public void setCurrentCapacity(float currentCapacity)
-	{
+	@Mutable
+	public void setCurrentCapacity(float currentCapacity) {
 		this.currentCapacity = currentCapacity;
 	}
 
+	@Readonly
 	abstract public float getChargingTime(ChargingStation station);
 
-	public String getCarNumber()
-	{
+	@Readonly
+	public String getCarNumber() {
 		return carNumber;
 	}
 
-	public void setCarNumber(String carNumber)
-	{
+	@Mutable
+	public void setCarNumber(String carNumber) {
 		this.carNumber = carNumber;
 	}
 
-	public float getTankCapacity()
-	{
+	@Readonly
+	public float getTankCapacity() {
 		return tankCapacity;
 	}
 
-	public void setTankCapacity(float tankCapacity)
-	{
+	@Mutable
+	public void setTankCapacity(float tankCapacity) {
 		this.tankCapacity = tankCapacity;
 	}
 
-	public float getWaitDuration()
-	{
+	@Readonly
+	public float getWaitDuration() {
 		return waitDuration;
 	}
 
-	public void setWaitDuration(float waitDuration)
-	{
+	@Mutable
+	public void setWaitDuration(float waitDuration) {
 		this.waitDuration = waitDuration;
 	}
 
-	public LocationAPI getApi()
-	{
+	@Readonly
+	public LocationAPI getApi() {
 		return api;
 	}
 
-	public void setApi(LocationAPI api)
-	{
+	@Mutable
+	public void setApi(LocationAPI api) {
 		this.api = api;
 	}
-
-	public void setCurrState(CarState currState)
-	{
+	
+	@Mutable
+	public void setCurrState(CarState currState) {
 		this.currState = currState;
 	}
 
@@ -115,8 +119,9 @@ public abstract class Car
 	 * time (station's waiting time should be lower than car's waiting time) -
 	 * Station's capacity (station should have enough fuel left for this car)
 	 */
-	public ChargingStation getNearestFreeChargingStation() throws ChargingStationNotFoundException
-	{
+	@Readonly
+	@APIMethod
+	public ChargingStation getNearestFreeChargingStation() throws ChargingStationNotFoundException {
 		// Getting the nearest station from the LocationAPI
 		ChargingStation[] nearestStations;
 		try
@@ -141,10 +146,13 @@ public abstract class Car
 		{
 			double totalWaitingTime;
 			float tankLeftOver;
-			if(this instanceof ElectricCar)
-			{
-				totalWaitingTime = nearestStations[i].getTotalWaitingTimeElectric(this);
-				tankLeftOver = nearestStations[i].getTotalLeftoverElectricity();
+			if (this instanceof ElectricCar){
+				ChargingStation currentStation = nearestStations[i];
+				if (currentStation == null){
+					continue;
+				}
+				totalWaitingTime = currentStation.getTotalWaitingTimeElectric();
+				tankLeftOver = currentStation.getTotalLeftoverElectricity();
 
 			}
 			else
@@ -172,6 +180,7 @@ public abstract class Car
 	 * This method will add the car to the station's queue. Also it should set car
 	 * state to in queue.
 	 */
+	@Mutable
 	public void joinStationQueue(ChargingStation station)
 	{
 		station.addCarToQueue(this);
@@ -184,6 +193,7 @@ public abstract class Car
 	 * charged The following methods return boolean values corrresponding to its
 	 * state.
 	 */
+	@Readonly
 	public boolean isLooking()
 	{
 		if(currState == CarState.looking)
@@ -193,6 +203,7 @@ public abstract class Car
 		return false;
 	}
 
+	@Readonly
 	public boolean isInQueue()
 	{
 		if(currState == CarState.inQueue)
@@ -202,6 +213,7 @@ public abstract class Car
 		return false;
 	}
 
+	@Readonly
 	public boolean isCharging()
 	{
 		if(currState == CarState.charging)
@@ -211,6 +223,7 @@ public abstract class Car
 		return false;
 	}
 
+	@Readonly
 	public boolean isCharged()
 	{
 		if(currState == CarState.charged)
@@ -240,8 +253,8 @@ public abstract class Car
 	/*
 	 * Return the station the car joined to.
 	 */
-	public ChargingStation getCurrentStation()
-	{
+	@Readonly
+	public ChargingStation getCurrentStation(){
 		return this.currentChargingStation;
 	};
 
@@ -249,8 +262,8 @@ public abstract class Car
 	 * Leave station since the current station isn't suitable anymore. Set car state
 	 * to looking.
 	 */
-	public void leaveStationQueue()
-	{
+	@Mutable
+	public void leaveStationQueue(){
 		setCurrState(CarState.looking);
 		currentChargingStation.leaveStationQueue(this);
 		currentChargingStation = null;
@@ -259,8 +272,8 @@ public abstract class Car
 	/*
 	 * Leave station since the car is charged. Set car state to charged.
 	 */
-	public void leaveStation()
-	{
+	@Mutable
+	public void leaveStation(){
 		currState = CarState.charged;
 		currentChargingStation.leaveStation(this);
 		currentChargingStation = null;
@@ -270,8 +283,8 @@ public abstract class Car
 	 * Car leaves map as no suitable station is available. Set state to charged!
 	 * We'll change this later and handle it better. But for now, it should suffice.
 	 */
-	public void leaveMap()
-	{
+	@Mutable
+	public void leaveMap(){
 		currState = CarState.charged;
 		System.out.println(
 				"Car numbered " + carNumber + " because it couldn't find station with acceptable waiting time");
@@ -280,6 +293,7 @@ public abstract class Car
 	/*
 	 * Add the amount of fuel to the car's current capacity.
 	 */
+	@Mutable
 	public void addFuel(double amount)
 	{
 		currentCapacity += amount;
@@ -288,6 +302,7 @@ public abstract class Car
 	/*
 	 * Returns the amount of fuel that is missing until the tank is full
 	 */
+	@Readonly
 	public float getMissingAmountOfFuel()
 	{
 		return tankCapacity - currentCapacity;

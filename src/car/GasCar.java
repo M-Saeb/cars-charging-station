@@ -1,4 +1,5 @@
 package car;
+import annotations.Readonly;
 import api.GPSValues;
 import api.LocationAPI;
 import stations.ChargingStation;
@@ -12,6 +13,7 @@ public class GasCar extends Car
 	}
 
 	@Override
+	@Readonly
 	public float getChargingTime(ChargingStation station) {
 		return getMissingAmountOfFuel() / station.getGasOutputPerSecond();
 	}
