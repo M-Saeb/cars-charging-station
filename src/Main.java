@@ -7,7 +7,8 @@ import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
 import stations.ChargingStation;
 import byteStream.ByteStreamHandler;
-import byteStream.byteStreamInput;
+import byteStream.ByteStreamInputCars;
+import byteStream.ByteStreamInputChargingStations;
 
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
@@ -40,57 +41,16 @@ public class Main {
 	public static void main(String[] args) {
 		// initiate logger
 		Logger logger = Logger.getLogger("Main");
-		ChargingStation[] stations = new ChargingStation[4];
 		ChargingStation[] sortedStations = new ChargingStation[4];
 		
-		ChargingStation[] stations2TestStations = byteStreamInput.getChargingStations("C:/Java_Workspace/JavaProject/objectLists/chargingStationsList.txt");
+		ChargingStation[] stations = ByteStreamInputChargingStations.getChargingStations("C:/Java_Workspace/JavaProject/objectLists/chargingStationsList.txt");
 		logger.info("Created pool of charging stations.");
 
 		// create pool of cars
-		LocationAPI locationAPI = new LocationAPI(stations2TestStations);
-		Car[] cars = {
-				new GasCar(
-					"Ford Mustang",
-					(float) 20.0,
-					(float) 60.9,
-					(float) 120.0,
-					locationAPI,
-					new GPSValues(40, 20)
-				),
-				new ElectricCar(
-					"Toyota Prius",
-					(float) 5.0,
-					(float) 13.0,
-					(float) 30.0,
-					locationAPI,
-					new GPSValues(-50, 50)
-				),
-					
-				new GasCar(
-					"Peugeot 206",
-					(float) 12.0,
-					(float) 49.0,
-					(float) 30.0,
-					locationAPI,
-					new GPSValues(24, 140)
-				),
-				new ElectricCar(
-					"BW i5",
-					(float) 70.0,
-					(float) 83.9,
-					(float) 70.0,
-					locationAPI,
-					new GPSValues(80, 95)
-				),
-				new GasCar(
-					"Audi A3",
-					(float) 10,
-					(float) 48.0,
-					(float) 90.0,
-					locationAPI,
-					new GPSValues(40, 10)
-				)
-		};
+		LocationAPI locationAPI = new LocationAPI(stations);
+		
+		Car[] cars = ByteStreamInputCars.getCars("C:/Java_Workspace/JavaProject/objectLists/carsList.txt", locationAPI);
+		
 		logger.info("Created pool of cars.");
 
 		// create pool of threads
@@ -141,7 +101,7 @@ public class Main {
 			}
 		}
 
-		for (ChargingStation station: stations2TestStations){
+		for (ChargingStation station: stations){
 			station.sendCarsToFreeSlots();
 			logger.info("Sent cars of " + station.toString() + " to slots.");
 			station.chargeCarsInSlots();
