@@ -85,20 +85,30 @@ public class byteStreamInput
 	public void chargingStationsInputByteStream(String filePath) throws IOException
 	{
 		int indexArray = 0;
-		try {
-			FileInputStream reader = new FileInputStream(filePath);
-			int stationsCounter = (int) reader.getChannel().size();
+		int byteData = 0;
+		int stationsCounter = 0;
+		char recorveredParameterCharTemp;
+		try (FileInputStream reader = new FileInputStream(filePath)) {
+			while((byteData = reader.read()) != -1)
+			{
+				recorveredParameterCharTemp = (char)byteData;
+				if(recorveredParameterCharTemp == '\n')
+				{
+					stationsCounter++;
+				}
+			}
+			stationsCounter++;
 			/* Reader needs a reset, so we can go to the beginning of the file again */
 			reader.close();
-			ChargingStation[] stations = new ChargingStation[stationsCounter];
+			ChargingStation[] stations = new ChargingStation[stationsCounter++];
 			/* If object was created correctly, move to obtain the information */
+			StringBuilder recoverText = new StringBuilder();
+			String recorveredParameterString;
 			try {
 				/* Reset object reader to the beginning of the file */
-				reader.getChannel().position(0);
-				String recorveredParameterString;
-				StringBuilder recoverText = new StringBuilder();
-				int byteData = 0;
-				while((byteData = reader.read()) != -1)
+				FileInputStream readerTemp = new FileInputStream(filePath);
+				byteData = 0;
+				while((byteData = readerTemp.read()) != -1)
 				{	
 					char recorveredParameterChar = (char)byteData;
 					if(recorveredParameterChar == '\n')
@@ -110,24 +120,40 @@ public class byteStreamInput
 						setGpsValues(new GPSValues(Float.parseFloat(recorveredParameterStrings[1]), Float.parseFloat(recorveredParameterStrings[2])));
 						setNumGasSlots(Integer.parseInt(recorveredParameterStrings[3]));
 						setNumElectricSlots(Integer.parseInt(recorveredParameterStrings[4]));
-						setGasOutputPerSecondoutputPerSecond(Integer.parseInt(recorveredParameterStrings[5]));
-						setElectricityOutputPerSecond(Integer.parseInt(recorveredParameterStrings[6]));
+						setGasOutputPerSecondoutputPerSecond(Float.parseFloat(recorveredParameterStrings[5]));
+						setElectricityOutputPerSecond(Float.parseFloat(recorveredParameterStrings[6]));
+						ChargingStation tempStation = new ChargingStation(getChargingStationID(), getGpsValues(), getNumGasSlots(), getNumElectricSlots(), getGasOutputPerSecondoutputPerSecond(), getElectricityOutputPerSecond());
 						
+						stations[indexArray] = tempStation;
+						recoverText = new StringBuilder(); 
+						/* Update index until the value matches the created items */
+						indexArray++;
 					}
 					else {
 						recoverText.append(recorveredParameterChar);
 					}
+				}
+				if(recoverText.length() > 0)
+				{
+					recorveredParameterString = recoverText.toString();
+					String[] recorveredParameterStrings = recorveredParameterString.split(" ");
 					
+					setChargingStationID(Integer.parseInt(recorveredParameterStrings[0]));
+					setGpsValues(new GPSValues(Float.parseFloat(recorveredParameterStrings[1]), Float.parseFloat(recorveredParameterStrings[2])));
+					setNumGasSlots(Integer.parseInt(recorveredParameterStrings[3]));
+					setNumElectricSlots(Integer.parseInt(recorveredParameterStrings[4]));
+					setGasOutputPerSecondoutputPerSecond(Float.parseFloat(recorveredParameterStrings[5]));
+					setElectricityOutputPerSecond(Float.parseFloat(recorveredParameterStrings[6]));
 					ChargingStation tempStation = new ChargingStation(getChargingStationID(), getGpsValues(), getNumGasSlots(), getNumElectricSlots(), getGasOutputPerSecondoutputPerSecond(), getElectricityOutputPerSecond());
 					
 					stations[indexArray] = tempStation;
-					/* Update index until the value matches the created items */
-					indexArray = (indexArray < stationsCounter)? (indexArray++): (indexArray);
-					setListStations(stations);
+					recoverText = new StringBuilder(); 
 				}
+				setListStations(stations);
+
 			} catch (Exception e) {
-				System.out.println("An error occurred: " + e.getMessage());
-				throw new IOException("Failed to open the file...");
+				System.out.println("End of File reached " + e.getMessage());
+				throw new Exception("Invalid data type...");
 			}
 		} catch (Exception e) {
 			System.out.println("An error occurred: " + e.getMessage());

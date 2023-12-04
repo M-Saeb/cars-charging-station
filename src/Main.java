@@ -43,7 +43,7 @@ public class Main {
 		ChargingStation[] stations = new ChargingStation[4];
 		ChargingStation[] sortedStations = new ChargingStation[4];
 		
-		ChargingStation[] stations2TestStations = byteStreamInput.getChargingStations("objectsLists/chargingStationsList.txt");
+		ChargingStation[] stations2TestStations = byteStreamInput.getChargingStations("C:/Java_Workspace/JavaProject/objectLists/chargingStationsList.txt");
 		
 		
 
