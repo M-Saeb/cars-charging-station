@@ -44,52 +44,10 @@ public class Main {
 		ChargingStation[] sortedStations = new ChargingStation[4];
 		
 		ChargingStation[] stations2TestStations = byteStreamInput.getChargingStations("C:/Java_Workspace/JavaProject/objectLists/chargingStationsList.txt");
-		
-		
-
-		// create pool of charging stations
-		try {
-			stations[0] = new ChargingStation(
-				1,
-				new GPSValues(44, 96),
-				2,
-				2,
-				5,
-				5
-			);
-			stations[1] = new ChargingStation(
-				2,
-				new GPSValues(10, 50),
-				2,
-				0,
-				5,
-				0
-			);
-			stations[2] = new ChargingStation(
-				3,
-				new GPSValues(-50, 150),
-				1,
-				1,
-				10,
-				5
-			);
-			stations[3] = new ChargingStation(
-				4,
-				new GPSValues(-70, 44),
-				4,
-				0,
-				10,
-				0
-			);
-		} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException | InvalidGPSValueException e) {
-			logger.severe(e.getStackTrace().toString());
-			e.printStackTrace();
-			return;
-		}
 		logger.info("Created pool of charging stations.");
 
 		// create pool of cars
-		LocationAPI locationAPI = new LocationAPI(stations);
+		LocationAPI locationAPI = new LocationAPI(stations2TestStations);
 		Car[] cars = {
 				new GasCar(
 					"Ford Mustang",
@@ -183,7 +141,7 @@ public class Main {
 			}
 		}
 
-		for (ChargingStation station: stations){
+		for (ChargingStation station: stations2TestStations){
 			station.sendCarsToFreeSlots();
 			logger.info("Sent cars of " + station.toString() + " to slots.");
 			station.chargeCarsInSlots();
