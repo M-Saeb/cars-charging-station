@@ -1,10 +1,7 @@
 package byteStream;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.security.KeyStore.TrustedCertificateEntry;
 
 import api.GPSValues;
 import api.LocationAPI;
@@ -13,7 +10,7 @@ import stations.ChargingStation;
 /**
  * 
  */
-public class byteStreamInput 
+public class ByteStreamInputChargingStations 
 {
 	private int chargingStationID;
 	private GPSValues gpsValues;
@@ -162,7 +159,7 @@ public class byteStreamInput
 	}	
 	public static ChargingStation[] getChargingStations(String filePath)
 	{
-		byteStreamInput objectByteStreamInput = new byteStreamInput();
+		ByteStreamInputChargingStations objectByteStreamInput = new ByteStreamInputChargingStations();
 		
 		try {
 			objectByteStreamInput.chargingStationsInputByteStream(filePath);
@@ -176,7 +173,7 @@ public class byteStreamInput
 	
 	public void printChargingStations()
 	{
-		byteStreamInput objectByteStreamInput = new byteStreamInput();
+		ByteStreamInputChargingStations objectByteStreamInput = new ByteStreamInputChargingStations();
 		ChargingStation[] tempChargingStations = objectByteStreamInput.getListStations();
 		LocationAPI.printArray(tempChargingStations);
 		
