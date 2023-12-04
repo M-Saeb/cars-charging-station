@@ -7,6 +7,7 @@ import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
 import stations.ChargingStation;
 import byteStream.ByteStreamHandler;
+import byteStream.byteStreamInput;
 
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
@@ -41,6 +42,10 @@ public class Main {
 		Logger logger = Logger.getLogger("Main");
 		ChargingStation[] stations = new ChargingStation[4];
 		ChargingStation[] sortedStations = new ChargingStation[4];
+		
+		ChargingStation[] stations2TestStations = byteStreamInput.getChargingStations("objectsLists/chargingStationsList.txt");
+		
+		
 
 		// create pool of charging stations
 		try {
