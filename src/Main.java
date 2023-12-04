@@ -43,13 +43,13 @@ public class Main {
 		Logger logger = Logger.getLogger("Main");
 		ChargingStation[] sortedStations = new ChargingStation[4];
 		
-		ChargingStation[] stations = ByteStreamInputChargingStations.getChargingStations("C:/Java_Workspace/JavaProject/objectLists/chargingStationsList.txt");
+		ChargingStation[] stations = ByteStreamInputChargingStations.getChargingStations("objectLists/chargingStationsList.txt");
 		logger.info("Created pool of charging stations.");
 
 		// create pool of cars
 		LocationAPI locationAPI = new LocationAPI(stations);
 		
-		Car[] cars = ByteStreamInputCars.getCars("C:/Java_Workspace/JavaProject/objectLists/carsList.txt", locationAPI);
+		Car[] cars = ByteStreamInputCars.getCars("objectLists/carsList.txt", locationAPI);
 		
 		logger.info("Created pool of cars.");
 
