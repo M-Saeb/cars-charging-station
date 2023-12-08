@@ -1,15 +1,22 @@
 package stations;
 
 import java.time.LocalDateTime;
+import java.util.logging.Logger;
+
+import byteStream.ByteStreamHandler;
+
+import annotations.Mutable;
+import annotations.Readonly;
 import car.Car;
 import exceptions.ChargingSlotFullException;
 
 
-public class ChargingSlot {
+abstract public class ChargingSlot {
 	private int id;
-	private ChargingStation chargingStation;
-	private Car currentCar = null;
+	protected ChargingStation chargingStation;
+	protected Car currentCar = null;
 	private LocalDateTime nextFreeTime;
+	protected Logger logger;
 	
 	public ChargingSlot(ChargingStation chargingStation, int id) {
 		if (chargingStation == null) {
@@ -17,9 +24,13 @@ public class ChargingSlot {
 		}
 		this.chargingStation = chargingStation;
 		this.id = id;
+		this.logger = Logger.getLogger(this.getClass().getSimpleName() + " " + this.id);
+		this.logger.addHandler(new ByteStreamHandler("logs/byteStreamLog.log"));
+		this.logger.fine("Initiated Charging Slot " + this.id);
 	}
-	
-	public void chargeCar(Car car) throws ChargingSlotFullException {
+
+	@Mutable
+	public void connectCar(Car car) throws ChargingSlotFullException {
 		// if there is a car already docked in this slot, raise an exception
 		if (this.currentCar != null) {
 			throw new ChargingSlotFullException("Slot " + this.id + " is full.");
@@ -29,24 +40,37 @@ public class ChargingSlot {
 		// calculate when the charging finishes and the slot is available
 		this.nextFreeTime = this.calculateNextFreeTime();
 	}
-	
+
+
+	abstract public void chargeCar();
+
+	@Mutable
+	public void disconnectCar(){
+		this.currentCar = null;
+	}
+
+	@Readonly
 	public int getId(){
 		return this.id;
 	}
-	
+
+	@Readonly
 	public Car getCurrentCar() {
 		return this.currentCar;
 	}
 	
+	@Readonly
 	public LocalDateTime getNextFreeTime() {
 		return this.nextFreeTime;
 	}
-	
+
+	@Readonly
 	private LocalDateTime calculateNextFreeTime() {
 		long chargingTime =  (long) this.currentCar.getChargingTime(this.chargingStation);
 		return LocalDateTime.now().plusSeconds(chargingTime);
 	}
-	
+
+	@Readonly
 	public String toString() {
 		return String.format("Charging Slot %s", this.id);
 	} 

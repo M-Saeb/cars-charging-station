@@ -1,30 +1,38 @@
 package api;
 
-import stations.ChargingStation;
-
 import java.lang.Math;
 import java.util.Arrays;
 import java.util.Comparator;
+
+import annotations.Readonly;
+import annotations.Mutable;
+
+import stations.ChargingStation;
+import car.*;
 
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
 import exceptions.InvalidGPSObject;
 
+
 public class LocationAPI
 {
     ChargingStation[] class_chargingStation;
+    Car class_carCar;
 
-    /*
-    Constructor for the API object
-    Input:
-    - ChargingStation[] -> List of objects called 'ChargingStation' that will be available/existing in the area
-     */
     public LocationAPI(ChargingStation[] class_chargingStation)
     {
         this.class_chargingStation = class_chargingStation;
     }
-    /* 
+
+    public LocationAPI(ChargingStation[] class_chargingStation, Car class_car)
+    {
+        this.class_chargingStation = class_chargingStation;
+        this.class_carCar = class_car;
+    }
+
+    /**
      * Constructor that will be able to throw an exception.
      * This will only occurs, when the assignation of the proper
      * constructor it is not called.
@@ -37,34 +45,25 @@ public class LocationAPI
     }
     
 
-
+    @Readonly
 	public ChargingStation[] getChargingStation() {
 		return class_chargingStation;
 	}
-    /* Local functions */
-    /*
-    Function: setChargingStations
-    Description: Assign the class ChargingStation to the API so all the functions can use this object.
-    Input:
-    -varChargingStation -> List of Charging stations in the area
-    Return: Void
-    Note:
-    Important to use before 'calculateNearestStation'
-     */
+
+    /**
+    * Assign the class ChargingStation to the API so all the functions can use this object.
+    */
+    @Mutable
     public void setChargingStations(ChargingStation[] varChargingStation)
     {
         this.class_chargingStation = varChargingStation;
     }
-    /*
-    Function: sortNearestStation
-    Description: Calculate the nearest station regarding the auto current location that is given to the function
-    Input:
-    -varLatitud -> Current coordinates of the car
-    -varLongitud -> Current coordinates of the car
-    Return: Nearest Charging Station ID
-     */
+    /**
+    * Calculate the nearest station regarding the auto current location that is given to the function
+    */
     @SuppressWarnings("unused")
-	protected static int[] sortNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation) throws InvalidGPSObject
+    @Readonly
+	protected static int[] sortNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_carObject) throws InvalidGPSObject, InvalidGPSValueException
     {
         float LattitudDiff = gpsValues.getLatitude();
         float LongitudDiff = gpsValues.getLongitude();
@@ -81,44 +80,65 @@ public class LocationAPI
         {
             for(int i = 0; i < class_chargingStation.length; i++)
             {
-		        /*
-		        Calculate the distance between the 2 points
-		        Where x2 is the station latitud and x1 is the car location
-		        sqrt[ (x2 - x1)^2 + (y2 - y1)^2 ]
-		        */
-                LattitudDiff = (float) Math.pow((class_chargingStation[i].getGPSLatitude() - gpsValues.getLatitude()), 2);
-                LongitudDiff = (float) Math.pow((class_chargingStation[i].getGPSLongitude() - gpsValues.getLongitude()), 2);
-                totalDistance[i][0] = (int) class_chargingStation[i].getChargingStationID();
-                totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
+            	try {
+    		        /*
+    		        Calculate the distance between the 2 points
+    		        Where x2 is the station latitude and x1 is the car location
+    		        sqrt[ (x2 - x1)^2 + (y2 - y1)^2 ]
+    		        */
+                    LattitudDiff = (float) Math.pow((class_chargingStation[i].getGPSLatitude() - gpsValues.getLatitude()), 2);
+                    LongitudDiff = (float) Math.pow((class_chargingStation[i].getGPSLongitude() - gpsValues.getLongitude()), 2);
+                    totalDistance[i][0] = (int) class_chargingStation[i].getChargingStationID();
+                    totalDistance[i][1] = (int) Math.sqrt(LattitudDiff + LongitudDiff);
+					
+                    /*
+                     * Exception bound to happen if invalid values are assigned into the operation.
+                     */
+				} catch (Exception arithmeticException) {
+					try {
+						throw new InvalidGPSValueException("Invalid values to calculate distance");
+					} catch (Exception chainedException) {
+						System.out.println("Chained exception happend...");
+						chainedException.printStackTrace();
+					}
+					
+				}
+
             }
             /* Compare elements regarding the second position of the array and sort them from shortest to longest */
             Arrays.sort(totalDistance, Comparator.comparingInt(arr -> arr[1]));
             for(int i = 0; i<sortedArray.length; i++)
             {
-                sortedArray[i] = totalDistance[i][0];
+            	if((class_carObject instanceof GasCar) && (class_chargingStation[i].getAvailableGasSlots() > 0))
+            	{
+            		sortedArray[i] = totalDistance[i][0];
+            	}
+            	else if((class_carObject instanceof ElectricCar) && (class_chargingStation[i].getAvailableElectricSlots() > 0)) 
+            	{
+            		sortedArray[i] = totalDistance[i][0];
+				}
+            	else {
+					
+				}
             }
         }
         /* Return the station ID that it is closest to the station */
         return sortedArray;
     }
 
-    /*
-    Function: calculateNearestStation
-    Description: Calculate the nearest station regarding the auto current location that is given to the function
-    Input:
-    -varSortedArray[] -> sorted array, so we know the order of the stations
-    -varArrStations[] -> array or list of all the stations in the area
-    Return: Nearest Charging Station ID
-     */
-    public static ChargingStation[] calculateNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation)
+    /**
+    * Calculate the nearest station regarding the auto current location that is given to the function
+    */
+    @Readonly
+    public static ChargingStation[] calculateNearestStation(GPSValues gpsValues, ChargingStation[] class_chargingStation, Car class_car) throws InvalidGPSValueException
     {
         int[] varSortedArray = new int[class_chargingStation.length];
         ChargingStation[] sortedStations = new ChargingStation[class_chargingStation.length];
 
         try {
-			varSortedArray = sortNearestStation(gpsValues, class_chargingStation);
-		} catch (InvalidGPSObject e) {
-			e.printStackTrace();
+			varSortedArray = sortNearestStation(gpsValues, class_chargingStation, class_car);
+		} catch (InvalidGPSObject ex1) {
+			ex1.printStackTrace();
 		}
         for(int i = 0; i < varSortedArray.length; i++)
         {
@@ -141,14 +161,10 @@ public class LocationAPI
 
         return sortedStations;
     }
-    /*
-    Function: checkGPSValues
-    Description: Validates that the GPS values are a valid value
-    Input:
-    - List of available Stations
-    Return:
-    - void
-     */
+    /**
+    * Validates that the GPS values are a valid value
+    */
+    @Readonly
 	public static void checkGPSValues(GPSValues gpsValues)
         throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
 		float latitude = gpsValues.getLatitude();
@@ -164,19 +180,14 @@ public class LocationAPI
         }
 		
 	}
-    /*
-    Function: printArray
-    Description: 
-    Input:
-    - List of available Stations
-    Return:
-    - Sorted list of available stations order from closest to farthest away
-     */
+    /**
+    * print the stations in API class
+    */
+    @Readonly
     public static void printArray(ChargingStation[] array) {
         for (ChargingStation station : array) {
             System.out.println(station);
         }
         System.out.println();
     }
-
 }
