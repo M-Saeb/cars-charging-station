@@ -119,6 +119,20 @@ public class ChargingStation implements Runnable {
 			this.LevelOfGasStorage = LevelOfGasStorage;
 		}
 
+		if (LevelOfElectricityStorage < 0 || LevelOfGasStorage < 0) {
+			throw new IllegalArgumentException("Charging station storage can't be fewer than 0.");
+		} else if (LevelOfElectricityStorage == 0 && LevelOfGasStorage == 0){
+			throw new IllegalArgumentException("Station can't have 0 storage of any kind");
+		}
+		if (numGasSlots == 0 && LevelOfGasStorage > 0) {
+			throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
+		} else if (numElectricSlots == 0 && LevelOfElectricityStorage > 0) {
+			throw new IllegalArgumentException(
+					"Station can't have 0 electricity slots and still have electricity output potential.");
+		}
+		this.LevelOfElectricityStorage = LevelOfElectricityStorage;
+		this.LevelOfGasStorage = LevelOfGasStorage;
+
 		this.logger.fine("Initiated " + this.toString());
 	}
 
