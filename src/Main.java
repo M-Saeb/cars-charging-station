@@ -63,7 +63,6 @@ public class Main {
 		
 		ChargingStation[] stations = ByteStreamInputChargingStations.getChargingStations("objectLists/chargingStationsList.txt");
 		logger.info("Created pool of charging stations.");
-
 		// create pool of cars
 		LocationAPI locationAPI = new LocationAPI(stations);
 		
@@ -74,9 +73,10 @@ public class Main {
 		// create pool of threads
 		
 		// send cars to charging stations
+		int round = 1;
 		int numCharged = 0;
 		while (numCharged < cars.length){
-			logger.fine("New round of checks begins.");
+			logger.fine("Beginning round " + round);
 			for (Car car: cars){
 				// if car is looking, find a suitable station and join its queue
 				if (car.isLooking()){
@@ -131,8 +131,8 @@ public class Main {
 			e.printStackTrace();
 			return;
 		}
-
-		}
+		round++;
+	}
 
 		logger.info("Finished charging rounds.");
 		int numReallyCharged = 0;

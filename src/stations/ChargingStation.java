@@ -1,6 +1,7 @@
 package stations;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import annotations.APIMethod;
@@ -159,8 +160,8 @@ public class ChargingStation {
 			try {
 				throw new InvalidGPSLongitudeException("Invalid Latitud value...");
 			} catch (Exception e) {
-				System.out.println("Invalid Latitud value...");
-				e.printStackTrace();
+				this.logger.severe("Invalid Latitud value...");
+				this.logger.severe(e.getStackTrace().toString());
 			}
 		} else {
 			/*
@@ -512,9 +513,9 @@ public class ChargingStation {
 	 */
 	@Mutable
 	public void chargeCarsInSlots() {
-		this.logger.finer("Charging cars in slots...");
+		this.logger.finer("Charging cars in slots. Current queue: " + this.queue.toString());
 		for (ElectricChargingSlot chargingSlot : electricSlots) {
-			this.logger.finer(chargingSlot.toString() + "is operating...");
+			this.logger.fine("Checking " + chargingSlot.toString());
 			if (chargingSlot.getCurrentCar() == null) {
 				this.logger.fine(chargingSlot.toString() + " is empty. Skipping...");
 				continue;
@@ -546,7 +547,6 @@ public class ChargingStation {
 		}
 
 		for (GasChargingSlot chargingSlot : gasSlots) {
-			this.logger.finer("%s is operating..." + chargingSlot.toString());
 			if (LevelOfGasStorage < gasOutputPerSecond) {
 				this.logger.info("gas has run out.");
 				break;

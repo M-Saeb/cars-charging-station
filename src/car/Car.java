@@ -308,8 +308,8 @@ public abstract class Car
 	@Mutable
 	public void leaveMap(){
 		currState = CarState.charged;
-		System.out.println(
-				"Car numbered " + carNumber + " because it couldn't find station with acceptable waiting time");
+		this.logger.info(
+				this.toString() + " left the map because it couldn't find a station with acceptable waiting time");
 	};
 
 	/**
@@ -319,6 +319,7 @@ public abstract class Car
 	public void addFuel(double amount)
 	{
 		currentCapacity += amount;
+		this.logger.fine(String.format("Received %f fuel. Current capacity: %f - Tank Capacity: %f", amount, this.currentCapacity, this.tankCapacity));
 	}
 
 	/**
