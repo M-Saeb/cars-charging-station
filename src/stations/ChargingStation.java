@@ -2,7 +2,11 @@ package stations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import annotations.APIMethod;
 import annotations.Mutable;
@@ -17,7 +21,7 @@ import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
 
-public class ChargingStation {
+public class ChargingStation extends Thread {
 	/**
 	 * GPS location from every charging station. This value can be sent to the other
 	 * types of station from this super class
@@ -37,6 +41,8 @@ public class ChargingStation {
 	private float LevelOfGasStorage;
 	private ArrayList<Car> queue = new ArrayList<Car>();
 	private float waitTime = 0;
+
+	private boolean done;
 
 	@APIMethod
 	public ChargingStation(
@@ -619,4 +625,23 @@ public class ChargingStation {
 
 		return LevelOfGasStorage - pendingUsedGas;
 	}
+
+
+	@Override
+	public void run() {
+		while (true){
+			if (this.done == true){
+				return;
+			}
+			this.sendCarsToFreeSlots();
+			logger.info("Sent cars to slots. Queue: " + this.queue.toString());
+			this.chargeCarsInSlots();
+			logger.info("Charged cars. Queue: " + this.queue.toString());
+		}
+	}
+
+
+    public void setDone(boolean b) {
+		this.done = b;
+    }
 }
