@@ -449,9 +449,9 @@ public class ChargingStation {
 		for (ChargingSlot slot : stationSlots) {
 			if (slot.currentCar == car) {
 				slot.disconnectCar();
+				this.logger.fine(String.format("Removed %s from slot.", car.toString()));
+				return;
 			}
-			this.logger.fine(String.format("Removed %s from slot.", car.toString()));
-			return;
 		}
 		logger.severe("Something went wrong: you order car numbered  " + car.toString()
 				+ " out of the station, but the car is not in the station");
