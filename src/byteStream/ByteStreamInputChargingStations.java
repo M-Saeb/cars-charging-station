@@ -114,7 +114,7 @@ public class ByteStreamInputChargingStations
 					stationsCounter++;
 				}
 			}
-			stationsCounter++;
+			// stationsCounter++;
 			/* Reader needs a reset, so we can go to the beginning of the file again */
 			reader.close();
 			ChargingStation[] stations = new ChargingStation[stationsCounter++];
