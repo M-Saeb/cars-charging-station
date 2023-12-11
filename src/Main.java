@@ -10,6 +10,7 @@ import byteStream.ByteStreamHandler;
 import byteStream.ByteStreamInputCars;
 import byteStream.ByteStreamInputChargingStations;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,6 @@ public class Main {
 			Logger.getAnonymousLogger().severe(e.getMessage());
 		}
 		Logger.getLogger("").addHandler(new ByteStreamHandler("logs/byteStreamLog.log"));
-
 	}
 
 	public static void main(String[] args) {
@@ -63,7 +63,6 @@ public class Main {
 		
 		ChargingStation[] stations = ByteStreamInputChargingStations.getChargingStations("objectLists/chargingStationsList.txt");
 		logger.info("Created pool of charging stations.");
-
 		// create pool of cars
 		LocationAPI locationAPI = new LocationAPI(stations);
 		
@@ -72,69 +71,48 @@ public class Main {
 		logger.info("Created pool of cars.");
 
 		// create pool of threads
-		
-		// send cars to charging stations
-		int numCharged = 0;
-		while (numCharged < cars.length){
-			logger.fine("New round of checks begins.");
-			for (Car car: cars){
-				// if car is looking, find a suitable station and join its queue
-				if (car.isLooking()){
-					logger.fine(car.toString() + " is not charged yet.");
-						try {
-							ChargingStation suitableStation = car.getNearestFreeChargingStation();
-							car.joinStationQueue(suitableStation);
-							logger.fine(car.toString() + " joined " + suitableStation.toString());
-						} catch (ChargingStationNotFoundException e) {
-							logger.severe("No charging station found for " + car.toString() + ". Setting at as charged.");
-							car.leaveMap();
-							++numCharged;
-						}
-				
-					// if car is alrady in queue, check if station is still suitable
-					// If not, search for another station.
-					} else if (car.isInQueue()){
-					boolean isStationStillSuitable = car.checkCurrentStation();
-					if (!isStationStillSuitable){
-						logger.fine(car.toString() + " left " + car.getCurrentStation().toString() + " as it was not suitable anymore.");
-						car.leaveStationQueue();
-						try {
-							ChargingStation suitableStation = car.getNearestFreeChargingStation();
-							car.joinStationQueue(suitableStation);
-							logger.fine(car.toString() + " joined " + suitableStation.toString());
-						} catch (ChargingStationNotFoundException e) {
-							logger.severe("No charging station found for " + car.toString() + ". Setting at as charged.");
-							car.leaveMap();
-							++numCharged;
-						}
-					}
-				// if car is charging, see if it's fully charged.
-				// If it is, leave the station. Yohoo, it's charged!
-				} else if (car.isCharging()){
-					if (car.getCurrentCapacity() == car.getTankCapacity()){
-						car.leaveStation();
-						logger.fine(car.toString() + " is charged and left the station.");
-						++numCharged;
-					}
-				}
-			}
-		for (ChargingStation station: stations){
-			station.sendCarsToFreeSlots();
-			logger.info("Sent cars of " + station.toString() + " to slots.");
-			station.chargeCarsInSlots();
-			logger.info("Charged cars of " + station.toString());
+		logger.info("Starting threads.");
+		for (ChargingStation station : stations) {
+			station.start();
 		}
-
+		// Wait for stations to start
 		try {
-			TimeUnit.SECONDS.sleep(1);
+			Thread.sleep(5);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			return;
+			System.exit(1);
 		}
 
+		for (Car car : cars) {
+			car.start();
 		}
 
-		logger.info("Finished charging rounds.");
+		
+
+		// wait for each car to finish
+		for (Car car : cars) {
+			try {
+				car.join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+		logger.info("all car threads finished.");
+
+		for (ChargingStation station : stations) {
+			station.setDone(true);
+			try {
+				Thread.sleep(2);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+
+		// let's see how things went
 		int numReallyCharged = 0;
 		for (Car car: cars){
 			if (car.getCurrentCapacity() != car.getTankCapacity()){
@@ -144,6 +122,5 @@ public class Main {
 			}
 		}
 		logger.info(String.format("Managed to charge %d/%d cars.", numReallyCharged, cars.length));
-
 	}
 }

@@ -92,7 +92,7 @@ public class ByteStreamInputCars
 					carsCounter++;
 				}
 			}
-			carsCounter++;
+			// carsCounter++;
 			/* Reader needs a reset, so we can go to the beginning of the file again */
 			reader.close();
 			Car[] cars = new Car[carsCounter++];

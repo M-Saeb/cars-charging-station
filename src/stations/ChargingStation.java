@@ -1,7 +1,12 @@
 package stations;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import annotations.APIMethod;
 import annotations.Mutable;
@@ -16,7 +21,7 @@ import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
 
-public class ChargingStation {
+public class ChargingStation extends Thread {
 	/**
 	 * GPS location from every charging station. This value can be sent to the other
 	 * types of station from this super class
@@ -36,6 +41,8 @@ public class ChargingStation {
 	private float LevelOfGasStorage;
 	private ArrayList<Car> queue = new ArrayList<Car>();
 	private float waitTime = 0;
+
+	private boolean done;
 
 	@APIMethod
 	public ChargingStation(
@@ -159,8 +166,8 @@ public class ChargingStation {
 			try {
 				throw new InvalidGPSLongitudeException("Invalid Latitud value...");
 			} catch (Exception e) {
-				System.out.println("Invalid Latitud value...");
-				e.printStackTrace();
+				this.logger.severe("Invalid Latitud value...");
+				this.logger.severe(e.getStackTrace().toString());
 			}
 		} else {
 			/*
@@ -448,9 +455,9 @@ public class ChargingStation {
 		for (ChargingSlot slot : stationSlots) {
 			if (slot.currentCar == car) {
 				slot.disconnectCar();
+				this.logger.fine(String.format("Removed %s from slot.", car.toString()));
+				return;
 			}
-			this.logger.fine(String.format("Removed %s from slot.", car.toString()));
-			return;
 		}
 		logger.severe("Something went wrong: you order car numbered  " + car.toString()
 				+ " out of the station, but the car is not in the station");
@@ -512,9 +519,9 @@ public class ChargingStation {
 	 */
 	@Mutable
 	public void chargeCarsInSlots() {
-		this.logger.finer("Charging cars in slots...");
+		this.logger.finer("Charging cars in slots. Current queue: " + this.queue.toString());
 		for (ElectricChargingSlot chargingSlot : electricSlots) {
-			this.logger.finer(chargingSlot.toString() + "is operating...");
+			this.logger.fine("Checking " + chargingSlot.toString());
 			if (chargingSlot.getCurrentCar() == null) {
 				this.logger.fine(chargingSlot.toString() + " is empty. Skipping...");
 				continue;
@@ -546,7 +553,6 @@ public class ChargingStation {
 		}
 
 		for (GasChargingSlot chargingSlot : gasSlots) {
-			this.logger.finer("%s is operating..." + chargingSlot.toString());
 			if (LevelOfGasStorage < gasOutputPerSecond) {
 				this.logger.info("gas has run out.");
 				break;
@@ -619,4 +625,23 @@ public class ChargingStation {
 
 		return LevelOfGasStorage - pendingUsedGas;
 	}
+
+
+	@Override
+	public void run() {
+		while (true){
+			if (this.done == true){
+				return;
+			}
+			this.sendCarsToFreeSlots();
+			logger.info("Sent cars to slots. Queue: " + this.queue.toString());
+			this.chargeCarsInSlots();
+			logger.info("Charged cars. Queue: " + this.queue.toString());
+		}
+	}
+
+
+    public void setDone(boolean b) {
+		this.done = b;
+    }
 }
