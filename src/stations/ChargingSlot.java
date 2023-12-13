@@ -3,61 +3,58 @@ package stations;
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
 
-import byteStream.ByteStreamHandler;
+import java.util.concurrent.Semaphore;
 
 import annotations.Mutable;
 import annotations.Readonly;
 import car.Car;
+import car.ElectricCar;
 import exceptions.ChargingSlotFullException;
 
 
-abstract public class ChargingSlot {
+public class ChargingSlot {
 	private int id;
+	private int totalSlots;
 	protected ChargingStation chargingStation;
 	protected Car currentCar = null;
-	private LocalDateTime nextFreeTime;
 	protected Logger logger;
 	
-	public ChargingSlot(ChargingStation chargingStation, int id) {
-		if (chargingStation == null) {
-			throw new IllegalArgumentException("Supplied charging station is null.");
-		}
-		this.chargingStation = chargingStation;
-		this.id = id;
-		this.logger = Logger.getLogger(
-			String.format(
-				"%s.%s",
-				chargingStation.toString(),
-				this.toString()));
-		this.logger.addHandler(new ByteStreamHandler("logs/byteStreamLog.log"));
-		this.logger.fine("Initiated Charging Slot " + this.id);
+	private Semaphore semaphore;
+	
+	public ChargingSlot(int numSlots) 
+	{		
+		this.totalSlots = numSlots;
+		/* Initialize Semaphore */
+		this.semaphore = new Semaphore(numSlots, true);	
 	}
 
 	@Mutable
-	public void connectCar(Car car) throws ChargingSlotFullException {
-		// if there is a car already docked in this slot, raise an exception
-		this.logger.finer(String.format("Connecting %s to slot.", car.toString()));
-		if (this.currentCar != null) {
-			throw new ChargingSlotFullException("Slot " + this.id + " is full.");
-		}
-		this.currentCar = car;
+	public boolean connectCar(Car car) throws ChargingSlotFullException {
 		
-		// calculate when the charging finishes and the slot is available
-		this.nextFreeTime = this.calculateNextFreeTime();
+		try {
+			this.currentCar = car;
+			this.logger.fine(String.format("Connecting %s to slot.", car.toString()));
+			if(car instanceof ElectricCar)
+			{
+				this.logger.info("Connecting to ElectricCar slot.");
+			}
+			else {
+				this.logger.info("Connecting to GasCar slot.");
+			}
+			/* Car will try to obtain the charging slot */
+			return semaphore.tryAcquire();
+		} catch (Exception e) {
+			
+			this.logger.fine("Could not connect to slot.");
+			return false;
+		}
 	}
 
-
-	abstract public void chargeCar();
-
 	@Mutable
-	public void disconnectCar(){
+	public void disconnectCar(Car car){
 		this.logger.info("Disconnecting " + this.currentCar.toString());
 		this.currentCar = null;
-	}
-
-	@Readonly
-	public int getId(){
-		return this.id;
+		semaphore.release();
 	}
 
 	@Readonly
@@ -66,8 +63,9 @@ abstract public class ChargingSlot {
 	}
 	
 	@Readonly
-	public LocalDateTime getNextFreeTime() {
-		return this.nextFreeTime;
+	public int getTotalSlots()
+	{
+		return this.totalSlots;
 	}
 
 	@Readonly
