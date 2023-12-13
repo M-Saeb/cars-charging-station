@@ -13,7 +13,7 @@ public class GasChargingSlot extends ChargingSlot {
     public void chargeCar(GasCar car) throws ChargingSlotFullException {
         super.connectCar(car);
     }
-    
+
     @Mutable
     public void chargeCar() {
         this.logger.info("Charging vehicle in slot...");
