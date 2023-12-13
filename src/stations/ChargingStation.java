@@ -17,6 +17,7 @@ import car.Car;
 import car.ElectricCar;
 import car.GasCar;
 import exceptions.ChargingSlotFullException;
+import exceptions.IllegalFuelAmountException;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
@@ -518,7 +519,7 @@ public class ChargingStation extends Thread {
 	 * Add output per second of station to the car's tank. Make sure the car's tank
 	 * only gets full and not more than that. If a car's tank is already full, do
 	 * nothing.
-	 */
+	 *
 	@Mutable
 	public void chargeCarsInSlots() {
 		this.logger.finer("Charging cars in slots. Current queue: " + this.queue.toString());
@@ -585,6 +586,7 @@ public class ChargingStation extends Thread {
 			}
 		}
 	}
+	*/
 
 	@Readonly
 	public float getTotalLeftoverElectricity() {
@@ -628,6 +630,22 @@ public class ChargingStation extends Thread {
 		return LevelOfGasStorage - pendingUsedGas;
 	}
 
+	// TODO: either put a lock here or make it synchronous. Different slots might  access it at the same time.
+	public void takeElectricityFromReserve(float amount) throws IllegalFuelAmountException {
+		if (amount > electricityOutputPerSecond){
+			throw new IllegalFuelAmountException("Can't take more electricity than the station's output.");
+		}
+		this.LevelOfElectricityStorage -= amount;
+	}
+
+	// TODO: either put a lock here or make it synchronous. Different slots might  access it at the same time.
+	public void takeGasFromReserve(float amount) throws IllegalFuelAmountException {
+		if (amount > gasOutputPerSecond){
+			throw new IllegalFuelAmountException("Can't take more gas than the station's output.");
+		}
+		this.LevelOfGasStorage -= amount;
+	}
+
 
 	@Override
 	public void run() {
@@ -643,8 +661,14 @@ public class ChargingStation extends Thread {
 			}
 			this.sendCarsToFreeSlots();
 			logger.info("Sent cars to slots. Queue: " + this.queue.toString());
-			this.chargeCarsInSlots();
-			logger.info("Charged cars. Queue: " + this.queue.toString());
+			
+			/*
+			 * Either check that the cars are done charging and disconnect them here
+			 * or have the slots check and disconnect them.
+			 */
+
+			// this.chargeCarsInSlots();
+			// logger.info("Charged cars. Queue: " + this.queue.toString());
 		}
 	}
 

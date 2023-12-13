@@ -34,7 +34,7 @@ abstract public class ChargingSlot extends Thread {
 	}
 
 	@Mutable
-	public void connectCar(Car car) throws ChargingSlotFullException {
+	public synchronized void connectCar(Car car) throws ChargingSlotFullException {
 		// if there is a car already docked in this slot, raise an exception
 		this.logger.finer(String.format("Connecting %s to slot.", car.toString()));
 		if (this.currentCar != null) {
@@ -82,5 +82,30 @@ abstract public class ChargingSlot extends Thread {
 
 	public void setDone() {
 		this.done = true;
+	}
+
+	@Override
+	public void run() {
+		while (true) {
+			if (done == true){
+				this.logger.finer("Done flag set to true. exiting.");
+				break;
+			}
+
+			if (this.currentCar != null){
+				if (this.currentCar.getMissingAmountOfFuel() == 0){
+					this.logger.finer("Car is already charged. Skipping...");
+				} else {
+					this.chargeCar();
+				}
+			}
+
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				this.logger.severe(e.getStackTrace().toString());
+				return;
+			}
+		}
 	}
 }
