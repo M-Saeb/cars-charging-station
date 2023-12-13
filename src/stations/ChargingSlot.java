@@ -33,26 +33,26 @@ public class ChargingSlot {
 		
 		try {
 			this.currentCar = car;
-			this.logger.fine(String.format("Connecting %s to slot.", car.toString()));
 			if(car instanceof ElectricCar)
 			{
-				this.logger.info("Connecting to ElectricCar slot.");
+				//this.logger.fine("Connecting to ElectricCar slot.");
+				System.out.println("Connecting to ElectricCar slot.");
 			}
 			else {
-				this.logger.info("Connecting to GasCar slot.");
+				//this.logger.fine("Connecting to GasCar slot.");
+				System.out.println("Connecting to GasCar slot.");
 			}
 			/* Car will try to obtain the charging slot */
 			return semaphore.tryAcquire();
 		} catch (Exception e) {
-			
-			this.logger.fine("Could not connect to slot.");
+			this.logger.info("Could not connect to slot.");
 			return false;
 		}
 	}
 
 	@Mutable
 	public void disconnectCar(Car car){
-		this.logger.info("Disconnecting " + this.currentCar.toString());
+		System.out.println("Disconnecting " + this.currentCar.toString());
 		this.currentCar = null;
 		semaphore.release();
 	}

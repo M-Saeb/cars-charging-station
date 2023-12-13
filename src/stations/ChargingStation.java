@@ -12,7 +12,7 @@ import api.GPSValues;
 import api.LocationAPI;
 import car.Car;
 import car.ElectricCar;
-
+import car.GasCar;
 import exceptions.ChargingSlotFullException;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
@@ -249,12 +249,14 @@ public class ChargingStation extends Thread {
 		if (car instanceof ElectricCar) {
 			this.electricSlots.disconnectCar(car);
 			this.logger.fine(String.format("Removed %s from slot.", car.toString()));
-		} else { // GasCar
+		} else if(car instanceof GasCar) { // GasCar
 			this.gasSlots.disconnectCar(car);
 			this.logger.fine(String.format("Removed %s from slot.", car.toString()));
 		}
-		logger.severe("Something went wrong: you order car numbered  " + car.toString()
-				+ " out of the station, but the car is not in the station");
+		else {
+			logger.severe("Something went wrong: you order car numbered  " + car.toString()
+			+ " out of the station, but the car is not in the station");
+		}
 	}
 
 	/**
@@ -262,72 +264,64 @@ public class ChargingStation extends Thread {
 	 */
 	@Mutable
 	public void sendCarsToFreeSlots(Car car) 
-	{
-		this.logger.finer("Sending cars to free slots...");
-		
-		if(!waitingQueue.isEmpty())
+	{		
+		if(car instanceof ElectricCar)
 		{
-			this.logger.finer("Queue is not empty...");
-			if(car instanceof ElectricCar)
+			this.logger.info(String.format("Electric Car"));
+			/* Resource is free, then take the semaphore resource and connect car */
+			try 
 			{
-				/* Resource is free, then take the semaphore resource and connect car */
-				try 
+				/* Mutex */
+				stationLock.lock();
+				if(electricSlots.connectCar(car))
 				{
-					/* Mutex */
-					stationLock.lock();
-					if(electricSlots.connectCar(car))
-					{
-						/* 
-						 * Add fuel logic here 
-						 */
-						this.logger.info(String.format("Car %s was charged...", car.toString()));
-						leaveStation(car);
-					}
-					else 
-					{
-						this.logger.info(String.format("Car %s, found no free slots...", car.toString()));
-						car.setEnterStationTime(System.currentTimeMillis());
-						waitingQueue.add(car);
-					}
-				} catch (ChargingSlotFullException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					/* 
+					 * Add fuel logic here 
+					 */
+					this.logger.info(String.format("Car %s was charged...", car.toString()));
+					leaveStation(car);
 				}
-				finally {
-					/* Mutex */
-					stationLock.unlock();
-				}
-			}
-			else {
-				/* Resource is free, then take the semaphore resource and connect car */
-				try 
+				else 
 				{
-					if(gasSlots.connectCar(car))
-					{
-						/* 
-						 * Add fuel logic here 
-						 */
-						this.logger.info(String.format("Car %s was charged...", car.toString()));
-						leaveStation(car);
-					}
-					else 
-					{
-						this.logger.info(String.format("Car %s, found no free slots...", car.toString()));
-						car.setEnterStationTime(System.currentTimeMillis());
-						waitingQueue.add(car);
-					}
-				} catch (ChargingSlotFullException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}	
+					this.logger.info(String.format("Car %s, found no free slots...", car.toString()));
+					car.setEnterStationTime(System.currentTimeMillis());
+					waitingQueue.add(car);
+				}
+			} catch (ChargingSlotFullException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+			finally {
+				/* Mutex */
+				stationLock.unlock();
+			}
+		}
+		else {
+			this.logger.info(String.format("Gas Car"));
+			/* Resource is free, then take the semaphore resource and connect car */
+			try 
+			{
+				if(gasSlots.connectCar(car))
+				{
+					/* 
+					 * Add fuel logic here 
+					 */
+					this.logger.info(String.format("Car %s was charged...", car.toString()));
+					leaveStation(car);
+				}
+				else 
+				{
+					this.logger.info(String.format("Car %s, found no free slots...", car.toString()));
+					car.setEnterStationTime(System.currentTimeMillis());
+					waitingQueue.add(car);
+				}
+			} catch (ChargingSlotFullException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		}
 
 		}
-		else 
-		{
-			this.logger.info(String.format("No more cars in queue...", car.toString()));
-		}
-	}
 	
 	@Mutable
 	public void checkTimeQueue()
