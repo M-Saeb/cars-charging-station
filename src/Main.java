@@ -90,7 +90,7 @@ public class Main {
 			}
 			CarRun carRun = new CarRun(nearChargingStation, cars[i]);
 			Thread carThread = new Thread(carRun);
-			carThread.run();
+			carThread.start();
 		}
 		logger.info("Run Ended.");
 	}
