@@ -85,6 +85,7 @@ public class ChargingStation extends Thread {
 			GasChargingSlot[] myGasSlots = new GasChargingSlot[numGasSlots];
 			for (int i = 0; i < numGasSlots; i++) {
 				myGasSlots[i] = new GasChargingSlot(this, slotIDs++);
+				myGasSlots[i].start();
 			}
 			this.gasSlots = myGasSlots;
 		}
@@ -92,6 +93,7 @@ public class ChargingStation extends Thread {
 			ElectricChargingSlot[] myElectricSlots = new ElectricChargingSlot[numElectricSlots];
 			for (int i = 0; i < numElectricSlots; i++) {
 				myElectricSlots[i] = new ElectricChargingSlot(this, slotIDs++);
+				myElectricSlots[i].start()
 			}
 			this.electricSlots = myElectricSlots;
 		}
@@ -631,6 +633,12 @@ public class ChargingStation extends Thread {
 	public void run() {
 		while (true){
 			if (this.done == true){
+				for (ChargingSlot slot : this.electricSlots) {
+					slot.setDone();
+				}
+				for (ChargingSlot slot : this.gasSlots){
+					slot.setDone();
+				}
 				return;
 			}
 			this.sendCarsToFreeSlots();

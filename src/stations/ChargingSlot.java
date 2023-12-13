@@ -10,12 +10,13 @@ import annotations.Readonly;
 import car.Car;
 import exceptions.ChargingSlotFullException;
 
-abstract public class ChargingSlot {
+abstract public class ChargingSlot extends Thread {
 	private int id;
 	protected ChargingStation chargingStation;
 	protected Car currentCar = null;
 	private LocalDateTime nextFreeTime;
 	protected Logger logger;
+	private boolean done = false;
 
 	public ChargingSlot(ChargingStation chargingStation, int id) {
 		if (chargingStation == null) {
@@ -54,7 +55,7 @@ abstract public class ChargingSlot {
 	}
 
 	@Readonly
-	public int getId() {
+	public int getSlotId() {
 		return this.id;
 	}
 
@@ -77,5 +78,9 @@ abstract public class ChargingSlot {
 	@Readonly
 	public String toString() {
 		return String.format("Charging Slot %s", this.id);
+	}
+
+	public void setDone() {
+		this.done = true;
 	}
 }
