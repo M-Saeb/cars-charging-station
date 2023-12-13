@@ -657,18 +657,20 @@ public class ChargingStation extends Thread {
 				for (ChargingSlot slot : this.gasSlots){
 					slot.setDone();
 				}
+
 				return;
 			}
 			this.sendCarsToFreeSlots();
 			logger.info("Sent cars to slots. Queue: " + this.queue.toString());
-			
+
 			/*
-			 * Either check that the cars are done charging and disconnect them here
+			 * TODO: Either check that the cars are done charging and disconnect them here
 			 * or have the slots check and disconnect them.
 			 */
 
 			// this.chargeCarsInSlots();
 			// logger.info("Charged cars. Queue: " + this.queue.toString());
+
 		}
 	}
 
