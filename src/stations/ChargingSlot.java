@@ -29,7 +29,7 @@ public class ChargingSlot {
 	}
 
 	@Mutable
-	public boolean connectCar(Car car) throws ChargingSlotFullException {
+	public boolean getSlot(Car car) throws ChargingSlotFullException {
 		
 		try {
 			this.currentCar = car;
@@ -51,7 +51,7 @@ public class ChargingSlot {
 	}
 
 	@Mutable
-	public void disconnectCar(Car car){
+	public void leaveSlot(Car car){
 		System.out.println("Disconnecting " + this.currentCar.toString());
 		this.currentCar = null;
 		semaphore.release();

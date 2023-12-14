@@ -247,10 +247,10 @@ public class ChargingStation extends Thread {
 	public void leaveStation(Car car) {
 		this.logger.fine(String.format("%s is done charging. Removing it...", car.toString()));
 		if (car instanceof ElectricCar) {
-			this.electricSlots.disconnectCar(car);
+			this.electricSlots.leaveSlot(car);
 			this.logger.fine(String.format("Removed %s from slot.", car.toString()));
 		} else if(car instanceof GasCar) { // GasCar
-			this.gasSlots.disconnectCar(car);
+			this.gasSlots.leaveSlot(car);
 			this.logger.fine(String.format("Removed %s from slot.", car.toString()));
 		}
 		else {
@@ -265,21 +265,27 @@ public class ChargingStation extends Thread {
 	@Mutable
 	public void sendCarsToFreeSlots(Car car) 
 	{		
+		boolean getSlot = false;
 		if(car instanceof ElectricCar)
 		{
 			this.logger.info(String.format("Electric Car"));
 			/* Resource is free, then take the semaphore resource and connect car */
 			try 
 			{
-				/* Mutex */
-				stationLock.lock();
-				if(electricSlots.connectCar(car))
+				getSlot = electricSlots.getSlot(car);
+				if(getSlot)
 				{
+					this.logger.info(String.format("Current thread... %s", Thread.currentThread()));
 					/* 
 					 * Add fuel logic here 
 					 */
+					try {
+						int randWait = (int) (Math.random() * 1000);
+						Thread.sleep(randWait);
+					} catch (Exception e) {
+						Thread.currentThread().interrupt();
+					}
 					this.logger.info(String.format("Car %s was charged...", car.toString()));
-					leaveStation(car);
 				}
 				else 
 				{
@@ -288,12 +294,11 @@ public class ChargingStation extends Thread {
 					waitingQueue.add(car);
 				}
 			} catch (ChargingSlotFullException e) {
-				// TODO Auto-generated catch block
+				this.logger.info(String.format("Current thread... %s", Thread.currentThread()));
 				e.printStackTrace();
 			}
 			finally {
-				/* Mutex */
-				stationLock.unlock();
+				leaveStation(car);
 			}
 		}
 		else {
@@ -301,7 +306,7 @@ public class ChargingStation extends Thread {
 			/* Resource is free, then take the semaphore resource and connect car */
 			try 
 			{
-				if(gasSlots.connectCar(car))
+				if(gasSlots.getSlot(car))
 				{
 					/* 
 					 * Add fuel logic here 
@@ -327,8 +332,6 @@ public class ChargingStation extends Thread {
 	public void checkTimeQueue()
 	{
 		try {
-			/* Mutex */
-			stationLock.lock();
 			for(Car tempCar: waitingQueue)
 			{
 				if(!waitingQueue.isEmpty())
@@ -352,8 +355,6 @@ public class ChargingStation extends Thread {
 			// TODO: handle exception
 		}
 		finally {
-			/* Mutex */
-			stationLock.unlock();
 		}
 
 	}

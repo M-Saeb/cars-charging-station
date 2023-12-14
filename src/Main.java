@@ -92,6 +92,6 @@ public class Main {
 			Thread carThread = new Thread(carRun);
 			carThread.start();
 		}
-		logger.info("Run Ended.");
+		logger.info("---------------------Run Ended.----------------");
 	}
 }
