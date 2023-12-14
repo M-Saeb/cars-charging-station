@@ -112,8 +112,15 @@ public class ChargingSlot {
 
 	@Mutable
 	public void leaveSlot(Car car){
-		System.out.println("Disconnecting " + this.currentCar.toString());
-		semaphore.release();
+		SlotAssigment tempSlotAssigment = getCartoSlot(car);
+		if(tempSlotAssigment != null)
+		{
+			System.out.println("Disconnecting " + this.currentCar.toString() + " semaphore... " + tempSlotAssigment.getSemaphoreID() );
+			semaphore.release();
+		}
+		else {
+            System.out.println("Error: Car " + car.getCarNumber() + " released a slot, but no assigned semaphore found.");
+		}
 	}
 
 	@Readonly
