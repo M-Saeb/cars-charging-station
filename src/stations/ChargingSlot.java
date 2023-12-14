@@ -53,7 +53,6 @@ public class ChargingSlot {
 	@Mutable
 	public void leaveSlot(Car car){
 		System.out.println("Disconnecting " + this.currentCar.toString());
-		this.currentCar = null;
 		semaphore.release();
 	}
 

@@ -275,13 +275,13 @@ public class ChargingStation extends Thread {
 				getSlot = electricSlots.getSlot(car);
 				if(getSlot)
 				{
-					this.logger.info(String.format("Current thread... %s", Thread.currentThread()));
 					/* 
 					 * Add fuel logic here 
 					 */
 					try {
 						int randWait = (int) (Math.random() * 1000);
 						Thread.sleep(randWait);
+						System.out.println("Thread... " + Thread.currentThread() + " waited for... " + randWait + "ms");
 					} catch (Exception e) {
 						Thread.currentThread().interrupt();
 					}
