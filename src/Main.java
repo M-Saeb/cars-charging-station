@@ -12,9 +12,6 @@ import byteStream.ByteStreamHandler;
 import byteStream.ByteStreamInputCars;
 import byteStream.ByteStreamInputChargingStations;
 import car.Car;
-import concurrency.CarRun;
-import concurrency.ChargingStationRun;
-import exceptions.ChargingStationNotFoundException;
 import stations.ChargingStation;
 
 public class Main {
@@ -74,24 +71,18 @@ public class Main {
 		logger.info("---------------------------------------");
 		logger.info("Starting threads.");
 		logger.info("---------------------------------------");
-		
-		ChargingStationRun chargingStationRun = new ChargingStationRun(stations[0]);
-		Thread stationThread = new Thread(chargingStationRun);
-		stationThread.start();
+
+		for (ChargingStation station: stations){
+			Thread thread = new Thread(station);
+			thread.start();
+		}
 		
 		for(int i = 0; i < cars.length; i++)
 		{
-			ChargingStation nearChargingStation = null;
-			try {
-				nearChargingStation = cars[i].getNearestFreeChargingStation();
-			} catch (ChargingStationNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			CarRun carRun = new CarRun(nearChargingStation, cars[i]);
-			Thread carThread = new Thread(carRun);
+			Car car = cars[i];
+			Thread carThread = new Thread(car);
 			carThread.start();
 		}
-		logger.info("---------------------Run Ended.----------------");
+		logger.info("---------------------Setup Ended.----------------");
 	}
 }

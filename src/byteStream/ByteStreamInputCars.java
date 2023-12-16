@@ -6,7 +6,6 @@ import java.io.IOException;
 import api.GPSValues;
 import api.LocationAPI;
 import car.*;
-import stations.ChargingStation;
 
 /**
  * 
@@ -38,7 +37,7 @@ public class ByteStreamInputCars
 		this.gasOrElectricCar = gasOrElectricCar;
 	}
 	public String getCarNumber() {
-		return carNumber;
+		return this.carNumber;
 	}
 	private void setCarNumber(String carNumber) {
 		this.carNumber = carNumber;
@@ -175,12 +174,10 @@ public class ByteStreamInputCars
 				setListCars(cars);
 
 			} catch (Exception e) {
-				System.out.println("End of File reached " + e.getMessage());
-				throw new Exception("Invalid data type...");
+				e.printStackTrace();
 			}
 		} catch (Exception e) {
 			System.out.println("An error occurred: " + e.getMessage());
-			throw new IOException("Failed to open the file...");
 		}
 	}	
 	public static Car[] getCars(String filePath, LocationAPI api)
