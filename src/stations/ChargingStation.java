@@ -353,7 +353,6 @@ public class ChargingStation implements Runnable {
 			}
 		}
 	}
-	*/
 
 	@Override
 	public void run() {
