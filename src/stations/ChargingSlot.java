@@ -7,6 +7,7 @@ import annotations.Mutable;
 import annotations.Readonly;
 import car.Car;
 import car.CarState;
+import car.ElectricCar;
 import exceptions.ChargingSlotFullException;
 
 
@@ -65,7 +66,12 @@ public class ChargingSlot implements Runnable{
 				Thread.sleep(1000);
 				Car car = this.getCurrentCar();
 				if (car != null ){
-					float outputPerSecond = this.chargingStation.getElectricityOutputPerSecond();
+					float outputPerSecond;
+					if (car instanceof ElectricCar){
+						outputPerSecond = this.chargingStation.getElectricityOutputPerSecond();
+					} else {
+						outputPerSecond = this.chargingStation.getGasOutputPerSecond();
+					}
 					this.logger.info("Adding " + outputPerSecond + " to car " + car.toString());
 					car.addFuel(outputPerSecond);
 				}
