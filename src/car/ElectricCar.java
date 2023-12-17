@@ -14,6 +14,13 @@ public class ElectricCar extends Car {
 
 	@Override
 	@Readonly
+	public boolean isStationWaitingTimeWithinRange(ChargingStation station) {
+		float waitingDuration = station.getExpectedWaitingTimeForElectricCars();
+		return waitingDuration < this.getMaximumWaitingDuration();
+	}
+
+	@Override
+	@Readonly
 	public float getChargingTime(ChargingStation station) {
 		return getMissingAmountOfFuel() / station.getElectricityOutputPerSecond();
 	}
