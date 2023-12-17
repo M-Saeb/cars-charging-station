@@ -1,9 +1,11 @@
 package stations;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import annotations.APIMethod;
 import annotations.Mutable;
@@ -73,7 +75,7 @@ public class ChargingStation implements Runnable {
 		{
 			if (numElectricSlots > 0) {
 				for(int i=0; i < numElectricSlots; i++){
-					String name = String.format("%s-ElecticSlot-%s ", this.toString(), i );
+					String name = String.format("%s-ElecticSlot-%s ", this.toString(), i+1 );
 					ChargingSlot slot = new ChargingSlot(name, this);
 					this.electricSlots.add(slot);
 					Thread slotThread = new Thread(slot);
@@ -82,7 +84,7 @@ public class ChargingStation implements Runnable {
 			}
 			if (numGasSlots > 0) {
 				for(int i=0; i < numGasSlots; i++){
-					String name = String.format("%s-GasSlot-%s ", this.toString(), i );
+					String name = String.format("%s-GasSlot-%s ", this.toString(), i+1 );
 					ChargingSlot slot = new ChargingSlot(name, this);
 					this.gasSlots.add(slot);
 					Thread slotThread = new Thread(slot);
@@ -208,6 +210,40 @@ public class ChargingStation implements Runnable {
 		return LevelOfGasStorage;
 	}
 
+	/**
+	 * return the expected waiting time in seconds value
+	 */
+	@Readonly
+	public float getExpectedWaitingTimeForElectricCars(){
+		List<Car> electricCars = this.waitingQueue.stream()
+			.filter(car -> car instanceof ElectricCar).toList();
+		float totalWaitingTime = (float) 0.0;
+		for (Car car: electricCars){
+			float missingAmount = car.getMissingAmountOfFuel();
+			float chargePerSecond = this.getElectricityOutputPerSecond();
+			float totalExpectedTime = missingAmount / chargePerSecond;
+			totalWaitingTime += totalExpectedTime;
+		}
+		return totalWaitingTime;
+	}
+
+	/**
+	 * return the expected waiting time in seconds value
+	 */
+	@Readonly
+	public float getExpectedWaitingTimeForGasCars(){
+		List<Car> gasCars = this.waitingQueue.stream()
+			.filter(car -> car instanceof GasCar).toList();
+		float totalWaitingTime = (float) 0.0;
+		for (Car car: gasCars){
+			float missingAmount = car.getMissingAmountOfFuel();
+			float chargePerSecond = this.getGasOutputPerSecond();
+			float totalExpectedTime = missingAmount / chargePerSecond;
+			totalWaitingTime += totalExpectedTime;
+		}
+		return totalWaitingTime;
+	}
+
 	@Mutable
 	public void setLevelOfGasStorage(float levelOfGasStorage) {
 		LevelOfGasStorage = levelOfGasStorage;
@@ -243,7 +279,6 @@ public class ChargingStation implements Runnable {
 	 */
 	@Mutable
 	public void leaveStationWaitingQueue(Car car) {
-		car.setChargingStationWaitingQueue(null);
 		waitingQueue.remove(car);
 		this.logger.fine(String.format("Removed %s from waitingQueue.", car));
 	}

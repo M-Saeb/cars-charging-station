@@ -1,4 +1,5 @@
 import java.io.File;
+import java.util.Random;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -79,10 +80,18 @@ public class Main {
 		
 		for(int i = 0; i < cars.length; i++)
 		{
+			Random random = new Random();
+        	int delayTime = random.nextInt(3) + 1;
+			try{
+				Thread.sleep(delayTime * 1000);
+			} catch (Exception e){
+				e.printStackTrace();
+			}
 			Car car = cars[i];
+			logger.info(String.format("--- Deploying next car: %s ---", car.toString()));
 			Thread carThread = new Thread(car);
 			carThread.start();
 		}
-		logger.info("---------------------Setup Ended.----------------");
+		logger.info("-------All cars are deployed.-------");
 	}
 }

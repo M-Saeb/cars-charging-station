@@ -79,7 +79,14 @@ public abstract class Car implements Runnable{
 
 	@Mutable
 	public void setChargingStationWaitingQueue(ChargingStation station) {
+		station.addCarToWaitingQueue(this);
 		this.chargingStationWaitingQueue = station;
+	}
+
+	@Mutable
+	public void leaveChargingStationWaitingQueue() {
+		this.chargingStationWaitingQueue.leaveStationWaitingQueue(this);
+		this.chargingStationWaitingQueue = null;
 	}
 
 	@Mutable
@@ -199,6 +206,8 @@ public abstract class Car implements Runnable{
 		);
 	}
 
+	public abstract boolean isStationWaitingTimeWithinRange(ChargingStation station);
+
 	/**
 	 * Returns the amount of fuel that is missing until the tank is full
 	 */
@@ -217,25 +226,36 @@ public abstract class Car implements Runnable{
 					case "looking":
 						try {
 							ChargingStation suitableStation = this.getNearestFreeChargingStation();
-							suitableStation.addCarToWaitingQueue(this);
+							if (suitableStation == null){
+								throw new Exception("suitableStation is null !!!");
+							}
+							if (!this.isStationWaitingTimeWithinRange(suitableStation)){
+									this.logger.info(
+										String.format("The station %s has a waiting time longer than 15 minutes", suitableStation.toString())
+									);
+									this.logger.info("Couldn't find a charging station with a queue shorter than 15 minutes");
+									this.setCurrentState(CarState.leaving);
+									break;
+							} else {
+								this.setChargingStationWaitingQueue(suitableStation);
+							}
 							// logger.fine("Joined " + suitableStation.toString() + " Queue");
 						} catch (ChargingStationNotFoundException e) {
 							logger.severe("No charging station found.");
-							this.setCurrentState(CarState.looking);
 						}						
 						break;
 						
 					case "inQueue":
-						// this.logger.info("Waiting in queue in station");
-						Duration timeDifference = Duration.between(LocalDateTime.now(), this.getEnterStationTime());
-						if(timeDifference.toSeconds() >= 15)
+						Duration timeDifference = Duration.between(this.getEnterStationTime(), LocalDateTime.now());
+						if(timeDifference.toSeconds() > 15)
 						{
-							this.setCurrentState(CarState.leaving);;
-						}
+							this.logger.info("Waited longer than 15 minutes, leave the station");
+							this.leaveChargingStationWaitingQueue();
+							this.setCurrentState(CarState.leaving);
+						} 
 						break;
-						
+
 					case "charging":
-						// this.logger.info("Charging in station");
 						int remaining = (int) this.getMissingAmountOfFuel();
 						if (remaining <= 0){
 							this.setCurrentState(CarState.charged);
@@ -248,7 +268,7 @@ public abstract class Car implements Runnable{
 						return;
 						
 					case "leaving":
-						this.logger.info("Car couldn't find a sutable charging station and is leaving the map");
+						this.logger.info("Car couldn't find a suitable charging station and is leaving the map");
 						return;
 				
 					default:
