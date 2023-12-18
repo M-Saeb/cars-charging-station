@@ -414,6 +414,10 @@ public class ChargingStation implements Runnable {
 		{
 			try {
 				Thread.sleep(1000);
+				/*
+				 * TODO: check for logic to add, remove electric slot with IF
+				 * case where charging station is connected to the power grid
+				 */
 				this.sendCarsToEmptyEletricSlots();
 				this.sendCarsToEmptyGasSlots();
 			} catch (Exception e) {
