@@ -3,79 +3,81 @@ package stations;
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
 
-import java.util.concurrent.Semaphore;
-
 import annotations.Mutable;
 import annotations.Readonly;
 import car.Car;
+import car.CarState;
 import car.ElectricCar;
 import exceptions.ChargingSlotFullException;
 
 
-public class ChargingSlot {
-	private int id;
-	private int totalSlots;
+public class ChargingSlot implements Runnable{
+	private String name;
 	protected ChargingStation chargingStation;
 	protected Car currentCar = null;
 	protected Logger logger;
 	
-	private Semaphore semaphore;
 	
-	public ChargingSlot(int numSlots) 
-	{		
-		this.totalSlots = numSlots;
-		/* Initialize Semaphore */
-		this.semaphore = new Semaphore(numSlots, true);	
+	public ChargingSlot(String name, ChargingStation station) 
+	{
+		this.name = name;
+		this.chargingStation = station;	
+		this.logger = Logger.getLogger(this.toString());
 	}
-
+	
 	@Mutable
-	public boolean getSlot(Car car) throws ChargingSlotFullException {
-		
-		try {
+	public void setCarToSlot(Car car) throws ChargingSlotFullException
+	{
+		if(this.getCurrentCar() == null){
 			this.currentCar = car;
-			if(car instanceof ElectricCar)
-			{
-				//this.logger.fine("Connecting to ElectricCar slot.");
-				System.out.println("Connecting to ElectricCar slot.");
-			}
-			else {
-				//this.logger.fine("Connecting to GasCar slot.");
-				System.out.println("Connecting to GasCar slot.");
-			}
-			/* Car will try to obtain the charging slot */
-			return semaphore.tryAcquire();
-		} catch (Exception e) {
-			this.logger.info("Could not connect to slot.");
-			return false;
+			this.currentCar.setCurrentState(CarState.charging);
+			this.logger.info("Attached car " + this.currentCar.toString());
+		} else{
+			throw new ChargingSlotFullException("Charging slot already has a car set to it");
 		}
 	}
 
 	@Mutable
-	public void leaveSlot(Car car){
-		System.out.println("Disconnecting " + this.currentCar.toString());
-		semaphore.release();
+	public void disconnectCar() {
+		this.logger.info("Disconnecting " + this.currentCar.toString());
+		this.currentCar = null;
 	}
 
 	@Readonly
 	public Car getCurrentCar() {
 		return this.currentCar;
 	}
-	
-	@Readonly
-	public int getTotalSlots()
-	{
-		return this.totalSlots;
-	}
 
 	@Readonly
 	private LocalDateTime calculateNextFreeTime() {
-		long chargingTime =  (long) this.currentCar.getChargingTime(this.chargingStation);
+		long chargingTime = (long) this.currentCar.getChargingTime(this.chargingStation);
 		return LocalDateTime.now().plusSeconds(chargingTime);
 	}
 
 	@Readonly
 	public String toString() {
-		return String.format("Charging Slot %s", this.id);
+		return this.name;
 	} 
-}
-	
+
+	@Override
+	public void run(){
+		while (true){
+			try{
+				Thread.sleep(1000);
+				Car car = this.getCurrentCar();
+				if (car != null ){
+					float outputPerSecond;
+					if (car instanceof ElectricCar){
+						outputPerSecond = this.chargingStation.getElectricityOutputPerSecond();
+					} else {
+						outputPerSecond = this.chargingStation.getGasOutputPerSecond();
+					}
+					this.logger.info("Adding " + outputPerSecond + " to car " + car.toString());
+					car.addFuel(outputPerSecond);
+				}
+			} catch (Exception e){
+				e.printStackTrace();
+			}			
+		}
+	}
+}	

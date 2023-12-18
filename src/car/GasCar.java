@@ -14,6 +14,13 @@ public class GasCar extends Car
 
 	@Override
 	@Readonly
+	public boolean isStationWaitingTimeWithinRange(ChargingStation station) {
+		float waitingDuration = station.getExpectedWaitingTimeForGasCars();
+		return waitingDuration < this.getMaximumWaitingDuration();
+	}
+
+	@Override
+	@Readonly
 	public float getChargingTime(ChargingStation station) {
 		return getMissingAmountOfFuel() / station.getGasOutputPerSecond();
 	}
