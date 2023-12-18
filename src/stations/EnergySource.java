@@ -8,9 +8,17 @@ public class EnergySource
 {
 	private WeatherState energyState;
 	
-	public void setPowerSource()
+	public void EnergySource()
 	{
-		
+		this.energyState = WeatherState.sunny;
+	}
+	public WeatherState getWeatherValue()
+	{
+		return this.energyState;
+	}
+	public String getWeather()
+	{
+		return this.energyState.getWeatherString();
 	}
 	public WeatherState getRandomWeather()
 	{
