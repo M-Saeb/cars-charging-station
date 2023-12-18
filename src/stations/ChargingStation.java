@@ -1,12 +1,9 @@
 package stations;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
-
 import annotations.APIMethod;
 import annotations.Mutable;
 import annotations.Readonly;
@@ -19,7 +16,6 @@ import car.GasCar;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
-import stations.EnergySource;
 import weather.WeatherState;
 import weather.weather;
 
@@ -168,9 +164,11 @@ public class ChargingStation implements Runnable {
 		{
 			stationEnergySource.setSolar();
 			currentEnergySource = stationEnergySource.getEnergyValue();
+			currentEnergySource = stationEnergySource.getEnergyValue();
 		}
 		else {
 			stationEnergySource.setPowerGrid();
+			currentEnergySource = stationEnergySource.getEnergyValue();
 			currentEnergySource = stationEnergySource.getEnergyValue();
 		}
 		this.logger.info(String.format("Power source: %s", currentEnergySource.toString()));
@@ -414,12 +412,15 @@ public class ChargingStation implements Runnable {
 		{
 			try {
 				Thread.sleep(1000);
-				/*
-				 * TODO: check for logic to add, remove electric slot with IF
-				 * case where charging station is connected to the power grid
-				 */
-				this.sendCarsToEmptyEletricSlots();
-				this.sendCarsToEmptyGasSlots();
+				if(currentEnergySource == EnergyState.powerGrid)
+				{
+					this.sendCarsToEmptyGasSlots();
+				}
+				else {
+					this.sendCarsToEmptyGasSlots();
+					this.sendCarsToEmptyEletricSlots();
+				}
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
