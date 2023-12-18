@@ -4,60 +4,106 @@ import api.GPSValues;
 import api.LocationAPI;
 import annotations.Readonly;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import annotations.APIMethod;
 import annotations.Mutable;
 import exceptions.ChargingStationNotFoundException;
 import exceptions.InvalidGPSValueException;
+import stations.ChargingSlot;
 import stations.ChargingStation;
 
-public abstract class Car extends Thread {
-
-	private final double FEASIBLE_WAITING_TIME = 900.0;
+public abstract class Car implements Runnable{
 
 	protected String carNumber;
 	private float currentCapacity;
 	private float tankCapacity;
-	private float waitDuration; // the maximum accepted waiting duration for the car
+	private float maximumWaitingDuration; // the maximum accepted waiting duration for the car
+	private LocalDateTime enterStationTime; // time when the car entered the queue and is set to wait.
 	protected LocationAPI api;
 	protected GPSValues currentGPS;
-	private ChargingStation currentChargingStation;
-	private CarState currState;
+	private ChargingStation chargingStationWaitingQueue;
+	private ChargingSlot chargingSlot;
+	private CarState currentState;
 	private boolean priorityFlag;
 	private Logger logger;
 
 	public Car(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api,
 			GPSValues currentGPS) {
 		this.carNumber = carNumber;
+		this.logger = Logger.getLogger(this.toString());
 		this.currentCapacity = currentCapacity;
 		this.tankCapacity = tankCapacity;
-		this.waitDuration = waitDuration;
+		this.maximumWaitingDuration = waitDuration;
 		this.api = api;
 		this.currentGPS = currentGPS;
-		if (currentCapacity < tankCapacity) {
-			this.currState = CarState.looking;
+		if (this.getMissingAmountOfFuel() > 0.0) {
+			this.setCurrentState(CarState.looking);
 		} else {
-			this.currState = CarState.charged;
+			this.setCurrentState(CarState.charged);
 		}
 		this.priorityFlag = false;
-		this.logger = Logger.getLogger(this.toString());
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%s %s", this.getClass().getSimpleName(), this.carNumber);
+		return this.getClass().getSimpleName() + " " + this.getCarNumber();
+	}
+	
+	public void setEnterStationTime()
+	{
+		this.enterStationTime = LocalDateTime.now();
+	}
+	
+	public LocalDateTime getEnterStationTime()
+	{
+		return this.enterStationTime;
+	}
+
+	@Readonly
+	public ChargingSlot getChargingSlot(){
+		return this.chargingSlot;
 	}
 
 	@Readonly
 	public float getCurrentCapacity() {
-		return currentCapacity;
+		return this.currentCapacity;
+	}
+
+	@Readonly
+	public ChargingStation getChargingStationWaitingQueue(){
+		return this.chargingStationWaitingQueue;
 	}
 
 	@Mutable
-	public void setCurrentCapacity(float currentCapacity) {
-		this.currentCapacity = currentCapacity;
+	public void setChargingStationWaitingQueue(ChargingStation station) {
+		station.addCarToWaitingQueue(this);
+		this.chargingStationWaitingQueue = station;
+	}
+
+	@Mutable
+	public void leaveChargingStationWaitingQueue() {
+		this.chargingStationWaitingQueue.leaveStationWaitingQueue(this);
+		this.chargingStationWaitingQueue = null;
+	}
+
+	@Mutable
+	public void setCharginSlot(ChargingSlot slot){
+		this.chargingSlot = slot;
+		try{
+			slot.setCarToSlot(this);
+		} catch (Exception e){
+			this.logger.severe("Please handle the error 111");
+		}
+	}
+
+	@Mutable
+	public void disconnectFromSlot(){
+		ChargingSlot slot = this.getChargingSlot(); 
+		slot.disconnectCar();
+		this.chargingSlot = null;
 	}
 
 	@Readonly
@@ -68,29 +114,19 @@ public abstract class Car extends Thread {
 		return carNumber;
 	}
 
-	@Mutable
-	public void setCarNumber(String carNumber) {
-		this.carNumber = carNumber;
-	}
-
 	@Readonly
 	public float getTankCapacity() {
 		return tankCapacity;
 	}
 
-	@Mutable
-	public void setTankCapacity(float tankCapacity) {
-		this.tankCapacity = tankCapacity;
-	}
-
 	@Readonly
-	public float getWaitDuration() {
-		return waitDuration;
+	public float getMaximumWaitingDuration() {
+		return maximumWaitingDuration;
 	}
 
 	@Mutable
-	public void setWaitDuration(float waitDuration) {
-		this.waitDuration = waitDuration;
+	public void setMaximumWaitingDuration(float waitDuration) {
+		this.maximumWaitingDuration = waitDuration;
 	}
 
 	@Readonly
@@ -104,8 +140,9 @@ public abstract class Car extends Thread {
 	}
 
 	@Mutable
-	public void setCurrState(CarState currState) {
-		this.currState = currState;
+	public void setCurrentState(CarState newState) {
+		this.logger.info("Updating state to " + newState);
+		this.currentState = newState;
 	}
 
 	public boolean isPriority() {
@@ -144,36 +181,8 @@ public abstract class Car extends Thread {
 		// Iterating over the found stations and checking for empty slots and if the
 		// type is matching
 		for (int i = 0; i < nearestStations.length; i++) {
-			double totalWaitingTime;
-			float tankLeftOver;
-			if (this instanceof ElectricCar) {
-				ChargingStation currentStation = nearestStations[i];
-				if (currentStation == null) {
-					continue;
-				}
-				totalWaitingTime = currentStation.getTotalWaitingTimeElectric(this);
-				tankLeftOver = currentStation.getTotalLeftoverElectricity();
-
-			} else { // GasCar
-				totalWaitingTime = nearestStations[i].getTotalWaitingTimeGas(this);
-				tankLeftOver = nearestStations[i].getTotalLeftoverGas();
-			}
-
-			if (this.logger.getLevel() == Level.FINEST) {
-				this.logger.finest(String.format(
-						"%s total waiting time and left over fuel for %ss are: %f - %f",
-						nearestStations[i].toString(),
-						this.getClass().getSimpleName(),
-						totalWaitingTime,
-						tankLeftOver));
-			}
-
-			if (totalWaitingTime >= this.waitDuration) {
-				this.logger.finest(nearestStations[i].toString() + " is not applicable due to waiting time.");
-				continue;
-			}
-			if (tankLeftOver < getMissingAmountOfFuel()) {
-				this.logger.finest(nearestStations[i].toString() + " is not applicable due to not enough fuel.");
+			ChargingStation currentStation = nearestStations[i];
+			if (currentStation == null) {
 				continue;
 			}
 			this.logger.finest(nearestStations[i].toString() + " is a match.");
@@ -183,116 +192,21 @@ public abstract class Car extends Thread {
 		throw new ChargingStationNotFoundException("Car: " + carNumber + " could not find a free station.");
 	}
 
-	/**
-	 * This method will add the car to the station's queue.
-	 */
 	@Mutable
-	public void joinStationQueue(ChargingStation station) {
-		this.logger.finer("Joining queue of " + station.toString());
-		station.addCarToQueue(this);
-		currentChargingStation = station;
-		currState = CarState.charging;
-		this.logger.finest("Joined queue of " + station.toString());
-	}
-
-	/**
-	 * return boolean values corrresponding to if it's in 'looking' state or not.
-	 */
-	@Readonly
-	public boolean isLooking() {
-		if (currState == CarState.looking) {
-			return true;
+	public void addFuel(double amount){
+		this.currentCapacity += amount;
+		if (this.currentCapacity > this.tankCapacity){
+			this.currentCapacity = this.tankCapacity;
 		}
-		return false;
+		this.logger.finer(
+			String.format(
+				"Received: %f fuel. Current Capacity: %f - Tank capacity: %f",
+				amount, this.currentCapacity, this.tankCapacity
+			)
+		);
 	}
 
-	@Readonly
-	public boolean isInQueue() {
-		if (currState == CarState.inQueue) {
-			return true;
-		}
-		return false;
-	}
-
-	@Readonly
-	public boolean isCharging() {
-		if (currState == CarState.charging) {
-			return true;
-		}
-		return false;
-	}
-
-	@Readonly
-	public boolean isCharged() {
-		if (currState == CarState.charged) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Checks the current station the car is in to make sure the waiting time is
-	 * still feasible.
-	 */
-	public boolean checkCurrentStation() {
-		this.logger.finest(String.format("Checking current station (%s)...", currentChargingStation.toString()));
-		if (currentChargingStation.getCarWaitingTime(this) > FEASIBLE_WAITING_TIME) {
-			this.logger.finest("Current station waiting time is not acceptable anymore.");
-			return false;
-		} else {
-			this.logger.finest("Current station waiting time is still acceptable.");
-			return true;
-		}
-	}
-
-	/**
-	 * Return the station the car joined to.
-	 */
-	@Readonly
-	public ChargingStation getCurrentStation() {
-		return this.currentChargingStation;
-	};
-
-	/**
-	 * Leave station since the current station isn't suitable anymore. Set car state
-	 * to looking.
-	 */
-	@Mutable
-	public void leaveStationQueue() {
-		setCurrState(CarState.looking);
-		currentChargingStation.leaveStationQueue(this);
-		currentChargingStation = null;
-	};
-
-	/**
-	 * Leave station since the car is charged. Set car state to charged.
-	 */
-	@Mutable
-	public void leaveStation() {
-		currState = CarState.charged;
-		currentChargingStation.leaveStation(this);
-		currentChargingStation = null;
-	};
-
-	/**
-	 * Car leaves map as no suitable station is available. Set state to charged!
-	 */
-	@Mutable
-	public void leaveMap() {
-		currState = CarState.charged;
-		this.logger.info(
-				this.toString() + " left the map because it couldn't find a station with acceptable waiting time");
-	};
-
-	/**
-	 * Add the amount of fuel to the car's current capacity.
-	 */
-	@Mutable
-	public void addFuel(double amount) {
-		currentCapacity += amount;
-		this.logger.fine(String.format("Received %f fuel. Current capacity: %f - Tank Capacity: %f", amount,
-				this.currentCapacity, this.tankCapacity));
-	}
+	public abstract boolean isStationWaitingTimeWithinRange(ChargingStation station);
 
 	/**
 	 * Returns the amount of fuel that is missing until the tank is full
@@ -302,46 +216,68 @@ public abstract class Car extends Thread {
 		return tankCapacity - currentCapacity;
 	}
 
+	@Override
 	public void run() {
 		while (true) {
-			logger.info("Beginning new round. Current state: " + this.currState);
-			// if car is looking, find a suitable station and join its queue
-			if (this.isLooking()) {
-				logger.fine("Not charged yet.");
-				try {
-					ChargingStation suitableStation = this.getNearestFreeChargingStation();
-					this.joinStationQueue(suitableStation);
-					logger.fine("Joined " + suitableStation.toString());
-				} catch (ChargingStationNotFoundException e) {
-					logger.severe("No charging station found. Setting state as charged.");
-					this.leaveMap();
-					return;
-				}
-				// if car is alrady in queue, check if station is still suitable
-				// If not, search for another station.
-			} else if (this.isInQueue()) {
-				boolean isStationStillSuitable = this.checkCurrentStation();
-				if (!isStationStillSuitable) {
-					logger.fine("Left " + this.getCurrentStation().toString() + " as it was not suitable anymore.");
-					this.leaveStationQueue();
-					try {
-						ChargingStation suitableStation = this.getNearestFreeChargingStation();
-						this.joinStationQueue(suitableStation);
-						logger.fine("Joined " + suitableStation.toString());
-					} catch (ChargingStationNotFoundException e) {
-						logger.severe("No charging station found. Setting state as charged.");
-						this.leaveMap();
+			try{
+				Thread.sleep(1000);
+				logger.info("Current state: " + this.currentState);
+				switch (this.currentState.toString()) {
+					case "looking":
+						try {
+							ChargingStation suitableStation = this.getNearestFreeChargingStation();
+							if (suitableStation == null){
+								throw new Exception("suitableStation is null !!!");
+							}
+							if (!this.isStationWaitingTimeWithinRange(suitableStation)){
+									this.logger.info(
+										String.format("The station %s has a waiting time longer than 15 minutes", suitableStation.toString())
+									);
+									this.logger.info("Couldn't find a charging station with a queue shorter than 15 minutes");
+									this.setCurrentState(CarState.leaving);
+									break;
+							} else {
+								this.setChargingStationWaitingQueue(suitableStation);
+							}
+							// logger.fine("Joined " + suitableStation.toString() + " Queue");
+						} catch (ChargingStationNotFoundException e) {
+							logger.severe("No charging station found.");
+						}						
+						break;
+						
+					case "inQueue":
+						Duration timeDifference = Duration.between(this.getEnterStationTime(), LocalDateTime.now());
+						if(timeDifference.toSeconds() > 15)
+						{
+							this.logger.info("Waited longer than 15 minutes, leave the station");
+							this.leaveChargingStationWaitingQueue();
+							this.setCurrentState(CarState.leaving);
+						} 
+						break;
+
+					case "charging":
+						int remaining = (int) this.getMissingAmountOfFuel();
+						if (remaining <= 0){
+							this.setCurrentState(CarState.charged);
+							this.disconnectFromSlot();
+						}
+						break;
+						
+					case "charged":
+						this.logger.info("Car is fully charged. leaving the map");
 						return;
-					}
+						
+					case "leaving":
+						this.logger.info("Car couldn't find a suitable charging station and is leaving the map");
+						return;
+				
+					default:
+						this.logger.severe("This line shouldn't have been printed");
+						break;
 				}
-				// if car is charging, see if it's fully charged.
-				// If it is, leave the station. Yohoo, it's charged!
-			} else if (this.isCharging()) {
-				if (this.getCurrentCapacity() == this.getTankCapacity()) {
-					this.leaveStation();
-					logger.fine("Fully charged and left the station.");
-					return;
-				}
+
+			} catch(Exception e){
+				e.printStackTrace();
 			}
 		}
 	}

@@ -1,11 +1,10 @@
 package stations;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import annotations.APIMethod;
@@ -14,36 +13,29 @@ import annotations.Readonly;
 import api.GPSValues;
 import api.LocationAPI;
 import car.Car;
+import car.CarState;
 import car.ElectricCar;
 import car.GasCar;
-import exceptions.ChargingSlotFullException;
-import exceptions.IllegalFuelAmountException;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
 
-public class ChargingStation extends Thread {
-	/**
-	 * GPS location from every charging station. This value can be sent to the other
-	 * types of station from this super class
-	 */
-	private GPSValues gpsValues;
 
-	/** Amount of available slot per charging station */
-	private int numberOfAvailableSlots;
-
+public class ChargingStation implements Runnable {	
+	private Logger logger;
+	/* Charging Station Info */
 	private int chargingStationID;
+	
+	private GPSValues gpsValues;
 	private float gasOutputPerSecond;
 	private float electricityOutputPerSecond;
-	private Logger logger;
-	private GasChargingSlot[] gasSlots;
-	private ElectricChargingSlot[] electricSlots;
 	private float LevelOfElectricityStorage;
 	private float LevelOfGasStorage;
-	private ArrayList<Car> queue = new ArrayList<Car>();
-	private float waitTime = 0;
-
-	private boolean done;
+	
+	
+	private ArrayList<Car> waitingQueue = new ArrayList<Car>();
+	private ArrayList<ChargingSlot> electricSlots = new ArrayList<ChargingSlot>();
+	private ArrayList<ChargingSlot> gasSlots = new ArrayList<ChargingSlot>();
 
 	@APIMethod
 	public ChargingStation(
@@ -56,94 +48,83 @@ public class ChargingStation extends Thread {
 			float LevelOfElectricityStorage,
 			float LevelOfGasStorage)
 			throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
-		this.chargingStationID = chargingStationID;
-		this.logger = Logger.getLogger(this.toString());
-		try {
-			LocationAPI.checkGPSValues(gpsValues);
-		} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e) {
-			this.logger.severe(e.getStackTrace().toString());
-			throw e;
-		} catch (Exception e) {
-			this.logger.severe(e.getStackTrace().toString());
-			throw e;
-		}
-		this.gpsValues = gpsValues;
-
-		this.gasSlots = new GasChargingSlot[numGasSlots];
-		this.electricSlots = new ElectricChargingSlot[numElectricSlots];
-
-		this.setNumberOfAvailableSlots(numGasSlots + numElectricSlots);
-		if ((numGasSlots == 0) && (numElectricSlots == 0)) {
-			throw new IllegalArgumentException("Station can't have 0 slots");
-		} else if (numGasSlots < 0) {
-			throw new IllegalArgumentException("Station can't have fewer than 0 gas slots.");
-		} else if (numElectricSlots < 0) {
-			throw new IllegalArgumentException("Station can't have fewer than 0 electirc slots.");
-		}
-
-		int slotIDs = 0;
-		if (numGasSlots > 0) {
-			GasChargingSlot[] myGasSlots = new GasChargingSlot[numGasSlots];
-			for (int i = 0; i < numGasSlots; i++) {
-				myGasSlots[i] = new GasChargingSlot(this, slotIDs++);
-				myGasSlots[i].start();
+		
+		{
+			this.chargingStationID = chargingStationID;
+			this.logger = Logger.getLogger(this.toString());
+			try {
+				LocationAPI.checkGPSValues(gpsValues);
+			} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e) {
+				this.logger.severe(e.getStackTrace().toString());
+				throw e;
+			} catch (Exception e) {
+				this.logger.severe(e.getStackTrace().toString());
+				throw e;
 			}
-			this.gasSlots = myGasSlots;
-		}
-		if (numElectricSlots > 0) {
-			ElectricChargingSlot[] myElectricSlots = new ElectricChargingSlot[numElectricSlots];
-			for (int i = 0; i < numElectricSlots; i++) {
-				myElectricSlots[i] = new ElectricChargingSlot(this, slotIDs++);
-				myElectricSlots[i].start()
+			this.gpsValues = gpsValues;
+			
+			if ((numGasSlots == 0) && (numElectricSlots == 0)) {
+				throw new IllegalArgumentException("Station can't have 0 slots");
+			} else if (numGasSlots < 0) {
+				throw new IllegalArgumentException("Station can't have fewer than 0 gas slots.");
+			} else if (numElectricSlots < 0) {
+				throw new IllegalArgumentException("Station can't have fewer than 0 electirc slots.");
 			}
-			this.electricSlots = myElectricSlots;
 		}
+		
+		{
+			if (numElectricSlots > 0) {
+				for(int i=0; i < numElectricSlots; i++){
+					String name = String.format("%s-ElecticSlot-%s ", this.toString(), i+1 );
+					ChargingSlot slot = new ChargingSlot(name, this);
+					this.electricSlots.add(slot);
+					Thread slotThread = new Thread(slot);
+					slotThread.start();
+				}
+			}
+			if (numGasSlots > 0) {
+				for(int i=0; i < numGasSlots; i++){
+					String name = String.format("%s-GasSlot-%s ", this.toString(), i+1 );
+					ChargingSlot slot = new ChargingSlot(name, this);
+					this.gasSlots.add(slot);
+					Thread slotThread = new Thread(slot);
+					slotThread.start();
+				}
+			}
 
-		if (gasOutputPerSecond < 0 || electricityOutputPerSecond < 0) {
-			throw new IllegalArgumentException("Charging station output can't be fewer than 0.");
-		}
-		if (numGasSlots == 0 && gasOutputPerSecond > 0) {
-			throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
-		} else if (numElectricSlots == 0 && electricityOutputPerSecond > 0) {
-			throw new IllegalArgumentException(
-					"Station can't have 0 electricity slots and still have electricity output potential.");
-		}
-		this.gasOutputPerSecond = gasOutputPerSecond;
-		this.electricityOutputPerSecond = electricityOutputPerSecond;
+			if (gasOutputPerSecond < 0 || electricityOutputPerSecond < 0) {
+				throw new IllegalArgumentException("Charging station output can't be fewer than 0.");
+			}
+			if (numGasSlots == 0 && gasOutputPerSecond > 0) {
+				throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
+			} else if (numElectricSlots == 0 && electricityOutputPerSecond > 0) {
+				throw new IllegalArgumentException(
+						"Station can't have 0 electricity slots and still have electricity output potential.");
+			}
+			this.gasOutputPerSecond = gasOutputPerSecond;
+			this.electricityOutputPerSecond = electricityOutputPerSecond;
 
-		if (LevelOfElectricityStorage < 0 || LevelOfGasStorage < 0) {
-			throw new IllegalArgumentException("Charging station storage can't be fewer than 0.");
-		} else if (LevelOfElectricityStorage == 0 && LevelOfGasStorage == 0){
-			throw new IllegalArgumentException("Station can't have 0 storage of any kind");
+			if (LevelOfElectricityStorage < 0 || LevelOfGasStorage < 0) {
+				throw new IllegalArgumentException("Charging station storage can't be fewer than 0.");
+			} else if (LevelOfElectricityStorage == 0 && LevelOfGasStorage == 0){
+				throw new IllegalArgumentException("Station can't have 0 storage of any kind");
+			}
+			if (numGasSlots == 0 && LevelOfGasStorage > 0) {
+				throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
+			} else if (numElectricSlots == 0 && LevelOfElectricityStorage > 0) {
+				throw new IllegalArgumentException(
+						"Station can't have 0 electricity slots and still have electricity output potential.");
+			}
+			this.LevelOfElectricityStorage = LevelOfElectricityStorage;
+			this.LevelOfGasStorage = LevelOfGasStorage;
 		}
-		if (numGasSlots == 0 && LevelOfGasStorage > 0) {
-			throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
-		} else if (numElectricSlots == 0 && LevelOfElectricityStorage > 0) {
-			throw new IllegalArgumentException(
-					"Station can't have 0 electricity slots and still have electricity output potential.");
-		}
-		this.LevelOfElectricityStorage = LevelOfElectricityStorage;
-		this.LevelOfGasStorage = LevelOfGasStorage;
 
 		this.logger.fine("Initiated " + this.toString());
-	}
-
-	
-	@Mutable
-	public void addCar(Car car) {
-		// add this car to queue
-
-		// calcualte new wait time
 	}
 
 	@Readonly
 	public String toString() {
 		return String.format("Charging Station %d", this.chargingStationID);
-	}
-
-	@Readonly
-	public float getWaitTime() {
-		return waitTime;
 	}
 
 	@Readonly
@@ -180,25 +161,19 @@ public class ChargingStation extends Thread {
 		return this.gpsValues.getLongitude();
 	}
 
-	@Readonly
-	public int getNumberOfAvailableSlots() {
-		return numberOfAvailableSlots;
-	}
 
 	@Readonly
 	public int getAvailableGasSlots() {
-		return gasSlots.length;
+		return (int) gasSlots.stream()
+			.filter(slot -> slot.currentCar == null).count();
 	}
 
 	@Readonly
 	public int getAvailableElectricSlots() {
-		return electricSlots.length;
+		return (int) electricSlots.stream()
+			.filter(slot -> slot.currentCar == null).count();
 	}
 
-	@Mutable
-	public void setNumberOfAvailableSlots(int availableSlots) {
-		this.numberOfAvailableSlots = availableSlots;
-	}
 
 	@Mutable
 	public void setChargingStationID(int chargingStationID) {
@@ -235,194 +210,54 @@ public class ChargingStation extends Thread {
 		return LevelOfGasStorage;
 	}
 
+	/**
+	 * return the expected waiting time in seconds value
+	 */
+	@Readonly
+	public float getExpectedWaitingTimeForElectricCars(){
+		List<Car> electricCars = this.waitingQueue.stream()
+			.filter(car -> car instanceof ElectricCar).toList();
+		float totalWaitingTime = (float) 0.0;
+		for (Car car: electricCars){
+			float missingAmount = car.getMissingAmountOfFuel();
+			float chargePerSecond = this.getElectricityOutputPerSecond();
+			float totalExpectedTime = missingAmount / chargePerSecond;
+			totalWaitingTime += totalExpectedTime;
+		}
+		return totalWaitingTime;
+	}
+
+	/**
+	 * return the expected waiting time in seconds value
+	 */
+	@Readonly
+	public float getExpectedWaitingTimeForGasCars(){
+		List<Car> gasCars = this.waitingQueue.stream()
+			.filter(car -> car instanceof GasCar).toList();
+		float totalWaitingTime = (float) 0.0;
+		for (Car car: gasCars){
+			float missingAmount = car.getMissingAmountOfFuel();
+			float chargePerSecond = this.getGasOutputPerSecond();
+			float totalExpectedTime = missingAmount / chargePerSecond;
+			totalWaitingTime += totalExpectedTime;
+		}
+		return totalWaitingTime;
+	}
+
 	@Mutable
 	public void setLevelOfGasStorage(float levelOfGasStorage) {
 		LevelOfGasStorage = levelOfGasStorage;
 	}
 
-	/**
-	 * Private function for getting the waiting time for the next free electric slot
-	 */
-	@Readonly
-	private double getWaitingTimeForNextSlotElectric() {
-		double waitingTime = 0;
-
-		for (ElectricChargingSlot slot : electricSlots) {
-			if (slot.getCurrentCar() == null) {
-				continue;
-			}
-
-			double waitingTimeOfCurrCar = slot.getCurrentCar().getChargingTime(this);
-
-			if (waitingTime == 0) {
-				waitingTime = waitingTimeOfCurrCar;
-				continue;
-			}
-
-			if (waitingTimeOfCurrCar < waitingTime) {
-				waitingTime = waitingTimeOfCurrCar;
-			}
-		}
-		this.logger.finer("Total waiting time for Electric cars: " + waitingTime);
-		return waitingTime;
-	}
-
-	/**
-	 * Private function for getting the waiting time for the next free gas slot
-	 */
-	@Readonly
-	private double getWaitingTimeForNextSlotGas() {
-		double waitingTime = 0;
-
-		for (GasChargingSlot slot : gasSlots) {
-			if (slot.getCurrentCar() == null) {
-				continue;
-			}
-
-			double waitingTimeOfCurrCar = slot.getCurrentCar().getChargingTime(this);
-
-			if (waitingTime == 0) {
-				waitingTime = waitingTimeOfCurrCar;
-				continue;
-			}
-
-			if (waitingTimeOfCurrCar < waitingTime) {
-				waitingTime = waitingTimeOfCurrCar;
-			}
-		}
-		this.logger.finer("Total waiting time for Gas cars: " + waitingTime);
-
-		return waitingTime;
-	}
-
-	/**
-	 * This should get the waiting time for a specific car in queue It should
-	 * consider the waiting time + the charging times of the cars in front of that
-	 * car.
-	 */
-	@Readonly
-	public double getCarWaitingTime(Car car) {
-		double waitingTime = 0;
-
-		// Getting the waiting time for a next slot
-		if (car instanceof ElectricCar) {
-			waitingTime += getWaitingTimeForNextSlotElectric();
-		} else if (car instanceof GasCar) {
-			waitingTime += getWaitingTimeForNextSlotGas();
-		}
-
-		// Adding the waiting time of the cars that are in the queue in front of the car
-		for (Car queueCar : queue) {
-			// Checking if the car that the time is calculated for is equal to the car at
-			// the position of the queue
-			if (queueCar.equals(car)) {
-				break;
-			}
-
-			// Checking if the objects are from the same type (same type of car)
-			if (queueCar.getClass().equals(car.getClass())) {
-				waitingTime += queueCar.getChargingTime(this);
-			}
-		}
-		this.logger.finer(String.format("Total waiting time for %s: %f", car.toString(), waitingTime));
-		return waitingTime;
-	}
-
-	/**
-	 * This gets the total waiting time of the station. It considers the
-	 * waiting time + the charging times of the cars in the queue.
-	 */
-	@Readonly
-	public double getTotalWaitingTimeElectric(Car car) {
-		double totalWaitingTime = 0;
-
-		totalWaitingTime += getWaitingTimeForNextSlotElectric();
-
-		// Checking if there are cars in the queue, otherwise returning
-		if (queue.isEmpty()) {
-			return totalWaitingTime;
-		}
-
-		// Branch if car is a prioritized car
-		if (car.isPriority()) {
-			for (Car queueCar : queue) {
-				// Break if current checked car is not prioritized (first not prioritized car)
-				if (!queueCar.isPriority()) {
-					break;
-				}
-
-				if (queueCar instanceof ElectricCar) {
-					totalWaitingTime += car.getChargingTime(this);
-				}
-			}
-
-			return totalWaitingTime;
-		}
-
-		// Branch if car is not a prioritized car
-		for (Car queueCar : queue) {
-			if (queueCar instanceof ElectricCar) {
-				totalWaitingTime += queueCar.getChargingTime(this);
-			}
-		}
-		this.logger.finer(String.format("Total waiting time for Electric cars: %f", totalWaitingTime));
-		return totalWaitingTime;
-	}
-
-	@Readonly
-	public double getTotalWaitingTimeGas(Car car) {
-		double totalWaitingTime = 0;
-
-		totalWaitingTime += getWaitingTimeForNextSlotGas();
-
-		// Checking if there are cars in the queue, otherwise returning
-		if (queue.isEmpty()) {
-			return totalWaitingTime;
-		}
-
-		// Branch if car is a prioritized car
-		if (car.isPriority()) {
-			for (Car queueCar : queue) {
-				// Break if current checked car is not prioritized (first not prioritized car)
-				if (!queueCar.isPriority()) {
-					break;
-				}
-
-				if (queueCar instanceof GasCar) {
-					totalWaitingTime += car.getChargingTime(this);
-				}
-			}
-
-			return totalWaitingTime;
-		}
-
-		// Branch if car is not a prioritized car
-		for (Car queueCar : queue) {
-			if (queueCar instanceof GasCar) {
-				totalWaitingTime += queueCar.getChargingTime(this);
-			}
-		}
-
-		return totalWaitingTime;
-	}
-
 	@Mutable
-	public void addCarToQueue(Car car) {
-		this.logger.finer(String.format("Adding %s to queue.", car.toString()));
-		// Adding it and returning, if the queue is empty
-		if (queue.isEmpty()) {
-			queue.add(car);
-			this.logger.finer("Queue was empty. Added car.");
-			return;
-		}
-
+	public void addCarToWaitingQueue(Car car) {
 		// If car is prioritized, add it after the last prioritized car
 		if (car.isPriority()) {
-			this.logger.finer("Car is priority. Adding it to the top of the queue.");
+			this.logger.finer("Car is priority. Adding it to the top of the waitingQueue.");
 
-			for (int i = 0; i < queue.size(); i++) {
-				if (!queue.get(i).isPriority()) {
-					queue.add(i, car);
+			for (int i = 0; i < waitingQueue.size(); i++) {
+				if (!waitingQueue.get(i).isPriority()) {
+					waitingQueue.add(i, car);
 					this.logger.finer("Added priority car at position " + i);
 					return;
 				}
@@ -430,252 +265,106 @@ public class ChargingStation extends Thread {
 		}
 
 		// Otherwise add normal
-		queue.add(car);
-		this.logger.fine(String.format("Added %s to queue.", car.toString()));
+		waitingQueue.add(car);
+		this.logger.fine(String.format(
+			"Added %s to waitingQueue with number %s.",
+			car.toString(), this.waitingQueue.size()
+		));
+		car.setEnterStationTime();
+		car.setCurrentState(CarState.inQueue);
 	}
 
 	/**
-	 * Remove car from station queue.
+	 * Remove car from station waitingQueue.
 	 */
 	@Mutable
-	public void leaveStationQueue(Car car) {
-		queue.remove(car);
-		this.logger.fine(String.format("Removed %s from queue.", car));
+	public void leaveStationWaitingQueue(Car car) {
+		waitingQueue.remove(car);
+		this.logger.fine(String.format("Removed %s from waitingQueue.", car));
 	}
 
 	/**
 	 * Disonnect car from slot.
 	 */
 	@Mutable
-	public void leaveStation(Car car) {
+	public void leaveSlot(Car car) throws Exception{
 		this.logger.fine(String.format("%s is done charging. Removing it...", car.toString()));
-		ChargingSlot stationSlots[];
 		if (car instanceof ElectricCar) {
-			stationSlots = this.electricSlots;
-		} else { // GasCar
-			stationSlots = this.gasSlots;
+			int index = this.electricSlots.indexOf(car);
+			if (index < 0){
+				throw new Exception("Can't find the intended car");
+			} 
+			this.electricSlots.remove(index);
 		}
-		for (ChargingSlot slot : stationSlots) {
-			if (slot.currentCar == car) {
-				slot.disconnectCar();
-				this.logger.fine(String.format("Removed %s from slot.", car.toString()));
-				return;
-			}
+		else if(car instanceof GasCar) { // GasCar
+			int index = this.gasSlots.indexOf(car);
+			if (index < 0){
+				throw new Exception("Can't find the intended car");
+			} 
+			this.electricSlots.remove(index);		}
+		else {
+			logger.severe("Something went wrong: you order car numbered  " + car.toString()
+			+ " out of the station, but the car is not in the station");
 		}
-		logger.severe("Something went wrong: you order car numbered  " + car.toString()
-				+ " out of the station, but the car is not in the station");
+
+		this.logger.fine(String.format("Removed %s from slot.", car.toString()));
+
 	}
 
-	/**
-	 * Send cars in queue to free slots and set their state to charging.
-	 */
 	@Mutable
-	public void sendCarsToFreeSlots() {
-		this.logger.finer("Sending cars to free slots...");
-		/* get the currently free slots */
-		ArrayList<ChargingSlot> freeSlots = new ArrayList<ChargingSlot>();
-		for (ElectricChargingSlot slot : electricSlots) {
-			if (slot.currentCar == null) {
-				freeSlots.add(slot);
-			}
-		}
-		for (GasChargingSlot slot : gasSlots) {
-			if (slot.currentCar == null) {
-				freeSlots.add(slot);
-			}
-		}
+	public void sendCarsToEmptyEletricSlots()
+	{
+		List<ChargingSlot> freeElecticSlots =  this.electricSlots.stream()
+			.filter(slot -> slot.getCurrentCar() == null).toList();
+		for (ChargingSlot slot: freeElecticSlots){
+			Optional<Car> nextPossibleCar = this.waitingQueue.stream()
+				.filter(car -> car instanceof ElectricCar).findFirst();
+			// if (nextPossibleCars.)
+			if (nextPossibleCar.isPresent()){
+				try{
+					Car car = nextPossibleCar.get();
+					car.setCharginSlot(slot);
+					this.waitingQueue.remove(car);
 
-		/* updating each free slot */
-		for (ChargingSlot slot : freeSlots) {
-
-			/* getting the type (class) of the slot */
-			Class<?> acceptedCarType;
-			if (slot instanceof ElectricChargingSlot) {
-				acceptedCarType = ElectricCar.class;
-			} else { // GasCharingSlot
-				acceptedCarType = GasCar.class;
-			}
-
-			/*
-			 * checking which is the first car in the qeueue to have the same fuel as the
-			 * slot
-			 */
-			for (Car car : queue) {
-				if (car.getClass() == acceptedCarType) {
-					try {
-						slot.connectCar(car);
-						queue.remove(car);
-						this.logger.info(String.format("%s connected to %s", car.toString(), slot.toString()));
-						break;
-					} catch (ChargingSlotFullException e) {
-						break;
-					}
+				} catch (Exception e){
+					e.printStackTrace();
 				}
 			}
 		}
 	}
 
-	/**
-	 * Add output per second of station to the car's tank. Make sure the car's tank
-	 * only gets full and not more than that. If a car's tank is already full, do
-	 * nothing.
-	 *
 	@Mutable
-	public void chargeCarsInSlots() {
-		this.logger.finer("Charging cars in slots. Current queue: " + this.queue.toString());
-		for (ElectricChargingSlot chargingSlot : electricSlots) {
-			this.logger.fine("Checking " + chargingSlot.toString());
-			if (chargingSlot.getCurrentCar() == null) {
-				this.logger.fine(chargingSlot.toString() + " is empty. Skipping...");
-				continue;
-			}
-
-			if (LevelOfElectricityStorage < electricityOutputPerSecond) {
-				this.logger.info("electricity has run out.");
-				break;
-			}
-
-			float missingFuel = chargingSlot.getCurrentCar().getMissingAmountOfFuel();
-			if (missingFuel >= electricityOutputPerSecond) {
-				chargingSlot.getCurrentCar().addFuel(electricityOutputPerSecond);
-				LevelOfElectricityStorage -= electricityOutputPerSecond;
-				logger.fine(String.format(
-						"Charged %s with %f values. Current electricity capacity: %f",
-						chargingSlot.getCurrentCar().toString(),
-						electricityOutputPerSecond,
-						LevelOfElectricityStorage));
-			} else {
-				chargingSlot.getCurrentCar().addFuel(missingFuel);
-				LevelOfElectricityStorage -= missingFuel;
-				logger.fine(String.format(
-						"Charged %s with %f values. Current electricity capacity: %f",
-						chargingSlot.getCurrentCar().toString(),
-						missingFuel,
-						LevelOfElectricityStorage));
-			}
-		}
-
-		for (GasChargingSlot chargingSlot : gasSlots) {
-			if (LevelOfGasStorage < gasOutputPerSecond) {
-				this.logger.info("gas has run out.");
-				break;
-			}
-
-			if (chargingSlot.getCurrentCar() == null) {
-				this.logger.fine(chargingSlot.toString() + " is empty. Skipping...");
-				continue;
-			}
-
-			float missingFuel = chargingSlot.getCurrentCar().getMissingAmountOfFuel();
-			if (missingFuel >= gasOutputPerSecond) {
-				chargingSlot.getCurrentCar().addFuel(gasOutputPerSecond);
-				LevelOfGasStorage -= gasOutputPerSecond;
-				logger.fine(String.format(
-						"Charged %s with %f values. Current gas capacity: %f",
-						chargingSlot.getCurrentCar().toString(),
-						gasOutputPerSecond,
-						LevelOfGasStorage));
-			} else {
-				chargingSlot.getCurrentCar().addFuel(missingFuel);
-				LevelOfGasStorage -= missingFuel;
-				logger.fine(String.format(
-						"Charged %s with %f values. Current gas capacity: %f",
-						chargingSlot.getCurrentCar().toString(),
-						missingFuel,
-						LevelOfGasStorage));
+	public void sendCarsToEmptyGasSlots()
+	{
+		List<ChargingSlot> freeGasSlots =  this.gasSlots.stream()
+			.filter(slot -> slot.getCurrentCar() == null).toList();
+		for (ChargingSlot slot: freeGasSlots){
+			Optional<Car> nextPossibleCar = this.waitingQueue.stream()
+				.filter(car -> car instanceof GasCar).findFirst();
+			// if (nextPossibleCars.)
+			if (nextPossibleCar.isPresent()){
+				try{
+					Car car = nextPossibleCar.get();
+					car.setCharginSlot(slot);
+					this.waitingQueue.remove(car);
+				} catch (Exception e){
+					e.printStackTrace();
+				}
 			}
 		}
 	}
-	*/
-
-	@Readonly
-	public float getTotalLeftoverElectricity() {
-		int pendingUsedElectricity = 0;
-
-		for (int i = 0; i < electricSlots.length; i++) {
-			Car currentCar = electricSlots[i].getCurrentCar();
-			if (currentCar == null) {
-				continue;
-			}
-			pendingUsedElectricity += electricSlots[i].getCurrentCar().getMissingAmountOfFuel();
-		}
-
-		for (int i = 0; i < queue.size(); i++) {
-			if (queue.get(i) instanceof ElectricCar) {
-				pendingUsedElectricity += queue.get(i).getMissingAmountOfFuel();
-			}
-		}
-
-		return LevelOfElectricityStorage - pendingUsedElectricity;
-	}
-
-	@Readonly
-	public float getTotalLeftoverGas() {
-		int pendingUsedGas = 0;
-
-		for (int i = 0; i < gasSlots.length; i++) {
-			Car currentCar = gasSlots[i].getCurrentCar();
-			if (currentCar == null) {
-				continue;
-			}
-			pendingUsedGas += gasSlots[i].getCurrentCar().getMissingAmountOfFuel();
-		}
-
-		for (int i = 0; i < queue.size(); i++) {
-			if (queue.get(i) instanceof GasCar) {
-				pendingUsedGas += queue.get(i).getMissingAmountOfFuel();
-			}
-		}
-
-		return LevelOfGasStorage - pendingUsedGas;
-	}
-
-	// TODO: either put a lock here or make it synchronous. Different slots might  access it at the same time.
-	public void takeElectricityFromReserve(float amount) throws IllegalFuelAmountException {
-		if (amount > electricityOutputPerSecond){
-			throw new IllegalFuelAmountException("Can't take more electricity than the station's output.");
-		}
-		this.LevelOfElectricityStorage -= amount;
-	}
-
-	// TODO: either put a lock here or make it synchronous. Different slots might  access it at the same time.
-	public void takeGasFromReserve(float amount) throws IllegalFuelAmountException {
-		if (amount > gasOutputPerSecond){
-			throw new IllegalFuelAmountException("Can't take more gas than the station's output.");
-		}
-		this.LevelOfGasStorage -= amount;
-	}
-
 
 	@Override
 	public void run() {
-		while (true){
-			if (this.done == true){
-				for (ChargingSlot slot : this.electricSlots) {
-					slot.setDone();
-				}
-				for (ChargingSlot slot : this.gasSlots){
-					slot.setDone();
-				}
-
-				return;
+		while(true)
+		{
+			try {
+				Thread.sleep(1000);
+				this.sendCarsToEmptyEletricSlots();
+				this.sendCarsToEmptyGasSlots();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			this.sendCarsToFreeSlots();
-			logger.info("Sent cars to slots. Queue: " + this.queue.toString());
-
-			/*
-			 * TODO: Either check that the cars are done charging and disconnect them here
-			 * or have the slots check and disconnect them.
-			 */
-
-			// this.chargeCarsInSlots();
-			// logger.info("Charged cars. Queue: " + this.queue.toString());
-
 		}
 	}
-
-
-    public void setDone(boolean b) {
-		this.done = b;
-    }
 }

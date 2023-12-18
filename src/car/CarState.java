@@ -4,5 +4,6 @@ public enum CarState {
 	looking,
 	inQueue,
 	charging,
-	charged
+	charged,
+	leaving
 }
