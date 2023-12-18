@@ -19,6 +19,8 @@ import car.GasCar;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
+import stations.EnergySource;
+import weather.WeatherState;
 
 
 public class ChargingStation implements Runnable {	
@@ -31,6 +33,8 @@ public class ChargingStation implements Runnable {
 	private float electricityOutputPerSecond;
 	private float LevelOfElectricityStorage;
 	private float LevelOfGasStorage;
+	
+	EnergySource stationWeatherState = new EnergySource();
 	
 	
 	private ArrayList<Car> waitingQueue = new ArrayList<Car>();
@@ -70,6 +74,10 @@ public class ChargingStation implements Runnable {
 			} else if (numElectricSlots < 0) {
 				throw new IllegalArgumentException("Station can't have fewer than 0 electirc slots.");
 			}
+		}
+		
+		{
+			stationWeatherState.getRandomWeather();
 		}
 		
 		{
@@ -148,6 +156,7 @@ public class ChargingStation implements Runnable {
 		this.LevelOfGasStorage = LevelOfGasStorage;
 
 		this.logger.fine("Initiated " + this.toString());
+		this.logger.info(String.format("Weather: %s", stationWeatherState.getWeather()));
 	}
 
 	@Readonly
