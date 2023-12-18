@@ -3,10 +3,26 @@ package weather;
 import java.util.Random;
 
 public class weather {
-	public static WeatherState getRandomWeather()
+	private WeatherState weatherState;
+	
+	public weather()
 	{
-        Random random = new Random();
-        WeatherState[] conditions = WeatherState.values();
-        return conditions[random.nextInt(conditions.length)];
+		this.weatherState = WeatherState.sunny;
+	}
+	
+	public WeatherState getWeatherValue()
+	{
+		return this.weatherState;
+	}
+	public String getWeather()
+	{
+		return this.weatherState.getWeatherString();
+	}
+	public WeatherState getRandomWeather()
+	{
+		Random objRandom = new Random();
+		WeatherState[] varWeatherState = WeatherState.values();
+		this.weatherState = varWeatherState[objRandom.nextInt(varWeatherState.length)];
+		return this.weatherState;
 	}
 }
