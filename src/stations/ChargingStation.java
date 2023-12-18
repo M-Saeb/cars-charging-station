@@ -21,6 +21,7 @@ import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
 import stations.EnergySource;
 import weather.WeatherState;
+import weather.weather;
 
 
 public class ChargingStation implements Runnable {	
@@ -34,7 +35,9 @@ public class ChargingStation implements Runnable {
 	private float LevelOfElectricityStorage;
 	private float LevelOfGasStorage;
 	
-	EnergySource stationWeatherState = new EnergySource();
+	private weather stationWeatherState = new weather();
+	private EnergySource stationEnergySource = new EnergySource();
+	private EnergyState currentEnergySource;
 	
 	
 	private ArrayList<Car> waitingQueue = new ArrayList<Car>();
@@ -157,6 +160,20 @@ public class ChargingStation implements Runnable {
 
 		this.logger.fine("Initiated " + this.toString());
 		this.logger.info(String.format("Weather: %s", stationWeatherState.getWeather()));
+		
+		/*
+		 * Power Source of station
+		 */
+		if(stationWeatherState.getWeatherValue().ordinal() < WeatherState.cloudy.ordinal())
+		{
+			stationEnergySource.setSolar();
+			currentEnergySource = stationEnergySource.getEnergyValue();
+		}
+		else {
+			stationEnergySource.setPowerGrid();
+			currentEnergySource = stationEnergySource.getEnergyValue();
+		}
+		this.logger.info(String.format("Power source: %s", currentEnergySource.toString()));
 	}
 
 	@Readonly
