@@ -135,33 +135,33 @@ public class ChargingStation implements Runnable {
 			this.levelOfGasStorage = levelOfGasStorage;
 		}
 
-		if (LevelOfElectricityStorage < 0 || LevelOfGasStorage < 0) {
+		if (levelOfElectricityStorage < 0 || levelOfGasStorage < 0) {
 			throw new IllegalArgumentException("Charging station storage can't be fewer than 0.");
-		} else if (LevelOfElectricityStorage == 0 && LevelOfGasStorage == 0){
+		} else if (levelOfElectricityStorage == 0 && levelOfGasStorage == 0){
 			throw new IllegalArgumentException("Station can't have 0 storage of any kind");
 		}
-		if (numGasSlots == 0 && LevelOfGasStorage > 0) {
+		if (numGasSlots == 0 && levelOfGasStorage > 0) {
 			throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
-		} else if (numElectricSlots == 0 && LevelOfElectricityStorage > 0) {
+		} else if (numElectricSlots == 0 && levelOfElectricityStorage > 0) {
 			throw new IllegalArgumentException(
 					"Station can't have 0 electricity slots and still have electricity output potential.");
 		}
-		this.LevelOfElectricityStorage = LevelOfElectricityStorage;
-		this.LevelOfGasStorage = LevelOfGasStorage;
+		this.levelOfElectricityStorage = levelOfElectricityStorage;
+		this.levelOfGasStorage = levelOfGasStorage;
 
-		if (LevelOfElectricityStorage < 0 || LevelOfGasStorage < 0) {
+		if (levelOfElectricityStorage < 0 || levelOfGasStorage < 0) {
 			throw new IllegalArgumentException("Charging station storage can't be fewer than 0.");
-		} else if (LevelOfElectricityStorage == 0 && LevelOfGasStorage == 0){
+		} else if (levelOfElectricityStorage == 0 && levelOfGasStorage == 0){
 			throw new IllegalArgumentException("Station can't have 0 storage of any kind");
 		}
-		if (numGasSlots == 0 && LevelOfGasStorage > 0) {
+		if (numGasSlots == 0 && levelOfGasStorage > 0) {
 			throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
-		} else if (numElectricSlots == 0 && LevelOfElectricityStorage > 0) {
+		} else if (numElectricSlots == 0 && levelOfElectricityStorage > 0) {
 			throw new IllegalArgumentException(
 					"Station can't have 0 electricity slots and still have electricity output potential.");
 		}
-		this.LevelOfElectricityStorage = LevelOfElectricityStorage;
-		this.LevelOfGasStorage = LevelOfGasStorage;
+		this.levelOfElectricityStorage = levelOfElectricityStorage;
+		this.levelOfGasStorage = levelOfGasStorage;
 
 		this.logger.fine("Initiated " + this.toString());
 		this.logger.info(String.format("Weather: %s", stationWeatherState.getWeather()));
