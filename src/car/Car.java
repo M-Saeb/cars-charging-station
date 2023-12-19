@@ -45,6 +45,7 @@ public abstract class Car implements Runnable{
 			this.setCurrentState(CarState.charged);
 		}
 		this.priorityFlag = false;
+		this.logger = Logger.getLogger(this.toString());
 	}
 
 	@Override

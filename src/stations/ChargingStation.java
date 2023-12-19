@@ -1,14 +1,11 @@
 package stations;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
-
 import annotations.APIMethod;
 import annotations.Mutable;
 import annotations.Readonly;
@@ -21,6 +18,8 @@ import car.GasCar;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
+import weather.WeatherState;
+import weather.weather;
 
 
 public class ChargingStation implements Runnable {	
@@ -34,8 +33,12 @@ public class ChargingStation implements Runnable {
 	private float levelOfElectricityStorage;
 	private float levelOfGasStorage;
 	
+	private weather stationWeatherState = new weather();
+	private EnergySource stationEnergySource = new EnergySource();
+	private EnergyState currentEnergySource;
 	private Semaphore gasSemaphore;
 	private Semaphore electricitySemaphore;
+	
 	
 	private ArrayList<Car> waitingQueue = new ArrayList<Car>();
 	private ArrayList<ChargingSlot> electricSlots = new ArrayList<ChargingSlot>();
@@ -75,6 +78,10 @@ public class ChargingStation implements Runnable {
 			} else if (numElectricSlots < 0) {
 				throw new IllegalArgumentException("Station can't have fewer than 0 electirc slots.");
 			}
+		}
+		
+		{
+			stationWeatherState.getRandomWeather();
 		}
 		
 		{
@@ -128,7 +135,52 @@ public class ChargingStation implements Runnable {
 			this.levelOfGasStorage = levelOfGasStorage;
 		}
 
+		if (LevelOfElectricityStorage < 0 || LevelOfGasStorage < 0) {
+			throw new IllegalArgumentException("Charging station storage can't be fewer than 0.");
+		} else if (LevelOfElectricityStorage == 0 && LevelOfGasStorage == 0){
+			throw new IllegalArgumentException("Station can't have 0 storage of any kind");
+		}
+		if (numGasSlots == 0 && LevelOfGasStorage > 0) {
+			throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
+		} else if (numElectricSlots == 0 && LevelOfElectricityStorage > 0) {
+			throw new IllegalArgumentException(
+					"Station can't have 0 electricity slots and still have electricity output potential.");
+		}
+		this.LevelOfElectricityStorage = LevelOfElectricityStorage;
+		this.LevelOfGasStorage = LevelOfGasStorage;
+
+		if (LevelOfElectricityStorage < 0 || LevelOfGasStorage < 0) {
+			throw new IllegalArgumentException("Charging station storage can't be fewer than 0.");
+		} else if (LevelOfElectricityStorage == 0 && LevelOfGasStorage == 0){
+			throw new IllegalArgumentException("Station can't have 0 storage of any kind");
+		}
+		if (numGasSlots == 0 && LevelOfGasStorage > 0) {
+			throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
+		} else if (numElectricSlots == 0 && LevelOfElectricityStorage > 0) {
+			throw new IllegalArgumentException(
+					"Station can't have 0 electricity slots and still have electricity output potential.");
+		}
+		this.LevelOfElectricityStorage = LevelOfElectricityStorage;
+		this.LevelOfGasStorage = LevelOfGasStorage;
+
 		this.logger.fine("Initiated " + this.toString());
+		this.logger.info(String.format("Weather: %s", stationWeatherState.getWeather()));
+		
+		/*
+		 * Power Source of station
+		 */
+		if(stationWeatherState.getWeatherValue().ordinal() < WeatherState.cloudy.ordinal())
+		{
+			stationEnergySource.setSolar();
+			currentEnergySource = stationEnergySource.getEnergyValue();
+			currentEnergySource = stationEnergySource.getEnergyValue();
+		}
+		else {
+			stationEnergySource.setPowerGrid();
+			currentEnergySource = stationEnergySource.getEnergyValue();
+			currentEnergySource = stationEnergySource.getEnergyValue();
+		}
+		this.logger.info(String.format("Power source: %s", currentEnergySource.toString()));
 	}
 
 	@Readonly
@@ -455,8 +507,9 @@ public class ChargingStation implements Runnable {
 		{
 			try {
 				Thread.sleep(1000);
-				this.sendCarsToEmptyEletricSlots();
 				this.sendCarsToEmptyGasSlots();
+				this.sendCarsToEmptyEletricSlots();
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
