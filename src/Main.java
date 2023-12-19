@@ -24,6 +24,7 @@ import byteStream.ByteStreamInputCars;
 import byteStream.ByteStreamInputChargingStations;
 import car.Car;
 import stations.ChargingStation;
+import stations.EnergySource;
 
 class StationsFilter implements Filter {
 		public boolean isLoggable(LogRecord logRecord) {
@@ -31,9 +32,9 @@ class StationsFilter implements Filter {
 		}
 	}
 
-class GasSourceFilter implements Filter {
+class EnergySourceFilter implements Filter {
 		public boolean isLoggable(LogRecord logRecord) {
-			return logRecord.getLoggerName().startsWith("Gas Source");
+			return logRecord.getLoggerName().contains(EnergySource.class.getSimpleName());
 		}
 	}
 
@@ -94,12 +95,12 @@ public class Main {
 		List<Entry<String,Filter>> loggersConfig = new ArrayList<>();
 		loggersConfig.add(new SimpleEntry<String, Filter>("system", null));
 		loggersConfig.add(new SimpleEntry<String, Filter>("stations", new StationsFilter()));
-		loggersConfig.add(new SimpleEntry<String, Filter>("gas source", new GasSourceFilter()));
-		loggersConfig.add(new SimpleEntry<String, Filter>("electricity source", new ElectricitySourceFilter()));
+		loggersConfig.add(new SimpleEntry<String, Filter>("energy source", new EnergySourceFilter()));
+		// loggersConfig.add(new SimpleEntry<String, Filter>("electricity source", new ElectricitySourceFilter()));
 
 		for (Entry<String,Filter> loggerConfig: loggersConfig){
 			try {
-				String filename = String.format("%s - %s/%s", todaysDate, logsPath.toString(), loggerConfig.getKey());
+				String filename = String.format("%s/%s - %s", logsPath.toString(), todaysDate, loggerConfig.getKey());
 				FileHandler fileHandler = Utils.generateFileHandler(filename, ourFormatter, loggerConfig.getValue());
 				Logger.getLogger("").addHandler(fileHandler);
 			} catch (SecurityException | IOException e) {

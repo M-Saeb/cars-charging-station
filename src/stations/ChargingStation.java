@@ -36,7 +36,7 @@ public class ChargingStation implements Runnable {
 	private float levelOfGasStorage;
 	
 	private weather stationWeatherState = new weather();
-	private EnergySource stationEnergySource = new EnergySource();
+	private EnergySource stationEnergySource;
 	private EnergyState currentEnergySource;
 	private Semaphore gasSemaphore;
 	private Semaphore electricitySemaphore;
@@ -88,6 +88,7 @@ public class ChargingStation implements Runnable {
 					this.electricityOutputPerSecond
 					
 			));
+			this.stationEnergySource = new EnergySource(this);
 			try {
 				LocationAPI.checkGPSValues(gpsValues);
 			} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e) {
@@ -117,8 +118,7 @@ public class ChargingStation implements Runnable {
 				for(int i=0; i < numElectricSlots; i++){
 					electricitySemaphore = new Semaphore(numElectricSlots, true);
 					
-					String name = String.format("%s-ElecticSlot-%s ", this.toString(), i+1 );
-					ChargingSlot slot = new ChargingSlot(name, this);
+					ChargingSlot slot = new ChargingSlot(i + 1, this);
 					this.electricSlots.add(slot);
 					Thread slotThread = new Thread(slot);
 					slotThread.start();
@@ -127,9 +127,8 @@ public class ChargingStation implements Runnable {
 			if (numGasSlots > 0) {
 				for(int i=0; i < numGasSlots; i++){
 					gasSemaphore = new Semaphore(numGasSlots, true);
-					
-					String name = String.format("%s-GasSlot-%s ", this.toString(), i+1 );
-					ChargingSlot slot = new ChargingSlot(name, this);
+
+					ChargingSlot slot = new ChargingSlot(i + 1, this);
 					this.gasSlots.add(slot);
 					Thread slotThread = new Thread(slot);
 					slotThread.start();
@@ -206,7 +205,10 @@ public class ChargingStation implements Runnable {
 			stationEnergySource.setPowerGrid();
 			currentEnergySource = stationEnergySource.getEnergyValue();
 		}
-		this.logger.info(String.format("Power source: %s", currentEnergySource.toString()));
+		this.stationEnergySource.logger.info(String.format(
+			"Power source set to %s because of %s weather",
+			currentEnergySource.toString(),
+			stationWeatherState.getWeatherValue().toString()));
 	}
 
 	@Readonly
