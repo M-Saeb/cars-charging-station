@@ -173,11 +173,9 @@ public class ChargingStation implements Runnable {
 		{
 			stationEnergySource.setSolar();
 			currentEnergySource = stationEnergySource.getEnergyValue();
-			currentEnergySource = stationEnergySource.getEnergyValue();
 		}
 		else {
 			stationEnergySource.setPowerGrid();
-			currentEnergySource = stationEnergySource.getEnergyValue();
 			currentEnergySource = stationEnergySource.getEnergyValue();
 		}
 		this.logger.info(String.format("Power source: %s", currentEnergySource.toString()));
