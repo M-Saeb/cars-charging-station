@@ -69,10 +69,11 @@ public class ChargingSlot implements Runnable{
 					float outputPerSecond;
 					if (car instanceof ElectricCar){
 						outputPerSecond = this.chargingStation.getElectricityOutputPerSecond();
+						this.chargingStation.getElectricitySourceLogger().info("Adding " + outputPerSecond + " to car " + car.toString());
 					} else {
 						outputPerSecond = this.chargingStation.getGasOutputPerSecond();
+						this.chargingStation.getGasSourceLogger().info("Adding " + outputPerSecond + " to car " + car.toString());
 					}
-					this.logger.info("Adding " + outputPerSecond + " to car " + car.toString());
 					car.addFuel(outputPerSecond);
 				}
 			} catch (Exception e){

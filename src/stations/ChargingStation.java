@@ -23,6 +23,8 @@ import exceptions.InvalidGPSValueException;
 
 public class ChargingStation implements Runnable {	
 	private Logger logger;
+	private Logger gasSourceLogger;
+	private Logger electricitySourceLogger;
 	/* Charging Station Info */
 	private int chargingStationID;
 	
@@ -52,6 +54,32 @@ public class ChargingStation implements Runnable {
 		{
 			this.chargingStationID = chargingStationID;
 			this.logger = Logger.getLogger(this.toString());
+			this.gasSourceLogger = Logger.getLogger("Gas Source of ", this.toString());
+			this.electricitySourceLogger = Logger.getLogger("Electricity Source of ", this.toString());
+			this.gasSourceLogger.info(
+				String.format(
+					"""
+						Station has following energy properties:\n
+						Level os gas: %f\n
+						Gas output rate: %f\n
+						----------------------------------
+					""",
+					this.LevelOfGasStorage,
+					this.gasOutputPerSecond
+					
+			));
+			this.electricitySourceLogger.info(
+				String.format(
+					"""
+						Station has following energy properties:\n
+						Level of electricity: %f\n
+						Electricity output rate: %f\n
+						----------------------------------
+					""",
+					this.LevelOfElectricityStorage,
+					this.electricityOutputPerSecond
+					
+			));
 			try {
 				LocationAPI.checkGPSValues(gpsValues);
 			} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e) {
@@ -124,6 +152,15 @@ public class ChargingStation implements Runnable {
 	public String toString() {
 		return String.format("%d %d", this.getClass().getSimpleName(), this.chargingStationID);
 	}
+
+	@Readonly
+	public Logger getGasSourceLogger(){
+		return this.gasSourceLogger;
+	}
+
+	@Readonly
+	public Logger getElectricitySourceLogger(){
+		return this.electricitySourceLogger;
 	}
 
 	@Readonly
