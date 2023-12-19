@@ -442,7 +442,8 @@ public class ChargingStation implements Runnable {
 			}
 			
 			levelOfGasStorage -= amount;
-			this.logger.finer("Station supplied " + amount + " of gas. New level of storage: " + levelOfGasStorage);
+			setLevelOfGasStorage(levelOfGasStorage);
+			this.logger.finer("Station supplied " + amount + " of gas. New level of storage: " + this.levelOfGasStorage);
 		}
 		catch (InterruptedException e)
 		{
@@ -485,6 +486,7 @@ public class ChargingStation implements Runnable {
 			}
 			
 			levelOfElectricityStorage -= amount;
+			setLevelOfElectricityStorage(levelOfElectricityStorage);
 			this.logger.finer("Station supplied " + amount + " of electricity. New level of storage: " + levelOfElectricityStorage);
 		}
 		catch (InterruptedException e)
