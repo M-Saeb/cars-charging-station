@@ -12,15 +12,15 @@ import exceptions.ChargingSlotFullException;
 
 
 public class ChargingSlot implements Runnable{
-	private String name;
+	private int id;
 	protected ChargingStation chargingStation;
 	protected Car currentCar = null;
 	protected Logger logger;
 	
 	
-	public ChargingSlot(String name, ChargingStation station) 
+	public ChargingSlot(int id, ChargingStation station) 
 	{
-		this.name = name;
+		this.id = id;
 		this.chargingStation = station;	
 		this.logger = Logger.getLogger(this.toString());
 	}
@@ -56,7 +56,7 @@ public class ChargingSlot implements Runnable{
 
 	@Readonly
 	public String toString() {
-		return this.name;
+		return String.format("%s - %s %d",this.chargingStation.toString(), this.getClass().getSimpleName(), this.id);
 	} 
 
 	@Override

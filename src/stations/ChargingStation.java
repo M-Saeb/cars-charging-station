@@ -75,8 +75,7 @@ public class ChargingStation implements Runnable {
 		{
 			if (numElectricSlots > 0) {
 				for(int i=0; i < numElectricSlots; i++){
-					String name = String.format("%s-ElecticSlot-%s ", this.toString(), i+1 );
-					ChargingSlot slot = new ChargingSlot(name, this);
+					ChargingSlot slot = new ChargingSlot(i + 1, this);
 					this.electricSlots.add(slot);
 					Thread slotThread = new Thread(slot);
 					slotThread.start();
@@ -84,8 +83,7 @@ public class ChargingStation implements Runnable {
 			}
 			if (numGasSlots > 0) {
 				for(int i=0; i < numGasSlots; i++){
-					String name = String.format("%s-GasSlot-%s ", this.toString(), i+1 );
-					ChargingSlot slot = new ChargingSlot(name, this);
+					ChargingSlot slot = new ChargingSlot(i + 1, this);
 					this.gasSlots.add(slot);
 					Thread slotThread = new Thread(slot);
 					slotThread.start();
@@ -124,7 +122,8 @@ public class ChargingStation implements Runnable {
 
 	@Readonly
 	public String toString() {
-		return String.format("Charging Station %d", this.chargingStationID);
+		return String.format("%d %d", this.getClass().getSimpleName(), this.chargingStationID);
+	}
 	}
 
 	@Readonly
