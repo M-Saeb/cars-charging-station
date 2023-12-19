@@ -1,5 +1,6 @@
 package stations;
 
+import java.awt.event.WindowStateListener;
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
 
@@ -56,7 +57,7 @@ public class ChargingSlot implements Runnable{
 
 	@Readonly
 	public String toString() {
-		return String.format("%s - %s %d",this.chargingStation.toString(), this.getClass().getSimpleName(), this.id);
+		return String.format("%s - %s %d", this.chargingStation.toString(), this.getClass().getSimpleName(), this.id);
 	} 
 
 	@Override
@@ -66,15 +67,15 @@ public class ChargingSlot implements Runnable{
 				Thread.sleep(1000);
 				Car car = this.getCurrentCar();
 				if (car != null ){
-					float outputPerSecond;
+					float energyAmount = car.getMissingAmountOfFuel();
 					if (car instanceof ElectricCar){
-						outputPerSecond = this.chargingStation.getElectricityOutputPerSecond();
-						this.chargingStation.getElectricitySourceLogger().info("Adding " + outputPerSecond + " to car " + car.toString());
+						energyAmount = this.chargingStation.consumeElectricity(energyAmount);
+						this.chargingStation.getElectricitySourceLogger().info("Adding " + energyAmount + " to car " + car.toString())
 					} else {
-						outputPerSecond = this.chargingStation.getGasOutputPerSecond();
-						this.chargingStation.getGasSourceLogger().info("Adding " + outputPerSecond + " to car " + car.toString());
+						energyAmount = this.chargingStation.consumeGas(energyAmount);
+						this.chargingStation.getGasSourceLogger().info("Adding " + energyAmount + " to car " + car.toString());
 					}
-					car.addFuel(outputPerSecond);
+					car.addFuel(energyAmount);
 				}
 			} catch (Exception e){
 				e.printStackTrace();

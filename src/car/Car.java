@@ -45,6 +45,7 @@ public abstract class Car implements Runnable{
 			this.setCurrentState(CarState.charged);
 		}
 		this.priorityFlag = false;
+		this.logger = Logger.getLogger(this.toString());
 	}
 
 	@Override
@@ -193,7 +194,7 @@ public abstract class Car implements Runnable{
 	}
 
 	@Mutable
-	public void addFuel(double amount){
+	public void addFuel(float amount){
 		this.currentCapacity += amount;
 		if (this.currentCapacity > this.tankCapacity){
 			this.currentCapacity = this.tankCapacity;
