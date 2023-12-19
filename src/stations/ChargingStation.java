@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -29,13 +31,16 @@ public class ChargingStation implements Runnable {
 	private GPSValues gpsValues;
 	private float gasOutputPerSecond;
 	private float electricityOutputPerSecond;
-	private float LevelOfElectricityStorage;
-	private float LevelOfGasStorage;
+	private float levelOfElectricityStorage;
+	private float levelOfGasStorage;
 	
+	private Semaphore gasSemaphore;
+	private Semaphore electricitySemaphore;
 	
 	private ArrayList<Car> waitingQueue = new ArrayList<Car>();
 	private ArrayList<ChargingSlot> electricSlots = new ArrayList<ChargingSlot>();
 	private ArrayList<ChargingSlot> gasSlots = new ArrayList<ChargingSlot>();
+	
 
 	@APIMethod
 	public ChargingStation(
@@ -45,8 +50,8 @@ public class ChargingStation implements Runnable {
 			int numElectricSlots,
 			float gasOutputPerSecond,
 			float electricityOutputPerSecond,
-			float LevelOfElectricityStorage,
-			float LevelOfGasStorage)
+			float levelOfElectricityStorage,
+			float levelOfGasStorage)
 			throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
 		
 		{
@@ -75,6 +80,8 @@ public class ChargingStation implements Runnable {
 		{
 			if (numElectricSlots > 0) {
 				for(int i=0; i < numElectricSlots; i++){
+					electricitySemaphore = new Semaphore(numElectricSlots, true);
+					
 					String name = String.format("%s-ElecticSlot-%s ", this.toString(), i+1 );
 					ChargingSlot slot = new ChargingSlot(name, this);
 					this.electricSlots.add(slot);
@@ -84,6 +91,8 @@ public class ChargingStation implements Runnable {
 			}
 			if (numGasSlots > 0) {
 				for(int i=0; i < numGasSlots; i++){
+					gasSemaphore = new Semaphore(numGasSlots, true);
+					
 					String name = String.format("%s-GasSlot-%s ", this.toString(), i+1 );
 					ChargingSlot slot = new ChargingSlot(name, this);
 					this.gasSlots.add(slot);
@@ -104,19 +113,19 @@ public class ChargingStation implements Runnable {
 			this.gasOutputPerSecond = gasOutputPerSecond;
 			this.electricityOutputPerSecond = electricityOutputPerSecond;
 
-			if (LevelOfElectricityStorage < 0 || LevelOfGasStorage < 0) {
+			if (levelOfElectricityStorage < 0 || levelOfGasStorage < 0) {
 				throw new IllegalArgumentException("Charging station storage can't be fewer than 0.");
-			} else if (LevelOfElectricityStorage == 0 && LevelOfGasStorage == 0){
+			} else if (levelOfElectricityStorage == 0 && levelOfGasStorage == 0){
 				throw new IllegalArgumentException("Station can't have 0 storage of any kind");
 			}
-			if (numGasSlots == 0 && LevelOfGasStorage > 0) {
+			if (numGasSlots == 0 && levelOfGasStorage > 0) {
 				throw new IllegalArgumentException("Station can't have 0 gas slots and still have gas output potential.");
-			} else if (numElectricSlots == 0 && LevelOfElectricityStorage > 0) {
+			} else if (numElectricSlots == 0 && levelOfElectricityStorage > 0) {
 				throw new IllegalArgumentException(
 						"Station can't have 0 electricity slots and still have electricity output potential.");
 			}
-			this.LevelOfElectricityStorage = LevelOfElectricityStorage;
-			this.LevelOfGasStorage = LevelOfGasStorage;
+			this.levelOfElectricityStorage = levelOfElectricityStorage;
+			this.levelOfGasStorage = levelOfGasStorage;
 		}
 
 		this.logger.fine("Initiated " + this.toString());
@@ -197,17 +206,17 @@ public class ChargingStation implements Runnable {
 
 	@Readonly
 	public float getLevelOfElectricityStorage() {
-		return LevelOfElectricityStorage;
+		return levelOfElectricityStorage;
 	}
 
 	@Mutable
 	public void setLevelOfElectricityStorage(float levelOfElectricityStorage) {
-		LevelOfElectricityStorage = levelOfElectricityStorage;
+		this.levelOfElectricityStorage = levelOfElectricityStorage;
 	}
 
 	@Readonly
 	public float getLevelOfGasStorage() {
-		return LevelOfGasStorage;
+		return levelOfGasStorage;
 	}
 
 	/**
@@ -246,7 +255,7 @@ public class ChargingStation implements Runnable {
 
 	@Mutable
 	public void setLevelOfGasStorage(float levelOfGasStorage) {
-		LevelOfGasStorage = levelOfGasStorage;
+		this.levelOfGasStorage = levelOfGasStorage;
 	}
 
 	@Mutable
@@ -354,6 +363,92 @@ public class ChargingStation implements Runnable {
 		}
 	}
 
+	@Mutable
+	public float consumeGas(float requestedAmount)
+	{
+		float amount = 0;
+		
+		try
+		{
+			gasSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
+			
+			if(levelOfElectricityStorage == 0)
+			{
+				this.logger.warning("Gas storage of station is empty!");
+			}
+			
+			amount = requestedAmount;
+			
+			//Clipping if requested amount is too large
+			if(amount > gasOutputPerSecond)
+			{
+				amount = gasOutputPerSecond;
+			}
+			
+			//Checking if requested amount is larger than what is available
+			if(amount > levelOfGasStorage)
+			{
+				amount = levelOfGasStorage;
+			}
+			
+			levelOfGasStorage -= amount;
+			this.logger.finer("Station supplied " + amount + " of gas. New level of storage: " + levelOfGasStorage);
+		}
+		catch (InterruptedException e)
+		{
+			this.logger.warning("Did not gas semaphore!");
+		}
+		finally
+		{
+			gasSemaphore.release();
+		}
+		
+		return amount;
+	}
+	
+	public float consumeElectricity(float requestedAmount)
+	{
+		float amount = 0;
+		
+		try
+		{
+			electricitySemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
+			
+			if(levelOfElectricityStorage == 0)
+			{
+				this.logger.warning("Electricity storage of station is empty!");
+			}
+			
+			
+			amount = requestedAmount;
+			
+			//Clipping if requested amount is too large
+			if(amount > electricityOutputPerSecond)
+			{
+				amount = electricityOutputPerSecond;
+			}
+			
+			//Checking if requested amount is larger than what is available
+			if(amount > levelOfElectricityStorage)
+			{
+				amount = levelOfElectricityStorage;
+			}
+			
+			levelOfElectricityStorage -= amount;
+			this.logger.finer("Station supplied " + amount + " of electricity. New level of storage: " + levelOfElectricityStorage);
+		}
+		catch (InterruptedException e)
+		{
+			this.logger.warning("Did not get electricity semaphore!");
+		}
+		finally
+		{
+			electricitySemaphore.release();
+		}
+		
+		return amount;
+	}
+	
 	@Override
 	public void run() {
 		while(true)

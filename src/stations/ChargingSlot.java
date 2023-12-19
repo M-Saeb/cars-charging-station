@@ -1,5 +1,6 @@
 package stations;
 
+import java.awt.event.WindowStateListener;
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
 
@@ -66,14 +67,14 @@ public class ChargingSlot implements Runnable{
 				Thread.sleep(1000);
 				Car car = this.getCurrentCar();
 				if (car != null ){
-					float outputPerSecond;
+					float energyAmount = car.getMissingAmountOfFuel();
 					if (car instanceof ElectricCar){
-						outputPerSecond = this.chargingStation.getElectricityOutputPerSecond();
+						energyAmount = this.chargingStation.consumeElectricity(energyAmount);
 					} else {
-						outputPerSecond = this.chargingStation.getGasOutputPerSecond();
+						energyAmount = this.chargingStation.consumeGas(energyAmount);
 					}
-					this.logger.info("Adding " + outputPerSecond + " to car " + car.toString());
-					car.addFuel(outputPerSecond);
+					this.logger.info("Adding " + energyAmount + " to car " + car.toString());
+					car.addFuel(energyAmount);
 				}
 			} catch (Exception e){
 				e.printStackTrace();
