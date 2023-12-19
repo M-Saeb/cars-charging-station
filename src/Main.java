@@ -107,24 +107,6 @@ public class Main {
 			}
 			
 		}
-		try {
-			// Add main log file
-			FileHandler mainFileHandler = Utils.generateFileHandler(logsPath.toString() + "/system " + todaysDate, ourFormatter, null);
-			Logger.getLogger("").addHandler(mainFileHandler);
-
-			// Add stations' log file
-			FileHandler stationFileHandler = Utils.generateFileHandler(logsPath.toString() + "/stations " + todaysDate, ourFormatter, new StationsFilter());
-			Logger.getLogger("").addHandler(stationFileHandler);
-			
-			// Add energy sources' log files
-			FileHandler gasSourceHandler = Utils.generateFileHandler(logsPath.toString() + "/gas source " + todaysDate, ourFormatter, new GasSourceFilter());
-			Logger.getLogger("").addHandler(gasSourceHandler);
-
-			FileHandler electricitySourceHandler = Utils.generateFileHandler(logsPath.toString() + "/electricity source " + todaysDate, ourFormatter, new ElectricitySourceFilter());
-			Logger.getLogger("").addHandler(electricitySourceHandler);
-		} catch (SecurityException | IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public static void main(String[] args) {
