@@ -86,11 +86,12 @@ public class ChargingStation implements Runnable {
 		}
 		
 		{
+			int slotIDCounter = 0;
 			if (numElectricSlots > 0) {
 				for(int i=0; i < numElectricSlots; i++){
 					electricitySemaphore = new Semaphore(numElectricSlots, true);
 					
-					ChargingSlot slot = new ChargingSlot(i + 1, this);
+					ChargingSlot slot = new ChargingSlot(++slotIDCounter, this);
 					this.electricSlots.add(slot);
 					Thread slotThread = new Thread(slot);
 					slotThread.start();
@@ -100,7 +101,7 @@ public class ChargingStation implements Runnable {
 				for(int i=0; i < numGasSlots; i++){
 					gasSemaphore = new Semaphore(numGasSlots, true);
 
-					ChargingSlot slot = new ChargingSlot(i + 1, this);
+					ChargingSlot slot = new ChargingSlot(++slotIDCounter, this);
 					this.gasSlots.add(slot);
 					Thread slotThread = new Thread(slot);
 					slotThread.start();
@@ -185,17 +186,7 @@ public class ChargingStation implements Runnable {
 
 	@Readonly
 	public String toString() {
-		return String.format("Charging Station %d", this.chargingStationID);
-	}
-
-	@Readonly
-	public Logger getGasSourceLogger(){
-		return this.gasSourceLogger;
-	}
-
-	@Readonly
-	public Logger getElectricitySourceLogger(){
-		return this.electricitySourceLogger;
+		return String.format("%s %d", this.getClass().getSimpleName(), this.chargingStationID);
 	}
 
 	@Readonly
