@@ -24,8 +24,6 @@ import weather.weather;
 
 public class ChargingStation implements Runnable {	
 	private Logger logger;
-	private Logger gasSourceLogger;
-	private Logger electricitySourceLogger;
 	/* Charging Station Info */
 	private int chargingStationID;
 	
@@ -62,32 +60,6 @@ public class ChargingStation implements Runnable {
 		{
 			this.chargingStationID = chargingStationID;
 			this.logger = Logger.getLogger(this.toString());
-			this.gasSourceLogger = Logger.getLogger("Gas Source of ", this.toString());
-			this.electricitySourceLogger = Logger.getLogger("Electricity Source of ", this.toString());
-			this.gasSourceLogger.info(
-				String.format(
-					"""
-						Station has following energy properties:\n
-						Level os gas: %f\n
-						Gas output rate: %f\n
-						----------------------------------
-					""",
-					this.levelOfGasStorage,
-					this.gasOutputPerSecond
-					
-			));
-			this.electricitySourceLogger.info(
-				String.format(
-					"""
-						Station has following energy properties:\n
-						Level of electricity: %f\n
-						Electricity output rate: %f\n
-						----------------------------------
-					""",
-					this.levelOfElectricityStorage,
-					this.electricityOutputPerSecond
-					
-			));
 			this.stationEnergySource = new EnergySource(this);
 			try {
 				LocationAPI.checkGPSValues(gpsValues);

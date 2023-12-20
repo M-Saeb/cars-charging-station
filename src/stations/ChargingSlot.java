@@ -70,12 +70,11 @@ public class ChargingSlot implements Runnable{
 					float energyAmount = car.getMissingAmountOfFuel();
 					if (car instanceof ElectricCar){
 						energyAmount = this.chargingStation.consumeElectricity(energyAmount);
-						this.chargingStation.getElectricitySourceLogger().info("Adding " + energyAmount + " to car " + car.toString());
 					} else {
 						energyAmount = this.chargingStation.consumeGas(energyAmount);
-						this.chargingStation.getGasSourceLogger().info("Adding " + energyAmount + " to car " + car.toString());
 					}
 					car.addFuel(energyAmount);
+					this.logger.info("Adding " + energyAmount + " to car " + car.toString());
 				}
 			} catch (Exception e){
 				e.printStackTrace();

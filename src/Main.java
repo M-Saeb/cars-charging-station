@@ -38,11 +38,6 @@ class EnergySourceFilter implements Filter {
 		}
 	}
 
-class ElectricitySourceFilter implements Filter {
-		public boolean isLoggable(LogRecord logRecord) {
-			return logRecord.getLoggerName().startsWith("Electricity Source");
-		}
-	}
 
 public class Main {
 
@@ -96,7 +91,6 @@ public class Main {
 		loggersConfig.add(new SimpleEntry<String, Filter>("system", null));
 		loggersConfig.add(new SimpleEntry<String, Filter>("stations", new StationsFilter()));
 		loggersConfig.add(new SimpleEntry<String, Filter>("energy source", new EnergySourceFilter()));
-		// loggersConfig.add(new SimpleEntry<String, Filter>("electricity source", new ElectricitySourceFilter()));
 
 		for (Entry<String,Filter> loggerConfig: loggersConfig){
 			try {
