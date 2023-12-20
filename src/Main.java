@@ -94,7 +94,7 @@ public class Main {
 
 		for (Entry<String,Filter> loggerConfig: loggersConfig){
 			try {
-				String filename = String.format("%s/%s - %s", logsPath.toString(), todaysDate, loggerConfig.getKey());
+				String filename = String.format("%s/%s - %s.log", logsPath.toString(), todaysDate, loggerConfig.getKey());
 				FileHandler fileHandler = Utils.generateFileHandler(filename, ourFormatter, loggerConfig.getValue());
 				Logger.getLogger("").addHandler(fileHandler);
 			} catch (SecurityException | IOException e) {
