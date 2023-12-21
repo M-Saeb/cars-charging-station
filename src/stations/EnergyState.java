@@ -2,7 +2,7 @@ package stations;
 
 public enum EnergyState {
 	solar("solar"),
-	powerGrid("solar");
+	powerGrid("powerGrid");
 	
 	private String energyString;
 	

@@ -459,8 +459,23 @@ public class ChargingStation implements Runnable {
 	
 	public float consumeElectricity(float requestedAmount)
 	{
-		float amount = 0;
+		float currentElectricityOutputPerSecond = 0;
+		//Checking supply status of station
+		if(currentEnergySource == EnergyState.powerGrid)
+		{
+			currentElectricityOutputPerSecond = electricityOutputPerSecond;
+		}
+		else if(currentEnergySource == EnergyState.solar)
+		{
+			//More power available if solar is also active
+			currentElectricityOutputPerSecond = electricityOutputPerSecond * 1.25f;
+		}
+		else
+		{
+			currentElectricityOutputPerSecond = electricityOutputPerSecond;
+		}
 		
+		float amount = 0;
 		try
 		{
 			electricitySemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
@@ -474,9 +489,9 @@ public class ChargingStation implements Runnable {
 			amount = requestedAmount;
 			
 			//Clipping if requested amount is too large
-			if(amount > electricityOutputPerSecond)
+			if(amount > currentElectricityOutputPerSecond)
 			{
-				amount = electricityOutputPerSecond;
+				amount = currentElectricityOutputPerSecond;
 			}
 			
 			//Checking if requested amount is larger than what is available
