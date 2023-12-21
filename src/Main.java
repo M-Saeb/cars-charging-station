@@ -53,8 +53,6 @@ public class Main {
 	public static void main(String[] args) {
 		// initiate logger
 		Logger logger = Logger.getLogger("Main");
-		ChargingStation[] sortedStations = new ChargingStation[4];
-		
 		// Create pool of stations
 		ChargingStation[] stations = ByteStreamInputChargingStations.getChargingStations("objectLists/chargingStationsList.txt");
 		logger.info("---------------------------------------");
