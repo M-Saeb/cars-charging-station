@@ -24,6 +24,8 @@ public class ChargingSlot implements Runnable{
 		this.id = id;
 		this.chargingStation = station;	
 		this.logger = Logger.getLogger(this.toString());
+		// Add logs of slots to station logs
+		this.logger.addHandler(this.chargingStation.getFileHandler());
 	}
 	
 	@Mutable

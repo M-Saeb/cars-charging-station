@@ -4,15 +4,13 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.FileHandler;
-import java.util.logging.Filter;
 import java.util.logging.Formatter;
 import java.util.logging.Logger;
 
 public class Utils {
-    public static FileHandler generateFileHandler(String pattern, Formatter formatter, Filter filter) throws SecurityException, IOException {
+    public static FileHandler generateFileHandler(String pattern, Formatter formatter) throws SecurityException, IOException {
         FileHandler handler = new FileHandler(pattern, true);
         handler.setFormatter(formatter);
-        handler.setFilter(filter);
         return handler;
     }
 

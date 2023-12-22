@@ -1,5 +1,6 @@
 package stations;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -23,7 +24,6 @@ import car.GasCar;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
-import logging.LoggerNameFilter;
 import weather.WeatherState;
 import weather.weather;
 
@@ -31,6 +31,7 @@ import weather.weather;
 
 public class ChargingStation implements Runnable {	
 	private Logger logger;
+	private FileHandler fileHandler;
 	/* Charging Station Info */
 	private int chargingStationID;
 	
@@ -67,11 +68,11 @@ public class ChargingStation implements Runnable {
 		{
 			this.chargingStationID = chargingStationID;
 			this.logger = Logger.getLogger(this.toString());
+			// Add a logging file for this station
 			try {
-				FileHandler fileHandler = Utils.generateFileHandler(
-					String.format("%s/%s - %s.log", Paths.get("logs").toString(), Utils.getTodaysDate(), this.toString()),
-					Utils.getGlobalFormatter(),
-					new LoggerNameFilter(this.toString())
+				this.fileHandler = Utils.generateFileHandler(
+					String.format("%s/%s - %s.log", Paths.get("logs").toString(), Utils.getTodaysDate(), this.toString().toLowerCase()),
+					Utils.getGlobalFormatter()
 				);
 				this.logger.addHandler(fileHandler);
 			} catch (SecurityException | IOException e) {
@@ -201,6 +202,11 @@ public class ChargingStation implements Runnable {
 	@Readonly
 	public String toString() {
 		return String.format("%s %d", this.getClass().getSimpleName(), this.chargingStationID);
+	}
+
+	@Readonly
+	public FileHandler getFileHandler() {
+		return fileHandler;
 	}
 
 	@Readonly

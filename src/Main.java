@@ -71,22 +71,32 @@ public class Main {
 		String todaysDate = Utils.getTodaysDate();
 
 		Formatter ourFormatter = Utils.getGlobalFormatter();
-		// Create a list of (filename, filter) pairs
-		List<Entry<String,Filter>> loggersConfig = new ArrayList<>();
-		loggersConfig.add(new SimpleEntry<String, Filter>("system", null));
-		loggersConfig.add(new SimpleEntry<String, Filter>("solar", new logging.LoggerNameFilter("Solar")));
-		loggersConfig.add(new SimpleEntry<String, Filter>("power grid", new logging.LoggerNameFilter("PowerGrid")));
-		
-		for (Entry<String,Filter> loggerConfig: loggersConfig){
-			String filename = String.format("%s/%s - %s.log", logsPath.toString(), todaysDate, loggerConfig.getKey());
-			try {
-				FileHandler fileHandler = Utils.generateFileHandler(filename, ourFormatter, loggerConfig.getValue());
-				Logger.getLogger("").addHandler(fileHandler);
-			} catch (SecurityException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+
+		/*
+		 * Add logging file handler for solar and power grid energy sources,
+		 * as well as for the whole system.
+		 */
+		try {		
+			Logger.getLogger("").addHandler(
+				Utils.generateFileHandler(
+					String.format("%s/%s - %s.log", logsPath.toString(), todaysDate, "system"),
+					ourFormatter
+					)
+			);
+			Logger.getLogger("Solar").addHandler(
+				Utils.generateFileHandler(
+					String.format("%s/%s - %s.log", logsPath.toString(), todaysDate, "solar"),
+					ourFormatter
+					)
+			);
+			Logger.getLogger("PowerGrid").addHandler(
+				Utils.generateFileHandler(
+					String.format("%s/%s - %s.log", logsPath.toString(), todaysDate, "power grid"),
+					ourFormatter
+					)
+			);
+		} catch (SecurityException | IOException e) {
+			e.printStackTrace();
 		}
 
 	}
