@@ -38,7 +38,8 @@ public class EnergySource
 	{
 		this.energyState = EnergyState.solar;
 		this.solarLogger.info(String.format(
-			"Power source set to solar because of ",
+			"Power source of %s set to solar because of %s",
+			this.station.toString(),
 			reason));
 	}
 	
@@ -46,7 +47,8 @@ public class EnergySource
 	{
 		this.energyState = EnergyState.powerGrid;
 		this.powerGridLogger.info(String.format(
-			"Power source set to power grid because of %s weather",
+			"Power source of %s set to power grid because of %s",
+			this.station.toString(),
 			reason));
 	}
 }
