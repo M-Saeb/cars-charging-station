@@ -13,17 +13,19 @@ import exceptions.ChargingSlotFullException;
 
 
 public class ChargingSlot implements Runnable{
-	private String name;
+	private int id;
 	protected ChargingStation chargingStation;
 	protected Car currentCar = null;
 	protected Logger logger;
 	
 	
-	public ChargingSlot(String name, ChargingStation station) 
+	public ChargingSlot(int id, ChargingStation station) 
 	{
-		this.name = name;
+		this.id = id;
 		this.chargingStation = station;	
 		this.logger = Logger.getLogger(this.toString());
+		// Add logs of slots to station logs
+		this.logger.addHandler(this.chargingStation.getFileHandler());
 	}
 	
 	@Mutable
@@ -57,7 +59,7 @@ public class ChargingSlot implements Runnable{
 
 	@Readonly
 	public String toString() {
-		return this.name;
+		return String.format("%s - %s %d", this.chargingStation.toString(), this.getClass().getSimpleName(), this.id);
 	} 
 
 	@Override
@@ -73,8 +75,8 @@ public class ChargingSlot implements Runnable{
 					} else {
 						energyAmount = this.chargingStation.consumeGas(energyAmount);
 					}
-					this.logger.info("Adding " + energyAmount + " to car " + car.toString());
 					car.addFuel(energyAmount);
+					this.logger.info("Adding " + energyAmount + " to car " + car.toString());
 				}
 			} catch (Exception e){
 				e.printStackTrace();

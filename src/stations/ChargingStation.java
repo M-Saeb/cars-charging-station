@@ -1,11 +1,17 @@
 package stations;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+
+import utils.Utils;
 import annotations.APIMethod;
 import annotations.Mutable;
 import annotations.Readonly;
@@ -22,8 +28,10 @@ import weather.WeatherState;
 import weather.weather;
 
 
+
 public class ChargingStation implements Runnable {	
 	private Logger logger;
+	private FileHandler fileHandler;
 	/* Charging Station Info */
 	private int chargingStationID;
 	
@@ -34,7 +42,7 @@ public class ChargingStation implements Runnable {
 	private float levelOfGasStorage;
 	
 	private weather stationWeatherState = new weather();
-	private EnergySource stationEnergySource = new EnergySource();
+	private EnergySource stationEnergySource;
 	private EnergyState currentEnergySource;
 	private Semaphore gasSemaphore;
 	private Semaphore electricitySemaphore;
@@ -60,6 +68,18 @@ public class ChargingStation implements Runnable {
 		{
 			this.chargingStationID = chargingStationID;
 			this.logger = Logger.getLogger(this.toString());
+			// Add a logging file for this station
+			try {
+				this.fileHandler = Utils.generateFileHandler(
+					String.format("%s/%s - %s.log", Paths.get("logs").toString(), Utils.getTodaysDate(), this.toString().toLowerCase()),
+					Utils.getGlobalFormatter()
+				);
+				this.logger.addHandler(fileHandler);
+			} catch (SecurityException | IOException e) {
+				e.printStackTrace();
+			}
+
+			this.stationEnergySource = new EnergySource(this);
 			try {
 				LocationAPI.checkGPSValues(gpsValues);
 			} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e) {
@@ -85,12 +105,12 @@ public class ChargingStation implements Runnable {
 		}
 		
 		{
+			int slotIDCounter = 0;
 			if (numElectricSlots > 0) {
 				for(int i=0; i < numElectricSlots; i++){
 					electricitySemaphore = new Semaphore(numElectricSlots, true);
 					
-					String name = String.format("%s-ElecticSlot-%s ", this.toString(), i+1 );
-					ChargingSlot slot = new ChargingSlot(name, this);
+					ChargingSlot slot = new ChargingSlot(++slotIDCounter, this);
 					this.electricSlots.add(slot);
 					Thread slotThread = new Thread(slot);
 					slotThread.start();
@@ -99,9 +119,8 @@ public class ChargingStation implements Runnable {
 			if (numGasSlots > 0) {
 				for(int i=0; i < numGasSlots; i++){
 					gasSemaphore = new Semaphore(numGasSlots, true);
-					
-					String name = String.format("%s-GasSlot-%s ", this.toString(), i+1 );
-					ChargingSlot slot = new ChargingSlot(name, this);
+
+					ChargingSlot slot = new ChargingSlot(++slotIDCounter, this);
 					this.gasSlots.add(slot);
 					Thread slotThread = new Thread(slot);
 					slotThread.start();
@@ -171,21 +190,30 @@ public class ChargingStation implements Runnable {
 		 */
 		if(stationWeatherState.getWeatherValue().ordinal() < WeatherState.cloudy.ordinal())
 		{
-			stationEnergySource.setSolar();
+			stationEnergySource.setSolar(stationWeatherState.getWeatherValue().toString() + " weather");
 			currentEnergySource = stationEnergySource.getEnergyValue();
 		}
 		else {
-			stationEnergySource.setPowerGrid();
+			stationEnergySource.setPowerGrid(stationWeatherState.getWeatherValue().toString() + " weather");
 			currentEnergySource = stationEnergySource.getEnergyValue();
 		}
-		this.logger.info(String.format("Power source: %s", currentEnergySource.toString()));
 	}
 
 	@Readonly
 	public String toString() {
-		return String.format("Charging Station %d", this.chargingStationID);
+		return String.format("%s %d", this.getClass().getSimpleName(), this.chargingStationID);
 	}
 
+	@Readonly
+	public FileHandler getFileHandler() {
+		return fileHandler;
+	}
+
+	@Readonly
+	public weather getStationWeatherState() {
+		return stationWeatherState;
+	}
+	
 	@Readonly
 	public float getGPSLatitude() throws InvalidGPSValueException {
 		if (this.gpsValues.getLatitude() == 0) {

@@ -1,19 +1,30 @@
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.Map.Entry;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.FileHandler;
+import java.util.logging.Filter;
+import java.util.logging.Formatter;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.AbstractMap.SimpleEntry;
 
+import utils.Utils;
 import api.LocationAPI;
 import byteStream.ByteStreamHandler;
 import byteStream.ByteStreamInputCars;
 import byteStream.ByteStreamInputChargingStations;
 import car.Car;
 import stations.ChargingStation;
+import stations.EnergySource;
+
 
 public class Main {
 
@@ -28,6 +39,7 @@ public class Main {
 		}
 
 		// Delete old logs
+		/*
 		try {
 			for(File file: logsPath.toFile().listFiles()){ 
 				if (!file.isDirectory()){
@@ -38,6 +50,7 @@ public class Main {
 			Logger.getAnonymousLogger().severe("Couldn't delete old logs.");
 			Logger.getAnonymousLogger().severe(e.getMessage());
 		}
+		*/
 
 		// Import logging configurations
 		try {
@@ -48,11 +61,49 @@ public class Main {
 			Logger.getAnonymousLogger().severe(e.getMessage());
 		}
 		Logger.getLogger("").addHandler(new ByteStreamHandler("logs/byteStreamLog.log"));
+
+		/*
+		 * Add a FileHandler and associate it with a Filter for every type of
+		 * log file that we need.
+		 */
+
+		// get today's date for log filename
+		String todaysDate = Utils.getTodaysDate();
+
+		Formatter ourFormatter = Utils.getGlobalFormatter();
+
+		/*
+		 * Add logging file handler for solar and power grid energy sources,
+		 * as well as for the whole system.
+		 */
+		try {		
+			Logger.getLogger("").addHandler(
+				Utils.generateFileHandler(
+					String.format("%s/%s - %s.log", logsPath.toString(), todaysDate, "system"),
+					ourFormatter
+					)
+			);
+			Logger.getLogger("Solar").addHandler(
+				Utils.generateFileHandler(
+					String.format("%s/%s - %s.log", logsPath.toString(), todaysDate, "solar"),
+					ourFormatter
+					)
+			);
+			Logger.getLogger("PowerGrid").addHandler(
+				Utils.generateFileHandler(
+					String.format("%s/%s - %s.log", logsPath.toString(), todaysDate, "power grid"),
+					ourFormatter
+					)
+			);
+		} catch (SecurityException | IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public static void main(String[] args) {
 		// initiate logger
-		Logger logger = Logger.getLogger("Main");
+		Logger logger = Logger.getLogger("system");
 		ChargingStation[] sortedStations = new ChargingStation[4];
 		
 		// Create pool of stations
