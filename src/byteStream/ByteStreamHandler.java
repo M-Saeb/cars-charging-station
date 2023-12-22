@@ -39,7 +39,6 @@ public class ByteStreamHandler extends Handler
 				}
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			System.out.println("An error occurred: " + e.getMessage());
 			e.printStackTrace();
 		}
@@ -47,7 +46,6 @@ public class ByteStreamHandler extends Handler
 
 	@Override
 	public Formatter getFormatter() {
-		// TODO Auto-generated method stub
 		return formatter;
 	}
 
@@ -80,7 +78,6 @@ public class ByteStreamHandler extends Handler
     	try {
 	    	file.write(logBytes);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	finally {

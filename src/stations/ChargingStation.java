@@ -1,6 +1,5 @@
 package stations;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -43,7 +42,6 @@ public class ChargingStation implements Runnable {
 	
 	private weather stationWeatherState = new weather();
 	private EnergySource stationEnergySource;
-	private EnergyState currentEnergySource;
 	private Semaphore gasSemaphore;
 	private Semaphore electricitySemaphore;
 	
@@ -96,7 +94,7 @@ public class ChargingStation implements Runnable {
 			} else if (numGasSlots < 0) {
 				throw new IllegalArgumentException("Station can't have fewer than 0 gas slots.");
 			} else if (numElectricSlots < 0) {
-				throw new IllegalArgumentException("Station can't have fewer than 0 electirc slots.");
+				throw new IllegalArgumentException("Station can't have fewer than 0 electric slots.");
 			}
 		}
 		
@@ -191,11 +189,11 @@ public class ChargingStation implements Runnable {
 		if(stationWeatherState.getWeatherValue().ordinal() < WeatherState.cloudy.ordinal())
 		{
 			stationEnergySource.setSolar(stationWeatherState.getWeatherValue().toString() + " weather");
-			currentEnergySource = stationEnergySource.getEnergyValue();
+			stationEnergySource.getEnergyValue();
 		}
 		else {
 			stationEnergySource.setPowerGrid(stationWeatherState.getWeatherValue().toString() + " weather");
-			currentEnergySource = stationEnergySource.getEnergyValue();
+			stationEnergySource.getEnergyValue();
 		}
 	}
 
@@ -218,9 +216,9 @@ public class ChargingStation implements Runnable {
 	public float getGPSLatitude() throws InvalidGPSValueException {
 		if (this.gpsValues.getLatitude() == 0) {
 			try {
-				throw new InvalidGPSLatitudeException("Invalid Latitud value...");
+				throw new InvalidGPSLatitudeException("Invalid Latitude value...");
 			} catch (Exception e) {
-				System.out.println("Invalid Latitud value...");
+				System.out.println("Invalid Latitude value...");
 				e.printStackTrace();
 			}
 		} else {
@@ -235,9 +233,9 @@ public class ChargingStation implements Runnable {
 	public float getGPSLongitude() throws InvalidGPSValueException {
 		if (this.gpsValues.getLongitude() == 0) {
 			try {
-				throw new InvalidGPSLongitudeException("Invalid Latitud value...");
+				throw new InvalidGPSLongitudeException("Invalid Latitude value...");
 			} catch (Exception e) {
-				this.logger.severe("Invalid Latitud value...");
+				this.logger.severe("Invalid Latitude value...");
 				this.logger.severe(e.getStackTrace().toString());
 			}
 		} else {
@@ -371,8 +369,8 @@ public class ChargingStation implements Runnable {
 	}
 
 	/**
-	 * Disonnect car from slot.
-	 */
+	 * Disconnect car from slot.
+	 *
 	@Mutable
 	public void leaveSlot(Car car) throws Exception{
 		this.logger.fine(String.format("%s is done charging. Removing it...", car.toString()));
@@ -397,13 +395,14 @@ public class ChargingStation implements Runnable {
 		this.logger.fine(String.format("Removed %s from slot.", car.toString()));
 
 	}
+	*/
 
 	@Mutable
-	public void sendCarsToEmptyEletricSlots()
+	public void sendCarsToEmptyElectricSlots()
 	{
-		List<ChargingSlot> freeElecticSlots =  this.electricSlots.stream()
+		List<ChargingSlot> freeElectricSlots =  this.electricSlots.stream()
 			.filter(slot -> slot.getCurrentCar() == null).toList();
-		for (ChargingSlot slot: freeElecticSlots){
+		for (ChargingSlot slot: freeElectricSlots){
 			Optional<Car> nextPossibleCar = this.waitingQueue.stream()
 				.filter(car -> car instanceof ElectricCar).findFirst();
 			// if (nextPossibleCars.)
@@ -536,7 +535,7 @@ public class ChargingStation implements Runnable {
 			try {
 				Thread.sleep(1000);
 				this.sendCarsToEmptyGasSlots();
-				this.sendCarsToEmptyEletricSlots();
+				this.sendCarsToEmptyElectricSlots();
 				
 			} catch (Exception e) {
 				e.printStackTrace();

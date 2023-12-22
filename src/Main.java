@@ -1,20 +1,12 @@
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-import java.util.Map.Entry;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.FileHandler;
-import java.util.logging.Filter;
 import java.util.logging.Formatter;
 import java.util.logging.LogManager;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.AbstractMap.SimpleEntry;
 
 import utils.Utils;
 import api.LocationAPI;
@@ -23,7 +15,6 @@ import byteStream.ByteStreamInputCars;
 import byteStream.ByteStreamInputChargingStations;
 import car.Car;
 import stations.ChargingStation;
-import stations.EnergySource;
 
 
 public class Main {
@@ -104,7 +95,6 @@ public class Main {
 	public static void main(String[] args) {
 		// initiate logger
 		Logger logger = Logger.getLogger("system");
-		ChargingStation[] sortedStations = new ChargingStation[4];
 		
 		// Create pool of stations
 		ChargingStation[] stations = ByteStreamInputChargingStations.getChargingStations("objectLists/chargingStationsList.txt");
