@@ -1,11 +1,16 @@
 package stations;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+
+import utils.Utils;
 import annotations.APIMethod;
 import annotations.Mutable;
 import annotations.Readonly;
@@ -18,8 +23,10 @@ import car.GasCar;
 import exceptions.InvalidGPSLatitudeException;
 import exceptions.InvalidGPSLongitudeException;
 import exceptions.InvalidGPSValueException;
+import logging.LoggerNameFilter;
 import weather.WeatherState;
 import weather.weather;
+
 
 
 public class ChargingStation implements Runnable {	
@@ -60,6 +67,17 @@ public class ChargingStation implements Runnable {
 		{
 			this.chargingStationID = chargingStationID;
 			this.logger = Logger.getLogger(this.toString());
+			try {
+				FileHandler fileHandler = Utils.generateFileHandler(
+					String.format("%s/%s - %s.log", Paths.get("logs").toString(), Utils.getTodaysDate(), this.toString()),
+					Utils.getGlobalFormatter(),
+					new LoggerNameFilter(this.toString())
+				);
+				this.logger.addHandler(fileHandler);
+			} catch (SecurityException | IOException e) {
+				e.printStackTrace();
+			}
+
 			this.stationEnergySource = new EnergySource(this);
 			try {
 				LocationAPI.checkGPSValues(gpsValues);
@@ -171,17 +189,13 @@ public class ChargingStation implements Runnable {
 		 */
 		if(stationWeatherState.getWeatherValue().ordinal() < WeatherState.cloudy.ordinal())
 		{
-			stationEnergySource.setSolar();
+			stationEnergySource.setSolar(stationWeatherState.getWeatherValue().toString() + " weather");
 			currentEnergySource = stationEnergySource.getEnergyValue();
 		}
 		else {
-			stationEnergySource.setPowerGrid();
+			stationEnergySource.setPowerGrid(stationWeatherState.getWeatherValue().toString() + " weather");
 			currentEnergySource = stationEnergySource.getEnergyValue();
 		}
-		this.stationEnergySource.logger.info(String.format(
-			"Power source set to %s because of %s weather",
-			currentEnergySource.toString(),
-			stationWeatherState.getWeatherValue().toString()));
 	}
 
 	@Readonly
@@ -189,6 +203,11 @@ public class ChargingStation implements Runnable {
 		return String.format("%s %d", this.getClass().getSimpleName(), this.chargingStationID);
 	}
 
+	@Readonly
+	public weather getStationWeatherState() {
+		return stationWeatherState;
+	}
+	
 	@Readonly
 	public float getGPSLatitude() throws InvalidGPSValueException {
 		if (this.gpsValues.getLatitude() == 0) {

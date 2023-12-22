@@ -1,18 +1,27 @@
 package stations;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+
+import logging.LoggerNameFilter;
+import utils.Utils;
 
 public class EnergySource
 {
 	EnergyState energyState;
 	ChargingStation station;
-	Logger logger;
+	Logger solarLogger;
+	Logger powerGridLogger;
 
 	public EnergySource(ChargingStation station)
 	{
 		this.energyState = EnergyState.powerGrid;
 		this.station = station;
-		this.logger = Logger.getLogger(this.toString());
+
+		this.powerGridLogger = Logger.getLogger("PowerGrid");
+		this.solarLogger = Logger.getLogger("Solar");
 	}
 
 	@Override
@@ -30,13 +39,19 @@ public class EnergySource
 		return this.energyState.getEnergyString();
 	}
 	
-	public void setSolar()
+	public void setSolar(String reason)
 	{
 		this.energyState = EnergyState.solar;
+		this.solarLogger.info(String.format(
+			"Power source set to solar because of ",
+			reason));
 	}
 	
-	public void setPowerGrid()
+	public void setPowerGrid(String reason)
 	{
 		this.energyState = EnergyState.powerGrid;
+		this.powerGridLogger.info(String.format(
+			"Power source set to power grid because of %s weather",
+			reason));
 	}
 }

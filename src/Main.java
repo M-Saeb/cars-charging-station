@@ -8,8 +8,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.logging.FileHandler;
 import java.util.logging.Filter;
 import java.util.logging.Formatter;
@@ -18,6 +16,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.AbstractMap.SimpleEntry;
 
+import utils.Utils;
 import api.LocationAPI;
 import byteStream.ByteStreamHandler;
 import byteStream.ByteStreamInputCars;
@@ -25,18 +24,6 @@ import byteStream.ByteStreamInputChargingStations;
 import car.Car;
 import stations.ChargingStation;
 import stations.EnergySource;
-
-class StationsFilter implements Filter {
-		public boolean isLoggable(LogRecord logRecord) {
-			return logRecord.getLoggerName().startsWith(ChargingStation.class.getSimpleName());
-		}
-	}
-
-class EnergySourceFilter implements Filter {
-		public boolean isLoggable(LogRecord logRecord) {
-			return logRecord.getLoggerName().contains(EnergySource.class.getSimpleName());
-		}
-	}
 
 
 public class Main {
@@ -81,27 +68,27 @@ public class Main {
 		 */
 
 		// get today's date for log filename
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		LocalDate localDate = LocalDate.now();
-		String todaysDate = dtf.format(localDate);
+		String todaysDate = Utils.getTodaysDate();
 
-		Formatter ourFormatter = Logger.getLogger("").getHandlers()[0].getFormatter();
+		Formatter ourFormatter = Utils.getGlobalFormatter();
 		// Create a list of (filename, filter) pairs
 		List<Entry<String,Filter>> loggersConfig = new ArrayList<>();
 		loggersConfig.add(new SimpleEntry<String, Filter>("system", null));
-		loggersConfig.add(new SimpleEntry<String, Filter>("stations", new StationsFilter()));
-		loggersConfig.add(new SimpleEntry<String, Filter>("energy source", new EnergySourceFilter()));
-
+		loggersConfig.add(new SimpleEntry<String, Filter>("solar", new logging.LoggerNameFilter("Solar")));
+		loggersConfig.add(new SimpleEntry<String, Filter>("power grid", new logging.LoggerNameFilter("PowerGrid")));
+		
 		for (Entry<String,Filter> loggerConfig: loggersConfig){
+			String filename = String.format("%s/%s - %s.log", logsPath.toString(), todaysDate, loggerConfig.getKey());
 			try {
-				String filename = String.format("%s/%s - %s.log", logsPath.toString(), todaysDate, loggerConfig.getKey());
 				FileHandler fileHandler = Utils.generateFileHandler(filename, ourFormatter, loggerConfig.getValue());
 				Logger.getLogger("").addHandler(fileHandler);
 			} catch (SecurityException | IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
 		}
+
 	}
 
 	public static void main(String[] args) {
