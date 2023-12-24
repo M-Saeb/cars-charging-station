@@ -19,6 +19,7 @@ public class ByteStreamInputCars
 	private float waitDuration;
 	private LocationAPI api;
 	private GPSValues gpsValues;
+	private boolean priorityFlag;
 	
 	Car[] listCars;
 	
@@ -69,6 +70,15 @@ public class ByteStreamInputCars
 	private void setGpsValues(GPSValues gpsValues) {
 		this.gpsValues = gpsValues;
 	}
+	
+	private void setPriorityFlag(boolean priorityFlag) {
+		this.priorityFlag = priorityFlag;
+	}
+	
+	private boolean getPriorityFlag() {
+		return priorityFlag;
+	}
+	
 	
 	/*
 	 * 
@@ -154,11 +164,11 @@ public class ByteStreamInputCars
 
 					if(getGasOrElectricCar().equals("GasCar"))
 					{
-						tempCar = new GasCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues());
+						tempCar = new GasCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues(), getPriorityFlag());
 
 					}
 					else if(getGasOrElectricCar().equals("ElectricCar")) {
-						tempCar = new ElectricCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues());
+						tempCar = new ElectricCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues(), getPriorityFlag());
 
 					}
 					else

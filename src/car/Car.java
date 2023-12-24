@@ -31,7 +31,7 @@ public abstract class Car implements Runnable{
 	private Logger logger;
 
 	public Car(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api,
-			GPSValues currentGPS) {
+			GPSValues currentGPS, boolean priorityFlag) {
 		this.carNumber = carNumber;
 		this.logger = Logger.getLogger(this.toString());
 		this.currentCapacity = currentCapacity;
@@ -44,7 +44,7 @@ public abstract class Car implements Runnable{
 		} else {
 			this.setCurrentState(CarState.charged);
 		}
-		this.priorityFlag = false;
+		this.priorityFlag = priorityFlag;
 		this.logger = Logger.getLogger(this.toString());
 	}
 
