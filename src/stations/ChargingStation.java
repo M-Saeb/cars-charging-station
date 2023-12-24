@@ -488,11 +488,11 @@ public class ChargingStation implements Runnable {
 	{
 		float currentElectricityOutputPerSecond = 0;
 		//Checking supply status of station
-		if(currentEnergySource == EnergyState.powerGrid)
+		if(stationEnergySource.energyState == EnergyState.powerGrid)
 		{
 			currentElectricityOutputPerSecond = electricityOutputPerSecond;
 		}
-		else if(currentEnergySource == EnergyState.solar)
+		else if(stationEnergySource.energyState == EnergyState.solar)
 		{
 			//More power available if solar is also active
 			currentElectricityOutputPerSecond = electricityOutputPerSecond * 1.25f;

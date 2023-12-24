@@ -124,14 +124,15 @@ public class ByteStreamInputCars
 							setTankCapacity(Float.parseFloat(recoveredParameterStrings[3]));
 							setWaitDuration(Float.parseFloat(recoveredParameterStrings[4]));
 							setGpsValues(new GPSValues(Float.parseFloat(recoveredParameterStrings[5]), Float.parseFloat(recoveredParameterStrings[6])));
-
+							setPriorityFlag(Boolean.parseBoolean(recoveredParameterStrings[7]));
+							
 							if(getGasOrElectricCar().equals("GasCar"))
 							{
-								tempCar = new GasCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues());
+								tempCar = new GasCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues(), getPriorityFlag());
 
 							}
 							else if(getGasOrElectricCar().equals("ElectricCar")) {
-								tempCar = new ElectricCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues());
+								tempCar = new ElectricCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues(), getPriorityFlag());
 
 							}
 							else
@@ -161,6 +162,7 @@ public class ByteStreamInputCars
 					setTankCapacity(Float.parseFloat(recoveredParameterStrings[3]));
 					setWaitDuration(Float.parseFloat(recoveredParameterStrings[4]));
 					setGpsValues(new GPSValues(Float.parseFloat(recoveredParameterStrings[5]), Float.parseFloat(recoveredParameterStrings[6])));
+					setPriorityFlag(Boolean.parseBoolean(recoveredParameterStrings[7]));
 
 					if(getGasOrElectricCar().equals("GasCar"))
 					{
