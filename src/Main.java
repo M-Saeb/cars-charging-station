@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -8,19 +9,41 @@ import java.util.logging.Formatter;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import utils.Utils;
 import api.LocationAPI;
 import byteStream.ByteStreamHandler;
 import byteStream.ByteStreamInputCars;
 import byteStream.ByteStreamInputChargingStations;
 import car.Car;
 import stations.ChargingStation;
+import utils.Utils;
 
+/* Folder creation for logs */
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Main {
 
 	static {
-		Path logsPath = Paths.get("logs");
+		LocalDate currentDate = LocalDate.now();
+		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String dateFormatted = currentDate.format(dateFormat);
+		
+		
+		Path currentPath = Paths.get("logs");
+		String folderString = currentPath.toAbsolutePath().toString();
+		File folder = new File(folderString + "/" + dateFormatted);
+		System.out.println("Current absolute path is: " + folder);
+		if(!folder.exists())
+		{
+			folder.mkdir();
+			System.out.println("Folder created");
+		}
+		else
+		{
+			System.out.println("Folder already exists");
+		}
+		
+		Path logsPath = Paths.get("logs" + "/" + dateFormatted);
 		// Create logs dir
 		try {
 			Files.createDirectories(logsPath);
@@ -30,7 +53,6 @@ public class Main {
 		}
 
 		// Delete old logs
-		/*
 		try {
 			for(File file: logsPath.toFile().listFiles()){ 
 				if (!file.isDirectory()){
@@ -41,7 +63,6 @@ public class Main {
 			Logger.getAnonymousLogger().severe("Couldn't delete old logs.");
 			Logger.getAnonymousLogger().severe(e.getMessage());
 		}
-		*/
 
 		// Import logging configurations
 		try {
