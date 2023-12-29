@@ -1,7 +1,11 @@
 package stations;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -64,12 +68,30 @@ public class ChargingStation implements Runnable {
 			throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
 		
 		{
+			LocalDate currentDate = LocalDate.now();
+			DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			String dateFormatted = currentDate.format(dateFormat);
+			
+			Path currentPath = Paths.get("logs");
+			String folderString = currentPath.toAbsolutePath().toString();
+			File folder = new File(folderString + "/" + dateFormatted + "/" + "ChargingStation" + chargingStationID);
+			if(!folder.exists())
+			{
+				folder.mkdir();
+			}
+			else
+			{
+				/*
+				 * Do Nothing
+				 */
+			}
+			
 			this.chargingStationID = chargingStationID;
 			this.logger = Logger.getLogger(this.toString());
 			// Add a logging file for this station
 			try {
 				this.fileHandler = Utils.generateFileHandler(
-					String.format("%s/%s - %s.log", Paths.get("logs").toString(), Utils.getTodaysDate(), this.toString().toLowerCase()),
+					String.format("%s/%s - %s.log", Paths.get("logs/"+dateFormatted+"/" + "ChargingStation" + chargingStationID).toString(), Utils.getTodaysDate(), this.toString().toLowerCase()),
 					Utils.getGlobalFormatter()
 				);
 				this.logger.addHandler(fileHandler);
