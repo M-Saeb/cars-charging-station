@@ -440,6 +440,12 @@ public class ChargingStation implements Runnable {
 			}
 		}
 	}
+	
+	@Mutable
+	public ArrayList<Car> getWaitingCarsQueue()
+	{
+		return this.waitingQueue;
+	}
 
 	@Mutable
 	public void sendCarsToEmptyGasSlots()
