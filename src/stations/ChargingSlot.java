@@ -26,7 +26,14 @@ public class ChargingSlot implements Runnable{
 		// Add logs of slots to station logs
 		this.logger.addHandler(this.chargingStation.getFileHandler());
 	}
-	
+
+	public int getId() {
+		return id;
+	}
+	public ChargingStation getChargingStation() {
+		return chargingStation;
+	}
+
 	@Mutable
 	public void setCarToSlot(Car car) throws ChargingSlotFullException
 	{
