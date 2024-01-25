@@ -45,6 +45,7 @@ public class UtilsTest extends TestCase {
 			fail("couldn't initialize file handler.");
 			return;
 		}
+		fileHandler.close();
 		assertSame(fileHandler.getFormatter(), formatter);
 	}
 
