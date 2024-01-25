@@ -20,12 +20,12 @@ public class ChargingSlotTest extends TestCase {
 		try {
 			this.station = new ChargingStation(
 				0,
-				new GPSValues(100, 100),
+				new GPSValues(50, 50),
 				2,
-				0,
+				2,
 				10,
-				0,
-				0,
+				10,
+				100,
 				100
 			);
 		} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException | InvalidGPSValueException e) {
@@ -77,7 +77,7 @@ public class ChargingSlotTest extends TestCase {
 	 */
 	public void testAddFuelToCar() {
 		float fuelToBeAdded = 10;
-		GasCar car = new GasCar("test", 100, 0, 0, null, null, false);
+		GasCar car = new GasCar("test", 0, 100, 0, null, null, false);
 		try {
 			slot.setCarToSlot(car);
 		} catch (ChargingSlotFullException e) {
@@ -85,7 +85,7 @@ public class ChargingSlotTest extends TestCase {
 			fail("Couldn't set car to slot");
 		}
 		slot.addFuelToCar(fuelToBeAdded);
-		assertEquals(car.getCurrentCapacity(), fuelToBeAdded);
+		assertEquals(fuelToBeAdded, car.getCurrentCapacity());
 	}
 
 	/**
