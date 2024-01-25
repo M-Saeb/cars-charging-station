@@ -11,7 +11,9 @@ import java.util.logging.Logger;
 public class Utils {
     public static FileHandler generateFileHandler(String pattern, Formatter formatter) throws SecurityException, IOException {
         try {
-            return new FileHandler(pattern, true);
+            FileHandler handler = new FileHandler(pattern, true);
+            handler.setFormatter(formatter);
+            return handler;
         } catch (IOException e) {
             // File or directories might not exist, try creating parent directories and retry
             File file = new File(pattern);
@@ -23,7 +25,9 @@ public class Utils {
                 }
 
                 // Retry creating the FileHandler
-                return new FileHandler(pattern, true);
+                FileHandler handler = new FileHandler(pattern, true);
+                handler.setFormatter(formatter);
+                return handler;
             }
 
             // Re-throw the original IOException if creating parent directories is not possible
