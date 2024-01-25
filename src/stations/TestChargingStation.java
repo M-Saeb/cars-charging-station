@@ -1,7 +1,10 @@
 package stations;
 
+import java.util.ArrayList;
+
 import api.GPSValues;
 import car.GasCar;
+import car.Car;
 import car.ElectricCar;
 import junit.framework.TestCase;
 
@@ -81,5 +84,26 @@ public class TestChargingStation extends TestCase {
         setElectricCarToChargingStationg(station, car3);
         int value =  station.getAvailableElectricSlots();
         assertEquals(0, value);
+    }
+    
+    public void testWaitingTimeElectricCar()
+    {
+        ChargingStation station = this.createChargingStation();
+        ElectricCar car1 = createElectricCar();
+        setElectricCarToChargingStationg(station, car1);
+        
+        station.leaveStationWaitingQueue(car1);
+        ArrayList<Car> waitingQueueTest = station.getWaitingCarsQueue();
+        assertEquals(waitingQueueTest.size(), 0);
+    }
+    public void testWaitingTimeGasCar()
+    {
+        ChargingStation station = this.createChargingStation();
+        GasCar car1 = createGasCar();
+        setGasCarToChargingStationg(station, car1);
+        
+        station.leaveStationWaitingQueue(car1);
+        ArrayList<Car> waitingQueueTest = station.getWaitingCarsQueue();
+        assertEquals(waitingQueueTest.size(), 0);
     }
 }
