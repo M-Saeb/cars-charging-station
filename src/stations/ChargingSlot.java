@@ -26,7 +26,14 @@ public class ChargingSlot implements Runnable{
 		// Add logs of slots to station logs
 		this.logger.addHandler(this.chargingStation.getFileHandler());
 	}
-	
+
+	public int getId() {
+		return id;
+	}
+	public ChargingStation getChargingStation() {
+		return chargingStation;
+	}
+
 	@Mutable
 	public void setCarToSlot(Car car) throws ChargingSlotFullException
 	{
@@ -61,6 +68,18 @@ public class ChargingSlot implements Runnable{
 		return String.format("%s - %s %d", this.chargingStation.toString(), this.getClass().getSimpleName(), this.id);
 	} 
 
+	public void addFuelToCar(float amount){
+		this.currentCar.addFuel(amount);
+	}
+
+	public float fetchElectricityFromStation(float amount){
+		return this.chargingStation.consumeElectricity(amount);
+	}
+
+	public float fetchGasFromStation(float amount){
+		return this.chargingStation.consumeGas(amount);
+	}
+
 	@Override
 	public void run(){
 		while (true){
@@ -70,11 +89,11 @@ public class ChargingSlot implements Runnable{
 				if (car != null ){
 					float energyAmount = car.getMissingAmountOfFuel();
 					if (car instanceof ElectricCar){
-						energyAmount = this.chargingStation.consumeElectricity(energyAmount);
+						energyAmount = this.fetchElectricityFromStation(energyAmount);
 					} else {
-						energyAmount = this.chargingStation.consumeGas(energyAmount);
+						energyAmount = this.fetchElectricityFromStation(energyAmount);
 					}
-					car.addFuel(energyAmount);
+					this.addFuelToCar(energyAmount);
 					this.logger.info("Adding " + energyAmount + " to car " + car.toString());
 				}
 			} catch (Exception e){
