@@ -145,6 +145,10 @@ public abstract class Car implements Runnable{
 		this.logger.info("Updating state to " + newState);
 		this.currentState = newState;
 	}
+	
+	public CarState getCurrentState() {
+		return this.currentState;
+	}
 
 	public boolean isPriority() {
 		return priorityFlag;
