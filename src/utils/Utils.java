@@ -44,4 +44,24 @@ public class Utils {
     public static Formatter getGlobalFormatter() {
         return Logger.getLogger("").getHandlers()[0].getFormatter();
     }
+
+    public static void clearTerminal(){
+        // Check if the operating system is Windows
+        String os = System.getProperty("os.name").toLowerCase();
+        boolean isWindows = os.contains("win");
+
+        try {
+            if (isWindows) {
+                // For Windows, use "cls" command to clear the screen
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                // For Unix-like systems, use ANSI escape codes to clear the screen
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (Exception e) {
+            // Handle exceptions
+            e.printStackTrace();
+        }
+    }
 }
