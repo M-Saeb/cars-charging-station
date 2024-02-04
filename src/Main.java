@@ -277,7 +277,7 @@ public class Main {
 									desktop.open(folders[folderChoice - 1]);
 								} catch (IOException e) {
 									// Handle the exception if the folder cannot be opened
-									e.printStackTrace();
+									logger.severe(e.getStackTrace().toString());
 								}
 							} else {
 								System.out.println("Desktop is not supported on this platform.");
@@ -332,7 +332,7 @@ public class Main {
 			try{
 				Thread.sleep(delayTime * 1000);
 			} catch (Exception e){
-				e.printStackTrace();
+				logger.severe(e.getStackTrace().toString());
 			}
 			Car car = cars[i];
 			logger.info(String.format("--- Deploying next car: %s ---", car.toString()));
