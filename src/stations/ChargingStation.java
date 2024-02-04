@@ -53,6 +53,7 @@ public class ChargingStation implements Runnable {
 	private ArrayList<Car> waitingQueue = new ArrayList<Car>();
 	private ArrayList<ChargingSlot> electricSlots = new ArrayList<ChargingSlot>();
 	private ArrayList<ChargingSlot> gasSlots = new ArrayList<ChargingSlot>();
+	private boolean done = false;
 	
 
 	@APIMethod
@@ -575,6 +576,9 @@ public class ChargingStation implements Runnable {
 	public void run() {
 		while(true)
 		{
+			if (done){
+				return;
+			}
 			try {
 				Thread.sleep(1000);
 				this.sendCarsToEmptyGasSlots();
