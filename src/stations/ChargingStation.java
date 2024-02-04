@@ -481,6 +481,7 @@ public class ChargingStation implements Runnable {
 			if(levelOfGasStorage == 0)
 			{
 				this.logger.warning("Gas storage of station is empty!");
+				return -1;
 			}
 			
 			amount = requestedAmount;
@@ -516,6 +517,7 @@ public class ChargingStation implements Runnable {
 	public float consumeElectricity(float requestedAmount)
 	{
 		float currentElectricityOutputPerSecond = 0;
+		
 		//Checking supply status of station
 		if(stationEnergySource.energyState == EnergyState.powerGrid)
 		{
@@ -539,6 +541,7 @@ public class ChargingStation implements Runnable {
 			if(levelOfElectricityStorage == 0)
 			{
 				this.logger.warning("Electricity storage of station is empty!");
+				return -1;
 			}
 			
 			
