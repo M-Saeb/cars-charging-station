@@ -23,6 +23,12 @@ and switch between the energy sources.
 >> Name: Mohammed Al Salihi.
 >> Matriculation Number: 7218958.
 
+
+## Capstone Video
+A capture of the execution of the project can be found here:
+
+https://youtu.be/upBa6pgkwjk
+
 > [!IMPORTANT]
 > Run Intructions
 > 1. Open the file location where it is stored.
