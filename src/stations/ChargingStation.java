@@ -477,7 +477,7 @@ public class ChargingStation implements Runnable {
 		{
 			gasSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
 			
-			if(levelOfElectricityStorage == 0)
+			if(levelOfGasStorage == 0)
 			{
 				this.logger.warning("Gas storage of station is empty!");
 			}
