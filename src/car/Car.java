@@ -265,6 +265,13 @@ public abstract class Car implements Runnable{
 						if (remaining <= 0){
 							this.setCurrentState(CarState.charged);
 							this.disconnectFromSlot();
+						} else if (
+							(this instanceof ElectricCar && chargingStationWaitingQueue.getLevelOfElectricityStorage() == 0)
+							||
+							(this instanceof GasCar && chargingStationWaitingQueue.getLevelOfGasStorage() == 0)
+						){
+							this.setCurrentState(CarState.looking);
+							this.disconnectFromSlot();
 						}
 						break;
 						
