@@ -93,6 +93,11 @@ public class ChargingSlot implements Runnable{
 					} else {
 						energyAmount = this.fetchGasFromStation(energyAmount);
 					}
+
+					if (energyAmount == -1) { // station is out of fuel
+						this.logger.info("Station out of fuel. Idling...");
+						continue;
+					}
 					this.addFuelToCar(energyAmount);
 					this.logger.info("Adding " + energyAmount + " to car " + car.toString());
 				}
