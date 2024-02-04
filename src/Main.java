@@ -173,7 +173,14 @@ public class Main {
 						if (unselectedCars.size() == 0){
 							System.out.println("All cars have already been selected");
 						}
-						System.out.printf("Enter choice: ");
+
+						// Pad enter choice string to print at the same place 
+						String enterChoiceString = "";
+						for (int i = 0; i < selectedCars.size(); i++) {
+							enterChoiceString += "\n";
+						}
+						enterChoiceString += "Enter choice: ";
+						System.out.printf(enterChoiceString);
 						carChoice = scanner.nextInt();
 						Utils.clearTerminal();
 						if (carChoice == 0){
@@ -212,7 +219,13 @@ public class Main {
 					if (unselectedStations.size() == 0){
 						System.out.println("All stations have already been selected");
 					}
-					System.out.printf("Enter choice: ");
+					// Pad enter choice string to print at the same place 
+					String enterChoiceString = "";
+					for (int i = 0; i < selectedStations.size(); i++) {
+						enterChoiceString += "\n";
+					}
+					enterChoiceString += "Enter choice: ";
+					System.out.printf(enterChoiceString);
 					stationChoice = scanner.nextInt();
 					Utils.clearTerminal();
 					if (stationChoice == 0){
