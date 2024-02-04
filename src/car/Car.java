@@ -186,8 +186,22 @@ public abstract class Car implements Runnable{
 		// Iterating over the found stations and checking for empty slots and if the
 		// type is matching
 		for (int i = 0; i < nearestStations.length; i++) {
-			ChargingStation currentStation = nearestStations[i];
-			if (currentStation == null) {
+			ChargingStation currentStation = nearestStations[i]; 
+			// Check to see if station has enough fuel
+			if (
+				(this instanceof ElectricCar && currentStation.getLevelOfElectricityStorage() < this.getMissingAmountOfFuel())
+				||
+				(this instanceof GasCar && currentStation.getLevelOfGasStorage() < this.getMissingAmountOfFuel())
+			) {
+				this.logger.finest(String.format("The station %s doesn't have enough fuel", currentStation.toString()));
+				continue;
+			}
+
+			// Check to see if waiting time is acceptable
+			if (!this.isStationWaitingTimeWithinRange(currentStation)) {
+				this.logger.finest(
+					String.format("The station %s has a waiting time longer than 15 minutes", currentStation.toString())
+				);
 				continue;
 			}
 			this.logger.finest(nearestStations[i].toString() + " is a match.");
@@ -232,15 +246,8 @@ public abstract class Car implements Runnable{
 						try {
 							ChargingStation suitableStation = this.getNearestFreeChargingStation();
 							if (suitableStation == null){
-								throw new Exception("suitableStation is null !!!");
-							}
-							if (!this.isStationWaitingTimeWithinRange(suitableStation)){
-									this.logger.info(
-										String.format("The station %s has a waiting time longer than 15 minutes", suitableStation.toString())
-									);
-									this.logger.info("Couldn't find a charging station with a queue shorter than 15 minutes");
-									this.setCurrentState(CarState.leaving);
-									break;
+								this.logger.info("No suitable station available. Leaving map...");
+								this.setCurrentState(CarState.leaving);
 							} else {
 								this.setChargingStationWaitingQueue(suitableStation);
 							}
