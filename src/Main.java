@@ -320,11 +320,14 @@ public class Main {
 		logger.info("Starting threads.");
 		logger.info("---------------------------------------");
 
+		ArrayList<Thread> stationThreads = new ArrayList<>();
 		for (ChargingStation station: stations){
 			Thread thread = new Thread(station);
 			thread.start();
+			stationThreads.add(thread);
 		}
 		
+		ArrayList<Thread> carThreads = new ArrayList<>();
 		for(int i = 0; i < cars.length; i++)
 		{
 			Random random = new Random();
@@ -338,7 +341,34 @@ public class Main {
 			logger.info(String.format("--- Deploying next car: %s ---", car.toString()));
 			Thread carThread = new Thread(car);
 			carThread.start();
+			carThreads.add(carThread);
 		}
 		logger.info("-------All cars are deployed.-------");
+
+		// Wait for all cars to finish
+		for (Thread carThread : carThreads) {
+			try {
+				carThread.join();
+			} catch (InterruptedException e) {
+				logger.severe(e.getStackTrace().toString());
+			}
+		}
+
+		// Once cars are finished, make stations finish as well
+		for (int i = 0; i < stations.length; i++) {
+			stations[i].setAsDone();
+		}
+		for (Thread stationThread : stationThreads) {
+			try {
+				stationThread.join();
+			} catch (InterruptedException e) {
+				logger.severe(e.getStackTrace().toString());
+			}
+		}
+
+		logger.info("Simulation finished. Cars left with the following stats:");
+		for (Car car : cars) {
+			logger.info(String.format("%s left with its tank %f/%f", car.toString(), car.getCurrentCapacity(), car.getTankCapacity()));
+		}
 	}
 }
