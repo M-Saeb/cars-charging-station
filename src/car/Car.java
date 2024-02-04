@@ -261,7 +261,7 @@ public abstract class Car implements Runnable{
 						break;
 
 					case "charging":
-						int remaining = (int) this.getMissingAmountOfFuel();
+						float remaining = this.getMissingAmountOfFuel();
 						if (remaining <= 0){
 							this.setCurrentState(CarState.charged);
 							this.disconnectFromSlot();
