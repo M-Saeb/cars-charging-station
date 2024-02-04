@@ -592,4 +592,8 @@ public class ChargingStation implements Runnable {
 			}
 		}
 	}
+
+	public void setAsDone() {
+		this.done = true;
+	}
 }
