@@ -91,7 +91,7 @@ public class ChargingSlot implements Runnable{
 					if (car instanceof ElectricCar){
 						energyAmount = this.fetchElectricityFromStation(energyAmount);
 					} else {
-						energyAmount = this.fetchElectricityFromStation(energyAmount);
+						energyAmount = this.fetchGasFromStation(energyAmount);
 					}
 					this.addFuelToCar(energyAmount);
 					this.logger.info("Adding " + energyAmount + " to car " + car.toString());
