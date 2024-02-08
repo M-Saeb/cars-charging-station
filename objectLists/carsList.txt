@@ -1,25 +1,25 @@
-GasCar FordMustang 20.0 900.9 120.0 -40 20
-ElectricCar ToyotaPrius 15.0 130.0 30.0 -50 50
-GasCar Peugeot206 12.0 790.0 30.0 -24 140
-ElectricCar BMWi5 70.0 830.9 70.0 80 -95
-GasCar AudiA3 10 480.0 90.0 -40 10
-GasCar FordMustang 20.0 900.9 120.0 -40 20
-ElectricCar ToyotaPrius 15.0 130.0 30.0 -50 50
-GasCar Peugeot206 12.0 790.0 30.0 -24 140
-ElectricCar BMWi5 70.0 830.9 70.0 80 -95
-GasCar AudiA3 10 480.0 90.0 -40 10
-GasCar FordMustang 20.0 900.9 120.0 -40 20
-ElectricCar ToyotaPrius 15.0 130.0 30.0 -50 50
-GasCar Peugeot206 12.0 790.0 30.0 -24 140
-ElectricCar BMWi5 70.0 830.9 70.0 80 -95
-GasCar AudiA3 10 480.0 90.0 -40 10
-GasCar FordMustang 20.0 900.9 120.0 -40 20
-ElectricCar ToyotaPrius 15.0 130.0 30.0 -50 50
-GasCar Peugeot206 12.0 790.0 30.0 -24 140
-ElectricCar BMWi5 70.0 830.9 70.0 80 -95
-GasCar AudiA3 10 480.0 90.0 -40 10
-GasCar FordMustang 20.0 900.9 120.0 -40 20
-ElectricCar ToyotaPrius 15.0 130.0 30.0 -50 50
-GasCar Peugeot206 12.0 790.0 30.0 -24 140
-ElectricCar BMWi5 70.0 830.9 70.0 80 -95
-GasCar AudiA3 10 480.0 90.0 -40 10
+GasCar FordMustang 20.0 90.9 15.0 -40 20 true 
+ElectricCar ToyotaPrius 15.0 130.0 30.0 -50 50 true 
+GasCar Peugeot206 12.0 50.0 40.0 -24 140 true 
+ElectricCar BMWi5 70.0 103.9 70.0 40 -95 true 
+GasCar AudiA3 10 80.0 50.0 -40 10 true 
+GasCar FordMustangII 20.0 900.9 120.0 -40 20 true 
+ElectricCar ToyotaPriusII 15.0 130.0 30.0 -50 50 true 
+GasCar Peugeot206 12.0 790.0 30.0 -24 140 true 
+ElectricCar BMWi5 70.0 830.9 70.0 80 -95 true 
+GasCar AudiA3 10 480.0 90.0 -40 10 true 
+GasCar FordMustang 20.0 900.9 120.0 -40 20 true 
+ElectricCar ToyotaPrius 15.0 130.0 30.0 -50 50 true 
+GasCar Peugeot206 12.0 790.0 30.0 -24 140 false 
+ElectricCar BMWi5 70.0 830.9 70.0 80 -95 false 
+GasCar AudiA3 10 480.0 90.0 -40 10 false 
+GasCar FordMustang 20.0 900.9 120.0 -40 20 false 
+ElectricCar ToyotaPrius 15.0 130.0 30.0 -50 50 false 
+GasCar Peugeot206 12.0 790.0 30.0 -24 140 false 
+ElectricCar BMWi5 70.0 830.9 70.0 80 -95 false 
+GasCar AudiA3 10 480.0 90.0 -40 10 false 
+GasCar FordMustang 20.0 900.9 120.0 -40 20 false 
+ElectricCar ToyotaPrius 15.0 130.0 30.0 -50 50 false 
+GasCar Peugeot206 12.0 790.0 30.0 -24 140 false 
+ElectricCar BMWi5 70.0 830.9 70.0 80 -95 false 
+GasCar AudiA3 10 480.0 90.0 -40 10 false 
