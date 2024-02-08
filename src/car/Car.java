@@ -31,7 +31,7 @@ public abstract class Car implements Runnable{
 	private Logger logger;
 
 	public Car(String carNumber, float currentCapacity, float tankCapacity, float waitDuration, LocationAPI api,
-			GPSValues currentGPS) {
+			GPSValues currentGPS, boolean priorityFlag) {
 		this.carNumber = carNumber;
 		this.logger = Logger.getLogger(this.toString());
 		this.currentCapacity = currentCapacity;
@@ -44,7 +44,7 @@ public abstract class Car implements Runnable{
 		} else {
 			this.setCurrentState(CarState.charged);
 		}
-		this.priorityFlag = false;
+		this.priorityFlag = priorityFlag;
 		this.logger = Logger.getLogger(this.toString());
 	}
 
@@ -145,6 +145,10 @@ public abstract class Car implements Runnable{
 		this.logger.info("Updating state to " + newState);
 		this.currentState = newState;
 	}
+	
+	public CarState getCurrentState() {
+		return this.currentState;
+	}
 
 	public boolean isPriority() {
 		return priorityFlag;
@@ -182,8 +186,22 @@ public abstract class Car implements Runnable{
 		// Iterating over the found stations and checking for empty slots and if the
 		// type is matching
 		for (int i = 0; i < nearestStations.length; i++) {
-			ChargingStation currentStation = nearestStations[i];
-			if (currentStation == null) {
+			ChargingStation currentStation = nearestStations[i]; 
+			// Check to see if station has enough fuel
+			if (
+				(this instanceof ElectricCar && currentStation.getLevelOfElectricityStorage() < this.getMissingAmountOfFuel())
+				||
+				(this instanceof GasCar && currentStation.getLevelOfGasStorage() < this.getMissingAmountOfFuel())
+			) {
+				this.logger.finest(String.format("The station %s doesn't have enough fuel", currentStation.toString()));
+				continue;
+			}
+
+			// Check to see if waiting time is acceptable
+			if (!this.isStationWaitingTimeWithinRange(currentStation)) {
+				this.logger.finest(
+					String.format("The station %s has a waiting time longer than 15 minutes", currentStation.toString())
+				);
 				continue;
 			}
 			this.logger.finest(nearestStations[i].toString() + " is a match.");
@@ -228,15 +246,8 @@ public abstract class Car implements Runnable{
 						try {
 							ChargingStation suitableStation = this.getNearestFreeChargingStation();
 							if (suitableStation == null){
-								throw new Exception("suitableStation is null !!!");
-							}
-							if (!this.isStationWaitingTimeWithinRange(suitableStation)){
-									this.logger.info(
-										String.format("The station %s has a waiting time longer than 15 minutes", suitableStation.toString())
-									);
-									this.logger.info("Couldn't find a charging station with a queue shorter than 15 minutes");
-									this.setCurrentState(CarState.leaving);
-									break;
+								this.logger.info("No suitable station available. Leaving map...");
+								this.setCurrentState(CarState.leaving);
 							} else {
 								this.setChargingStationWaitingQueue(suitableStation);
 							}
@@ -257,9 +268,16 @@ public abstract class Car implements Runnable{
 						break;
 
 					case "charging":
-						int remaining = (int) this.getMissingAmountOfFuel();
+						float remaining = this.getMissingAmountOfFuel();
 						if (remaining <= 0){
 							this.setCurrentState(CarState.charged);
+							this.disconnectFromSlot();
+						} else if (
+							(this instanceof ElectricCar && chargingStationWaitingQueue.getLevelOfElectricityStorage() == 0)
+							||
+							(this instanceof GasCar && chargingStationWaitingQueue.getLevelOfGasStorage() == 0)
+						){
+							this.setCurrentState(CarState.looking);
 							this.disconnectFromSlot();
 						}
 						break;

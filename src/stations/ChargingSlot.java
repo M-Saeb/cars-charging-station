@@ -1,6 +1,5 @@
 package stations;
 
-import java.awt.event.WindowStateListener;
 import java.time.LocalDateTime;
 import java.util.logging.Logger;
 
@@ -13,19 +12,28 @@ import exceptions.ChargingSlotFullException;
 
 
 public class ChargingSlot implements Runnable{
-	private String name;
+	private int id;
 	protected ChargingStation chargingStation;
 	protected Car currentCar = null;
 	protected Logger logger;
 	
 	
-	public ChargingSlot(String name, ChargingStation station) 
+	public ChargingSlot(int id, ChargingStation station) 
 	{
-		this.name = name;
+		this.id = id;
 		this.chargingStation = station;	
 		this.logger = Logger.getLogger(this.toString());
+		// Add logs of slots to station logs
+		this.logger.addHandler(this.chargingStation.getFileHandler());
 	}
-	
+
+	public int getId() {
+		return id;
+	}
+	public ChargingStation getChargingStation() {
+		return chargingStation;
+	}
+
 	@Mutable
 	public void setCarToSlot(Car car) throws ChargingSlotFullException
 	{
@@ -57,8 +65,20 @@ public class ChargingSlot implements Runnable{
 
 	@Readonly
 	public String toString() {
-		return this.name;
+		return String.format("%s - %s %d", this.chargingStation.toString(), this.getClass().getSimpleName(), this.id);
 	} 
+
+	public void addFuelToCar(float amount){
+		this.currentCar.addFuel(amount);
+	}
+
+	public float fetchElectricityFromStation(float amount){
+		return this.chargingStation.consumeElectricity(amount);
+	}
+
+	public float fetchGasFromStation(float amount){
+		return this.chargingStation.consumeGas(amount);
+	}
 
 	@Override
 	public void run(){
@@ -69,12 +89,17 @@ public class ChargingSlot implements Runnable{
 				if (car != null ){
 					float energyAmount = car.getMissingAmountOfFuel();
 					if (car instanceof ElectricCar){
-						energyAmount = this.chargingStation.consumeElectricity(energyAmount);
+						energyAmount = this.fetchElectricityFromStation(energyAmount);
 					} else {
-						energyAmount = this.chargingStation.consumeGas(energyAmount);
+						energyAmount = this.fetchGasFromStation(energyAmount);
 					}
+
+					if (energyAmount == -1) { // station is out of fuel
+						this.logger.info("Station out of fuel. Idling...");
+						continue;
+					}
+					this.addFuelToCar(energyAmount);
 					this.logger.info("Adding " + energyAmount + " to car " + car.toString());
-					car.addFuel(energyAmount);
 				}
 			} catch (Exception e){
 				e.printStackTrace();

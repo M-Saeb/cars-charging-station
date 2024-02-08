@@ -1,11 +1,20 @@
 package stations;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+
+import utils.Utils;
 import annotations.APIMethod;
 import annotations.Mutable;
 import annotations.Readonly;
@@ -22,8 +31,10 @@ import weather.WeatherState;
 import weather.weather;
 
 
+
 public class ChargingStation implements Runnable {	
 	private Logger logger;
+	private FileHandler fileHandler;
 	/* Charging Station Info */
 	private int chargingStationID;
 	
@@ -34,8 +45,7 @@ public class ChargingStation implements Runnable {
 	private float levelOfGasStorage;
 	
 	private weather stationWeatherState = new weather();
-	private EnergySource stationEnergySource = new EnergySource();
-	private EnergyState currentEnergySource;
+	private EnergySource stationEnergySource;
 	private Semaphore gasSemaphore;
 	private Semaphore electricitySemaphore;
 	
@@ -43,6 +53,7 @@ public class ChargingStation implements Runnable {
 	private ArrayList<Car> waitingQueue = new ArrayList<Car>();
 	private ArrayList<ChargingSlot> electricSlots = new ArrayList<ChargingSlot>();
 	private ArrayList<ChargingSlot> gasSlots = new ArrayList<ChargingSlot>();
+	private boolean done = false;
 	
 
 	@APIMethod
@@ -58,8 +69,38 @@ public class ChargingStation implements Runnable {
 			throws InvalidGPSLatitudeException, InvalidGPSLongitudeException, InvalidGPSValueException {
 		
 		{
+			LocalDate currentDate = LocalDate.now();
+			DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			String dateFormatted = currentDate.format(dateFormat);
+			
+			Path currentPath = Paths.get("logs");
+			String folderString = currentPath.toAbsolutePath().toString();
+			File folder = new File(folderString + "/" + dateFormatted + "/" + "ChargingStation" + chargingStationID);
+			if(!folder.exists())
+			{
+				folder.mkdir();
+			}
+			else
+			{
+				/*
+				 * Do Nothing
+				 */
+			}
+			
 			this.chargingStationID = chargingStationID;
 			this.logger = Logger.getLogger(this.toString());
+			// Add a logging file for this station
+			try {
+				this.fileHandler = Utils.generateFileHandler(
+					String.format("%s/%s - %s.log", Paths.get("logs/"+dateFormatted+"/" + "ChargingStation" + chargingStationID).toString(), Utils.getTodaysDate(), this.toString().toLowerCase()),
+					Utils.getGlobalFormatter()
+				);
+				this.logger.addHandler(fileHandler);
+			} catch (SecurityException | IOException e) {
+				e.printStackTrace();
+			}
+
+			this.stationEnergySource = new EnergySource(this);
 			try {
 				LocationAPI.checkGPSValues(gpsValues);
 			} catch (InvalidGPSLatitudeException | InvalidGPSLongitudeException e) {
@@ -76,7 +117,7 @@ public class ChargingStation implements Runnable {
 			} else if (numGasSlots < 0) {
 				throw new IllegalArgumentException("Station can't have fewer than 0 gas slots.");
 			} else if (numElectricSlots < 0) {
-				throw new IllegalArgumentException("Station can't have fewer than 0 electirc slots.");
+				throw new IllegalArgumentException("Station can't have fewer than 0 electric slots.");
 			}
 		}
 		
@@ -85,12 +126,12 @@ public class ChargingStation implements Runnable {
 		}
 		
 		{
+			int slotIDCounter = 0;
 			if (numElectricSlots > 0) {
 				for(int i=0; i < numElectricSlots; i++){
 					electricitySemaphore = new Semaphore(numElectricSlots, true);
 					
-					String name = String.format("%s-ElecticSlot-%s ", this.toString(), i+1 );
-					ChargingSlot slot = new ChargingSlot(name, this);
+					ChargingSlot slot = new ChargingSlot(++slotIDCounter, this);
 					this.electricSlots.add(slot);
 					Thread slotThread = new Thread(slot);
 					slotThread.start();
@@ -99,9 +140,8 @@ public class ChargingStation implements Runnable {
 			if (numGasSlots > 0) {
 				for(int i=0; i < numGasSlots; i++){
 					gasSemaphore = new Semaphore(numGasSlots, true);
-					
-					String name = String.format("%s-GasSlot-%s ", this.toString(), i+1 );
-					ChargingSlot slot = new ChargingSlot(name, this);
+
+					ChargingSlot slot = new ChargingSlot(++slotIDCounter, this);
 					this.gasSlots.add(slot);
 					Thread slotThread = new Thread(slot);
 					slotThread.start();
@@ -171,28 +211,37 @@ public class ChargingStation implements Runnable {
 		 */
 		if(stationWeatherState.getWeatherValue().ordinal() < WeatherState.cloudy.ordinal())
 		{
-			stationEnergySource.setSolar();
-			currentEnergySource = stationEnergySource.getEnergyValue();
+			stationEnergySource.setSolar(stationWeatherState.getWeatherValue().toString() + " weather");
+			stationEnergySource.getEnergyValue();
 		}
 		else {
-			stationEnergySource.setPowerGrid();
-			currentEnergySource = stationEnergySource.getEnergyValue();
+			stationEnergySource.setPowerGrid(stationWeatherState.getWeatherValue().toString() + " weather");
+			stationEnergySource.getEnergyValue();
 		}
-		this.logger.info(String.format("Power source: %s", currentEnergySource.toString()));
 	}
 
 	@Readonly
 	public String toString() {
-		return String.format("Charging Station %d", this.chargingStationID);
+		return String.format("%s %d", this.getClass().getSimpleName(), this.chargingStationID);
 	}
 
+	@Readonly
+	public FileHandler getFileHandler() {
+		return fileHandler;
+	}
+
+	@Readonly
+	public weather getStationWeatherState() {
+		return stationWeatherState;
+	}
+	
 	@Readonly
 	public float getGPSLatitude() throws InvalidGPSValueException {
 		if (this.gpsValues.getLatitude() == 0) {
 			try {
-				throw new InvalidGPSLatitudeException("Invalid Latitud value...");
+				throw new InvalidGPSLatitudeException("Invalid Latitude value...");
 			} catch (Exception e) {
-				System.out.println("Invalid Latitud value...");
+				System.out.println("Invalid Latitude value...");
 				e.printStackTrace();
 			}
 		} else {
@@ -207,9 +256,9 @@ public class ChargingStation implements Runnable {
 	public float getGPSLongitude() throws InvalidGPSValueException {
 		if (this.gpsValues.getLongitude() == 0) {
 			try {
-				throw new InvalidGPSLongitudeException("Invalid Latitud value...");
+				throw new InvalidGPSLongitudeException("Invalid Latitude value...");
 			} catch (Exception e) {
-				this.logger.severe("Invalid Latitud value...");
+				this.logger.severe("Invalid Latitude value...");
 				this.logger.severe(e.getStackTrace().toString());
 			}
 		} else {
@@ -343,8 +392,8 @@ public class ChargingStation implements Runnable {
 	}
 
 	/**
-	 * Disonnect car from slot.
-	 */
+	 * Disconnect car from slot.
+	 *
 	@Mutable
 	public void leaveSlot(Car car) throws Exception{
 		this.logger.fine(String.format("%s is done charging. Removing it...", car.toString()));
@@ -369,13 +418,14 @@ public class ChargingStation implements Runnable {
 		this.logger.fine(String.format("Removed %s from slot.", car.toString()));
 
 	}
+	*/
 
 	@Mutable
-	public void sendCarsToEmptyEletricSlots()
+	public void sendCarsToEmptyElectricSlots()
 	{
-		List<ChargingSlot> freeElecticSlots =  this.electricSlots.stream()
+		List<ChargingSlot> freeElectricSlots =  this.electricSlots.stream()
 			.filter(slot -> slot.getCurrentCar() == null).toList();
-		for (ChargingSlot slot: freeElecticSlots){
+		for (ChargingSlot slot: freeElectricSlots){
 			Optional<Car> nextPossibleCar = this.waitingQueue.stream()
 				.filter(car -> car instanceof ElectricCar).findFirst();
 			// if (nextPossibleCars.)
@@ -390,6 +440,12 @@ public class ChargingStation implements Runnable {
 				}
 			}
 		}
+	}
+	
+	@Mutable
+	public ArrayList<Car> getWaitingCarsQueue()
+	{
+		return this.waitingQueue;
 	}
 
 	@Mutable
@@ -422,9 +478,10 @@ public class ChargingStation implements Runnable {
 		{
 			gasSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
 			
-			if(levelOfElectricityStorage == 0)
+			if(levelOfGasStorage == 0)
 			{
 				this.logger.warning("Gas storage of station is empty!");
+				return -1;
 			}
 			
 			amount = requestedAmount;
@@ -459,8 +516,24 @@ public class ChargingStation implements Runnable {
 	
 	public float consumeElectricity(float requestedAmount)
 	{
-		float amount = 0;
+		float currentElectricityOutputPerSecond = 0;
 		
+		//Checking supply status of station
+		if(stationEnergySource.energyState == EnergyState.powerGrid)
+		{
+			currentElectricityOutputPerSecond = electricityOutputPerSecond;
+		}
+		else if(stationEnergySource.energyState == EnergyState.solar)
+		{
+			//More power available if solar is also active
+			currentElectricityOutputPerSecond = electricityOutputPerSecond * 1.25f;
+		}
+		else
+		{
+			currentElectricityOutputPerSecond = electricityOutputPerSecond;
+		}
+		
+		float amount = 0;
 		try
 		{
 			electricitySemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
@@ -468,15 +541,16 @@ public class ChargingStation implements Runnable {
 			if(levelOfElectricityStorage == 0)
 			{
 				this.logger.warning("Electricity storage of station is empty!");
+				return -1;
 			}
 			
 			
 			amount = requestedAmount;
 			
 			//Clipping if requested amount is too large
-			if(amount > electricityOutputPerSecond)
+			if(amount > currentElectricityOutputPerSecond)
 			{
-				amount = electricityOutputPerSecond;
+				amount = currentElectricityOutputPerSecond;
 			}
 			
 			//Checking if requested amount is larger than what is available
@@ -505,14 +579,21 @@ public class ChargingStation implements Runnable {
 	public void run() {
 		while(true)
 		{
+			if (done){
+				return;
+			}
 			try {
 				Thread.sleep(1000);
 				this.sendCarsToEmptyGasSlots();
-				this.sendCarsToEmptyEletricSlots();
+				this.sendCarsToEmptyElectricSlots();
 				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public void setAsDone() {
+		this.done = true;
 	}
 }

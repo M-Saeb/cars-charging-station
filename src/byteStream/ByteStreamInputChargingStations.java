@@ -16,7 +16,7 @@ public class ByteStreamInputChargingStations
 	private GPSValues gpsValues;
 	private int numGasSlots;
 	private int numElectricSlots;
-	private float gasOutputPerSecondoutputPerSecond;
+	private float gasOutputPerSecond;
 	private float electricityOutputPerSecond;
 	private float levelOfGasStorage;
 	private float levelOfElectricityStorage;
@@ -63,12 +63,12 @@ public class ByteStreamInputChargingStations
 		this.numElectricSlots = numElectricSlots;
 	}
 
-	public float getGasOutputPerSecondoutputPerSecond() {
-		return gasOutputPerSecondoutputPerSecond;
+	public float getGasOutputPerSecond() {
+		return gasOutputPerSecond;
 	}
 
-	private void setGasOutputPerSecondoutputPerSecond(float gasOutputPerSecondoutputPerSecond) {
-		this.gasOutputPerSecondoutputPerSecond = gasOutputPerSecondoutputPerSecond;
+	private void setGasOutputPerSecond(float gasOutputPerSecond) {
+		this.gasOutputPerSecond = gasOutputPerSecond;
 	}
 
 	public float getElectricityOutputPerSecond() {
@@ -104,12 +104,12 @@ public class ByteStreamInputChargingStations
 		int indexArray = 0;
 		int byteData = 0;
 		int stationsCounter = 0;
-		char recorveredParameterCharTemp;
+		char recoveredParameterCharTemp;
 		try (FileInputStream reader = new FileInputStream(filePath)) {
 			while((byteData = reader.read()) != -1)
 			{
-				recorveredParameterCharTemp = (char)byteData;
-				if(recorveredParameterCharTemp == '\n')
+				recoveredParameterCharTemp = (char)byteData;
+				if(recoveredParameterCharTemp == '\n')
 				{
 					stationsCounter++;
 				}
@@ -120,50 +120,51 @@ public class ByteStreamInputChargingStations
 			ChargingStation[] stations = new ChargingStation[stationsCounter++];
 			/* If object was created correctly, move to obtain the information */
 			StringBuilder recoverText = new StringBuilder();
-			String recorveredParameterString;
+			String recoveredParameterString;
 			try {
-				/* Reset object reader to the beginning of the file */
-				FileInputStream readerTemp = new FileInputStream(filePath);
-				byteData = 0;
-				while((byteData = readerTemp.read()) != -1)
-				{	
-					char recorveredParameterChar = (char)byteData;
-					if(recorveredParameterChar == '\n')
-					{
-						recorveredParameterString = recoverText.toString();
-						String[] recorveredParameterStrings = recorveredParameterString.split(" ");
-						
-						setChargingStationID(Integer.parseInt(recorveredParameterStrings[0]));
-						setGpsValues(new GPSValues(Float.parseFloat(recorveredParameterStrings[1]), Float.parseFloat(recorveredParameterStrings[2])));
-						setNumGasSlots(Integer.parseInt(recorveredParameterStrings[3]));
-						setNumElectricSlots(Integer.parseInt(recorveredParameterStrings[4]));
-						setGasOutputPerSecondoutputPerSecond(Float.parseFloat(recorveredParameterStrings[5]));
-						setElectricityOutputPerSecond(Float.parseFloat(recorveredParameterStrings[6]));
-						setLevelOfElectricityStorage(Float.parseFloat(recorveredParameterStrings[7]));
-						setLevelOfGasStorage(Float.parseFloat(recorveredParameterStrings[8]));
-						ChargingStation tempStation = new ChargingStation(getChargingStationID(), getGpsValues(), getNumGasSlots(), getNumElectricSlots(), getGasOutputPerSecondoutputPerSecond(), getElectricityOutputPerSecond(), getLevelOfElectricityStorage(), getLevelOfGasStorage());
-						
-						stations[indexArray] = tempStation;
-						recoverText = new StringBuilder(); 
-						/* Update index until the value matches the created items */
-						indexArray++;
-					}
-					else {
-						recoverText.append(recorveredParameterChar);
+				try ( /* Reset object reader to the beginning of the file */
+				FileInputStream readerTemp = new FileInputStream(filePath)) {
+					byteData = 0;
+					while((byteData = readerTemp.read()) != -1)
+					{	
+						char recoveredParameterChar = (char)byteData;
+						if(recoveredParameterChar == '\n')
+						{
+							recoveredParameterString = recoverText.toString();
+							String[] recoveredParameterStrings = recoveredParameterString.split(" ");
+							
+							setChargingStationID(Integer.parseInt(recoveredParameterStrings[0]));
+							setGpsValues(new GPSValues(Float.parseFloat(recoveredParameterStrings[1]), Float.parseFloat(recoveredParameterStrings[2])));
+							setNumGasSlots(Integer.parseInt(recoveredParameterStrings[3]));
+							setNumElectricSlots(Integer.parseInt(recoveredParameterStrings[4]));
+							setGasOutputPerSecond(Float.parseFloat(recoveredParameterStrings[5]));
+							setElectricityOutputPerSecond(Float.parseFloat(recoveredParameterStrings[6]));
+							setLevelOfElectricityStorage(Float.parseFloat(recoveredParameterStrings[7]));
+							setLevelOfGasStorage(Float.parseFloat(recoveredParameterStrings[8]));
+							ChargingStation tempStation = new ChargingStation(getChargingStationID(), getGpsValues(), getNumGasSlots(), getNumElectricSlots(), getGasOutputPerSecond(), getElectricityOutputPerSecond(), getLevelOfElectricityStorage(), getLevelOfGasStorage());
+							
+							stations[indexArray] = tempStation;
+							recoverText = new StringBuilder(); 
+							/* Update index until the value matches the created items */
+							indexArray++;
+						}
+						else {
+							recoverText.append(recoveredParameterChar);
+						}
 					}
 				}
 				if(recoverText.length() > 0)
 				{
-					recorveredParameterString = recoverText.toString();
-					String[] recorveredParameterStrings = recorveredParameterString.split(" ");
+					recoveredParameterString = recoverText.toString();
+					String[] recoveredParameterStrings = recoveredParameterString.split(" ");
 					
-					setChargingStationID(Integer.parseInt(recorveredParameterStrings[0]));
-					setGpsValues(new GPSValues(Float.parseFloat(recorveredParameterStrings[1]), Float.parseFloat(recorveredParameterStrings[2])));
-					setNumGasSlots(Integer.parseInt(recorveredParameterStrings[3]));
-					setNumElectricSlots(Integer.parseInt(recorveredParameterStrings[4]));
-					setGasOutputPerSecondoutputPerSecond(Float.parseFloat(recorveredParameterStrings[5]));
-					setElectricityOutputPerSecond(Float.parseFloat(recorveredParameterStrings[6]));
-					ChargingStation tempStation = new ChargingStation(getChargingStationID(), getGpsValues(), getNumGasSlots(), getNumElectricSlots(), getGasOutputPerSecondoutputPerSecond(), getElectricityOutputPerSecond(), getLevelOfElectricityStorage(), getLevelOfGasStorage());
+					setChargingStationID(Integer.parseInt(recoveredParameterStrings[0]));
+					setGpsValues(new GPSValues(Float.parseFloat(recoveredParameterStrings[1]), Float.parseFloat(recoveredParameterStrings[2])));
+					setNumGasSlots(Integer.parseInt(recoveredParameterStrings[3]));
+					setNumElectricSlots(Integer.parseInt(recoveredParameterStrings[4]));
+					setGasOutputPerSecond(Float.parseFloat(recoveredParameterStrings[5]));
+					setElectricityOutputPerSecond(Float.parseFloat(recoveredParameterStrings[6]));
+					ChargingStation tempStation = new ChargingStation(getChargingStationID(), getGpsValues(), getNumGasSlots(), getNumElectricSlots(), getGasOutputPerSecond(), getElectricityOutputPerSecond(), getLevelOfElectricityStorage(), getLevelOfGasStorage());
 					
 					stations[indexArray] = tempStation;
 					recoverText = new StringBuilder(); 
@@ -186,7 +187,6 @@ public class ByteStreamInputChargingStations
 		try {
 			objectByteStreamInput.chargingStationsInputByteStream(filePath);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -204,7 +204,7 @@ public class ByteStreamInputChargingStations
         System.out.println("Longitude: " + objectByteStreamInput.getGpsValues().getLongitude());
         System.out.println("Gas Slots: " + objectByteStreamInput.getNumGasSlots());
         System.out.println("Electric Slots: " + objectByteStreamInput.getNumElectricSlots());
-        System.out.println("Gas Output: " + objectByteStreamInput.getGasOutputPerSecondoutputPerSecond());
+        System.out.println("Gas Output: " + objectByteStreamInput.getGasOutputPerSecond());
         System.out.println("Electric Output: " + objectByteStreamInput.getElectricityOutputPerSecond());
         System.out.println("Electric Storage: " + objectByteStreamInput.getLevelOfElectricityStorage());
 		System.out.println("Gas Storage: " + objectByteStreamInput.getLevelOfGasStorage());

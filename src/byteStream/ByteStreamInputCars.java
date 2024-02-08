@@ -19,6 +19,7 @@ public class ByteStreamInputCars
 	private float waitDuration;
 	private LocationAPI api;
 	private GPSValues gpsValues;
+	private boolean priorityFlag;
 	
 	Car[] listCars;
 	
@@ -63,15 +64,21 @@ public class ByteStreamInputCars
 	public LocationAPI getApi() {
 		return api;
 	}
-	private void setApi(LocationAPI api) {
-		this.api = api;
-	}
 	public GPSValues getGpsValues() {
 		return gpsValues;
 	}
 	private void setGpsValues(GPSValues gpsValues) {
 		this.gpsValues = gpsValues;
 	}
+	
+	private void setPriorityFlag(boolean priorityFlag) {
+		this.priorityFlag = priorityFlag;
+	}
+	
+	private boolean getPriorityFlag() {
+		return priorityFlag;
+	}
+	
 	
 	/*
 	 * 
@@ -81,12 +88,12 @@ public class ByteStreamInputCars
 		int indexArray = 0;
 		int byteData = 0;
 		int carsCounter = 0;
-		char recorveredParameterCharTemp;
+		char recoveredParameterCharTemp;
 		try (FileInputStream reader = new FileInputStream(filePath)) {
 			while((byteData = reader.read()) != -1)
 			{
-				recorveredParameterCharTemp = (char)byteData;
-				if(recorveredParameterCharTemp == '\n')
+				recoveredParameterCharTemp = (char)byteData;
+				if(recoveredParameterCharTemp == '\n')
 				{
 					carsCounter++;
 				}
@@ -97,70 +104,73 @@ public class ByteStreamInputCars
 			Car[] cars = new Car[carsCounter++];
 			/* If object was created correctly, move to obtain the information */
 			StringBuilder recoverText = new StringBuilder();
-			String recorveredParameterString;
+			String recoveredParameterString;
 			try {
-				/* Reset object reader to the beginning of the file */
-				FileInputStream readerTemp = new FileInputStream(filePath);
-				byteData = 0;
-				while((byteData = readerTemp.read()) != -1)
-				{	
-					char recorveredParameterChar = (char)byteData;
-					if(recorveredParameterChar == '\n')
-					{
-						Car tempCar;
-						recorveredParameterString = recoverText.toString();
-						String[] recorveredParameterStrings = recorveredParameterString.split(" ");
-						
-						setGasOrElectricCar(recorveredParameterStrings[0]);
-						setCarNumber(recorveredParameterStrings[1]);
-						setCurrentCapacity(Float.parseFloat(recorveredParameterStrings[2]));
-						setTankCapacity(Float.parseFloat(recorveredParameterStrings[3]));
-						setWaitDuration(Float.parseFloat(recorveredParameterStrings[4]));
-						setGpsValues(new GPSValues(Float.parseFloat(recorveredParameterStrings[5]), Float.parseFloat(recorveredParameterStrings[6])));
-
-						if(getGasOrElectricCar().equals("GasCar"))
+				try (/* Reset object reader to the beginning of the file */
+				FileInputStream readerTemp = new FileInputStream(filePath)) {
+					byteData = 0;
+					while((byteData = readerTemp.read()) != -1)
+					{	
+						char recoveredParameterChar = (char)byteData;
+						if(recoveredParameterChar == '\n')
 						{
-							tempCar = new GasCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues());
+							Car tempCar;
+							recoveredParameterString = recoverText.toString();
+							String[] recoveredParameterStrings = recoveredParameterString.split(" ");
+							
+							setGasOrElectricCar(recoveredParameterStrings[0]);
+							setCarNumber(recoveredParameterStrings[1]);
+							setCurrentCapacity(Float.parseFloat(recoveredParameterStrings[2]));
+							setTankCapacity(Float.parseFloat(recoveredParameterStrings[3]));
+							setWaitDuration(Float.parseFloat(recoveredParameterStrings[4]));
+							setGpsValues(new GPSValues(Float.parseFloat(recoveredParameterStrings[5]), Float.parseFloat(recoveredParameterStrings[6])));
+							setPriorityFlag(Boolean.parseBoolean(recoveredParameterStrings[7]));
+							
+							if(getGasOrElectricCar().equals("GasCar"))
+							{
+								tempCar = new GasCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues(), getPriorityFlag());
 
-						}
-						else if(getGasOrElectricCar().equals("ElectricCar")) {
-							tempCar = new ElectricCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues());
+							}
+							else if(getGasOrElectricCar().equals("ElectricCar")) {
+								tempCar = new ElectricCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues(), getPriorityFlag());
 
+							}
+							else
+							{
+								throw new IOException("Invalid Data Type...");
+							}
+							
+							cars[indexArray] = tempCar;
+							recoverText = new StringBuilder(); 
+							/* Update index until the value matches the created items */
+							indexArray++;
 						}
-						else
-						{
-							throw new IOException("Invalid Data Type...");
+						else {
+							recoverText.append(recoveredParameterChar);
 						}
-						
-						cars[indexArray] = tempCar;
-						recoverText = new StringBuilder(); 
-						/* Update index until the value matches the created items */
-						indexArray++;
-					}
-					else {
-						recoverText.append(recorveredParameterChar);
 					}
 				}
 				if(recoverText.length() > 0)
 				{
 					Car tempCar;
-					recorveredParameterString = recoverText.toString();
-					String[] recorveredParameterStrings = recorveredParameterString.split(" ");
+					recoveredParameterString = recoverText.toString();
+					String[] recoveredParameterStrings = recoveredParameterString.split(" ");
 					
-					setGasOrElectricCar(recorveredParameterStrings[0]);
-					setCarNumber(recorveredParameterStrings[1]);
-					setCurrentCapacity(Float.parseFloat(recorveredParameterStrings[2]));
-					setTankCapacity(Float.parseFloat(recorveredParameterStrings[3]));
-					setWaitDuration(Float.parseFloat(recorveredParameterStrings[4]));
-					setGpsValues(new GPSValues(Float.parseFloat(recorveredParameterStrings[5]), Float.parseFloat(recorveredParameterStrings[6])));
+					setGasOrElectricCar(recoveredParameterStrings[0]);
+					setCarNumber(recoveredParameterStrings[1]);
+					setCurrentCapacity(Float.parseFloat(recoveredParameterStrings[2]));
+					setTankCapacity(Float.parseFloat(recoveredParameterStrings[3]));
+					setWaitDuration(Float.parseFloat(recoveredParameterStrings[4]));
+					setGpsValues(new GPSValues(Float.parseFloat(recoveredParameterStrings[5]), Float.parseFloat(recoveredParameterStrings[6])));
+					setPriorityFlag(Boolean.parseBoolean(recoveredParameterStrings[7]));
 
 					if(getGasOrElectricCar().equals("GasCar"))
 					{
-						tempCar = new GasCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues());
+						tempCar = new GasCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues(), getPriorityFlag());
 
 					}
 					else if(getGasOrElectricCar().equals("ElectricCar")) {
-						tempCar = new ElectricCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues());
+						tempCar = new ElectricCar(getCarNumber(), getCurrentCapacity(), getTankCapacity(), getWaitDuration(), api, getGpsValues(), getPriorityFlag());
 
 					}
 					else
@@ -187,7 +197,6 @@ public class ByteStreamInputCars
 		try {
 			objectByteStreamInput.carsInputByteStream(filePath, api);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return objectByteStreamInput.getListCars();
