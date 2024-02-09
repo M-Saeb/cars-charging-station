@@ -28,7 +28,7 @@ The simulation either finishes on its own or can only be stopped by a keyboard i
 
 
 ## Structure
-![Block Diagram](BlockDiagram.jpg)
+![Block Diagram](BlockDiagram.bmp)
 The system consists of Charging Stations and Cars. Each one is represented by a long-running thread.
 
 ### Car
