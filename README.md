@@ -1,25 +1,20 @@
 # Java Project
 
 ## Authors
-- Hazhir Amiri.
-    - Matriculation Number: 7218509.
+- [allerter](https://github.com/allerter)
+- [lhckmn](https://github.com/lhckmn)
+- [LF-RoGu](https://github.com/LF-RoGu)
+- [M-Saeb](https://github.com/M-Saeb)
 
-- Leander Hackmann.
-    - Matriculation Number: 7217912
-
-- Luis Fernando Rodriguez Gutierrez.
-    - Matriculation Number: 7219085
-
-- Mohammed Al Salihi.
-    - Matriculation Number: 7218958.
-
+## Description
+A simulation project that uses concurrecnt API to create a logic similiar to a charging stations in real life
 
 ## Capstone Video
 A capture of the execution of the project can be found here:
 
 https://youtu.be/upBa6pgkwjk
 
-## Simulation
+## Running the code
 The simulation begins after the user selects "Begin Simulation" in the main menu and finishes when all cars have either gotten charged or failed to. At the end of every simulation, a summary of all the cars and their charging stats will be shown.
 
 The duration of the simulation depends on the number of stations and cars the user selects. In a simulation with 5 cars and 4 stations, the simulation takes about 1 minute to finish.
@@ -50,6 +45,6 @@ Right-click click on the project on Eclipse, then `Run As -> 1 Java Application`
 Open the project in VS Code, go to the `Main.java` file and run it. The terminal should open, displaying the menu.
 
 ## Task Distribution
-| Name  	| Hazhir Amiri                                     	| Leander Hackmann                                     	| Luis Fernando Rodriguez Gutierrez                                                        	| Mohammed Al Salihi                     	|
+| Name  	| [allerter](https://github.com/allerter)                                     	| [lhckmn](https://github.com/lhckmn)                                     	| [LF-RoGu](https://github.com/LF-RoGu)                                                         	| [M-Saeb](https://github.com/M-Saeb)                     	|
 |-------	|--------------------------------------------------	|------------------------------------------------------	|------------------------------------------------------------------------------------------	|----------------------------------------	|
 | Tasks 	| Main menu, logging, sequential logic, some overall bug fixing 	| Car classes and their logic, threaded charging logic 	| byte stream logging, reading car and station data from file, weather and energy source logic, location API 	| ChargingStation and ChargingSlot logic, annotation and metadata 	|
